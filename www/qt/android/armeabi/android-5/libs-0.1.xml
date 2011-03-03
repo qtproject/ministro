@@ -1,0 +1,122 @@
+<libs version="0.1" applicationParameters="-platform	android" environmentVariables="MINISTRO_SSL_CERTS_PATH=MINISTRO_PATH/qt/ssl	QT_IMPORT_PATH=MINISTRO_PATH/qt/imports	QT_PLUGIN_PATH=MINISTRO_PATH/qt/plugins">
+    <lib name="QtCore" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtCore.so" file="lib/libQtCore.so" size="2120860" sha1="d464318455a59ee2603fecda21da4954fcf7360b" level="0" />
+    <lib name="QtNetwork" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtNetwork.so" file="lib/libQtNetwork.so" size="1512132" sha1="65e257cba0056803c0bd743ea6dee7876d4fd20d" level="1" >
+        <depends>
+            <lib name="QtCore"/>
+        </depends>
+        <needs>
+            <item name="GenericBearerPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/plugins/bearer/libqgenericbearer.so" file="plugins/sqldrivers/libqgenericbearer.so" size="35596" sha1="3a398a5fab5381c10b5eda9bd86bf31ad0a419cf" />
+        </needs>
+    </lib>
+
+    <lib name="QtSql" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtSql.so" file="lib/libQtSql.so" size="139332" sha1="323c19b64b788c50925d580b3490d941447248d3" level="1" >
+        <depends>
+            <lib name="QtCore"/>
+        </depends>
+        <needs>
+            <item name="QSQLitePlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/plugins/sqldrivers/libqsqlite.so" file="plugins/sqldrivers/libqsqlite.so" size="298024" sha1="024bc6f549e94a61bdf50606e39690dadeb757dd" />
+        </needs>
+    </lib>
+
+    <lib name="QtXml" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtXml.so" file="lib/libQtXml.so" size="156300" sha1="fd6b648ebb6019d38991b52a3ec89c194003fdd3" level="1" >
+        <depends>
+            <lib name="QtCore"/>
+        </depends>
+    </lib>
+
+    <lib name="QtTest" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtTest.so" file="lib/libQtTest.so" size="81288" sha1="e95656b6f927168c27e61f2ffdce220fd80a2cdd" level="1" >
+        <depends>
+            <lib name="QtCore"/>
+        </depends>
+    </lib>
+
+    <lib name="QtScript" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtScript.so" file="lib/libQtScript.so" size="940192" sha1="67eda83155010c7a62c971be3f1ea20cf2273a28" level="1" >
+        <depends>
+            <lib name="QtCore"/>
+        </depends>
+    </lib>
+
+    <lib name="QtGui" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtGui.so" file="lib/libQtGui.so" size="5752992" sha1="a5a5c8b4bf1df08662fb732ddf963d4c3240c697" level="1" >
+        <depends>
+            <lib name="QtCore"/>
+            <lib name="QtAndroidPlatformPlugin"/>
+        </depends>
+        <needs>
+            <item name="QtAccessibleWidgets" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/plugins/accessible/libqtaccessiblewidgets.so" file="plugins/accessible/libqtaccessiblewidgets.so" size="139584" sha1="790fcd6176ae1ba499790dfe42f230159721aaac" />
+            <item name="QtGifPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/plugins/imageformats/libqgif.so" file="plugins/imageformats/libqgif.so" size="22444" sha1="e37682212a3495103c59c64c4e0acf37abcd36d8" />
+            <item name="QtIcoPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/plugins/imageformats/libqico.so" file="plugins/imageformats/libqico.so" size="22528" sha1="3b1ada098ef5608e364090a027a1ef3e1e442e06" />
+            <item name="QtJpegPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/plugins/imageformats/libqjpeg.so" file="plugins/imageformats/libqjpeg.so" size="155104" sha1="f4b635ac61e2a0b04ae24514bed3899fe4b4ec2a" />
+            <item name="QtMngPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/plugins/imageformats/libqmng.so" file="plugins/imageformats/libqmng.so" size="226288" sha1="cfccd659170b940d0ca6cd114e8e4e61a8787dcc" />
+            <item name="QtTiffPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/plugins/imageformats/libqtiff.so" file="plugins/imageformats/libqtiff.so" size="270244" sha1="78041a9a16c612e7582119b87e55f196918ca536" />
+        </needs>
+    </lib>
+
+    <lib name="QtSvg" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtSvg.so" file="lib/libQtSvg.so" size="207352" sha1="547f4e52ee83de926e08decbabc7fac7e3ed2b41" level="2" >
+        <depends>
+            <lib name="QtGui"/>
+        </depends>
+        <needs>
+            <item name="QtSvgIconPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/plugins/iconengines/libqsvgicon.so" file="plugins/iconengines/libqsvgicon.so" size="26996" sha1="fa3e42cf705445ffc831f2543decb66f109ed3c0" />
+            <item name="QtSvgPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/plugins/imageformats/libqsvg.so" file="plugins/imageformats/libqsvg.so" size="18716" sha1="6e70ef818e15c62ccdbb9fcdd3a0af7d47c72634" />
+        </needs>
+    </lib>
+
+    <lib name="QtMultimedia" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtMultimedia.so" file="lib/libQtMultimedia.so" size="69180" sha1="e2e667aee74ded4541576f1a6014208fe74ef81e" level="2" >
+        <depends>
+            <lib name="QtGui"/>
+        </depends>
+    </lib>
+
+    <lib name="QtOpenGL" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtOpenGL.so" file="lib/libQtOpenGL.so" size="412788" sha1="c44d8291857ab682badde73069d34c72b2c2dc90" level="2" >
+        <depends>
+            <lib name="QtGui"/>
+        </depends>
+    </lib>
+
+    <lib name="QtXmlPatterns" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtXmlPatterns.so" file="lib/libQtXmlPatterns.so" size="1923108" sha1="e9a6257e22fd1810101b66f6609d969cda8dc01b" level="2" >
+        <depends>
+            <lib name="QtNetwork"/>
+        </depends>
+    </lib>
+
+    <lib name="QtWebKit" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtWebKit.so" file="lib/libQtWebKit.so" size="9240204" sha1="74082c9642cf11f2719d8ef44d6a940d2b0fc76e" level="2" >
+        <depends>
+            <lib name="QtGui"/>
+            <lib name="QtNetwork"/>
+        </depends>
+    </lib>
+
+    <lib name="QtScriptTools" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtScriptTools.so" file="lib/libQtScriptTools.so" size="463412" sha1="d3c201698c759b4ddec1667fba6d3e1dec6bb128" level="2" >
+        <depends>
+            <lib name="QtGui"/>
+            <lib name="QtScript"/>
+        </depends>
+    </lib>
+
+    <lib name="QtDeclarative" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/lib/libQtDeclarative.so" file="lib/libQtDeclarative.so" size="1770496" sha1="b4baacf7bd208abef4f2ebc28afe3727808203f8" level="3" >
+        <depends>
+            <lib name="QtScript"/>
+            <lib name="QtSvg"/>
+            <lib name="QtSql"/>
+            <lib name="QtXmlPatterns"/>
+            <lib name="QtOpenGL"/>
+            <lib name="QtNetwork"/>
+        </depends>
+        <needs>
+            <item name="QmlFolderListModelPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/imports/Qt/labs/folderlistmodel/libqmlfolderlistmodelplugin.so" file="imports/Qt/labs/folderlistmodel/libqmlfolderlistmodelplugin.so" size="31040" sha1="9accf8fca261d5e29e08bd0325257c7192d3f7a7" />
+            <item name="QmlDir" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/imports/Qt/labs/folderlistmodel/qmldir" file="imports/Qt/labs/folderlistmodel/qmldir" size="32" sha1="339a50ff0cf652c565a7adf4ab8c4c74aac7305e" />
+            <item name="QmlGesturesPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/imports/Qt/labs/gestures/libqmlgesturesplugin.so" file="imports/Qt/labs/gestures/libqmlgesturesplugin.so" size="37620" sha1="1ac35c644fcb2db4dc0765c62af79343d96de650" />
+            <item name="QmlDir" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/imports/Qt/labs/gestures/qmldir" file="imports/Qt/labs/gestures/qmldir" size="25" sha1="237bc60b12c32e8763435b3286970975f33e642a" />
+            <item name="QmlParticlesPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/imports/Qt/labs/particles/libqmlparticlesplugin.so" file="imports/Qt/labs/particles/libqmlparticlesplugin.so" size="53216" sha1="1cbe89b89e4c3cbb1300861888591b05a7e9b11e" />
+            <item name="QmlDir" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/imports/Qt/labs/particles/qmldir" file="imports/Qt/labs/particles/qmldir" size="26" sha1="094a12fb018347e29ab831c5423b01576ddfc59f" />
+            <item name="QmlWebkitPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/imports/QtWebKit/libqmlwebkitplugin.so" file="imports/QtWebKit/libqmlwebkitplugin.so" size="61408" sha1="d831c9bfffa974893b764fa91c0acc5cb639fb46" />
+            <item name="QmlDir" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/imports/QtWebKit/qmldir" file="imports/QtWebKit/qmldir" size="23" sha1="f4012c3ef48875607eb1a7bae054d39d1568ada4" />
+        </needs>
+    </lib>
+
+    <lib name="QtAndroidPlatformPlugin" url="http://necessitas.sourceforge.net/qt/android/armeabi/objects/0.1/plugins/platforms/android/libandroid-5.so" file="plugins/platforms/android/libandroid-5.so" size="393160" sha1="5e24b99ac9eae9b3bd458df32a64d50f9b27b8fc" level="9999" >
+        <depends>
+            <lib name="QtGui"/>
+        </depends>
+    </lib>
+</libs>
