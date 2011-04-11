@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<Package>
+    <DisplayName>Necessitas Qt Creator Application</DisplayName>
+    <Description>The IDE for Qt development on Android devices.</Description>
+    <Version>2.1.81</Version>
+    <ReleaseDate>2011-04-09</ReleaseDate>
+    <Name>org.kde.necessitas.tools.qtcreator</Name>
+    <Script>installscript.qs</Script>
+    <ForcedInstallation>true</ForcedInstallation>
+    <InstallPriority>0</InstallPriority>
+    <SortingPriority>0</SortingPriority>
+</Package>

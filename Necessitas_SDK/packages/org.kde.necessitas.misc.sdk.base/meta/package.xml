@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<Package>
+    <DisplayName>Android SDK</DisplayName>
+    <Description>Android SDK</Description>
+    <Version>10.0.0</Version>
+    <ReleaseDate>2011-04-09</ReleaseDate>
+    <Name>org.kde.necessitas.misc.sdk.base</Name>
+    <Script>installscript.qs</Script>
+</Package>
