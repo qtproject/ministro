@@ -1,14 +1,16 @@
 #!/bin/bash
 
 REPO_SRC_DIR=$PWD
-TEMP_PATH=/tmp/necessitas
+TEMP_PATH=/var/necessitas
 mkdir -p $TEMP_PATH
 pushd $TEMP_PATH
 
 HOST_QT_VERSION=qt-everywhere-opensource-src-4.7.2
+NECESSITAS_QT_VERSION=4761
 STATIC_QT_PATH=""
 SHARED_QT_PATH=""
 SDK_TOOLS_PATH=""
+
 
 function error_msg
 {
@@ -91,48 +93,44 @@ function perpareSdkInstallerTools
 
 function perpareNecessitasQtCreator
 {
-    # get installer source code
-    if [ ! -d android-qt-creator ]
+    if [ ! -f $REPO_SRC_DIR/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-linux-x86.7z ]
     then
-        git clone git://gitorious.org/~taipan/qt-creator/android-qt-creator.git || error_msg "Can't clone android-qt-creator"
-    fi
+        if [ ! -d android-qt-creator ]
+        then
+            git clone git://anongit.kde.org/android-qt-creator.git android-qt-creator || error_msg "Can't clone android-qt-creator"
+        fi
 
-    pushd android-qt-creator
+        pushd android-qt-creator
 
-    if [ ! -f all_done ]
-    then
-        git checkout testing
-        $SHARED_QT_PATH/bin/qmake -r || error_msg "Can't configure android-qt-creator"
-        make -j4 || error_msg "Can't compile android-qt-creator"
-        echo "all done">all_done
+        if [ ! -f all_done ]
+        then
+            git checkout testing
+            $SHARED_QT_PATH/bin/qmake -r || error_msg "Can't configure android-qt-creator"
+            make -j4 || error_msg "Can't compile android-qt-creator"
+            echo "all done">all_done
+        fi
+        rm -fr QtCreator
+        INSTALL_ROOT=$PWD/QtCreator make install
+        mkdir -p $PWD/QtCreator/Qt/lib
+        mkdir -p $PWD/QtCreator/Qt/imports
+        cp -a $SHARED_QT_PATH/lib/* $PWD/QtCreator/Qt/lib/
+        rm -fr $PWD/QtCreator/Qt/lib/pkgconfig
+        find $PWD/QtCreator/Qt -name *.la | xargs rm -fr
+        find $PWD/QtCreator/Qt -name *.prl | xargs rm -fr
+        cp -a $SHARED_QT_PATH/imports/* $PWD/QtCreator/Qt/imports/
+        cp -a bin/necessitas $PWD/QtCreator/bin/
+        mkdir $PWD/QtCreator/images
+        cp -a bin/necessitas*.png $PWD/QtCreator/images/
+        $SDK_TOOLS_PATH/archivegen QtCreator qtcreator-linux-x86.7z
+        mkdir -p $REPO_SRC_DIR/packages/org.kde.necessitas.tools.qtcreator/data
+        mv qtcreator-linux-x86.7z $REPO_SRC_DIR/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-linux-x86.7z
+        popd
     fi
-    INSTALL_ROOT=$PWD/QtCreator make install
-    cp -a $SHARED_QT_PATH/lib $PWD/QtCreator/lib
-    cp -a $SHARED_QT_PATH/imports $PWD/QtCreator/imports
-    cp -a bin/necessitas $PWD/QtCreator/bin/
-    mkdir $PWD/QtCreator/images
-    cp -a bin/necessitas*.png $PWD/QtCreator/images/
-    $SDK_TOOLS_PATH/archivegen QtCreator qtcreator-linux-x86.7z
-    mv qtcreator-linux-x86.7z $REPO_SRC_DIR/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-linux-x86.7z
-    popd
 }
 
 
 function perpareNDKs
 {
-    # repack linux-x86 NDK
-    if [ ! -f $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-linux-x86.7z ]
-    then
-        downloadIfNotExits android-ndk-r5b-linux-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-linux-x86.tar.bz2
-        if [ ! -d android-ndk-r5b ]
-        then
-            tar xvfa android-ndk-r5b-linux-x86.tar.bz2
-        fi
-        $SDK_TOOLS_PATH/archivegen android-ndk-r5b android-ndk-r5b-linux-x86.7z
-        mv android-ndk-r5b-linux-x86.7z $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-linux-x86.7z
-        rm -fr android-ndk-r5b
-    fi
-
     # repack windows NDK
     if [ ! -f $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-windows.7z ]
     then
@@ -142,6 +140,7 @@ function perpareNDKs
             unzip android-ndk-r5b-windows.zip
         fi
         $SDK_TOOLS_PATH/archivegen android-ndk-r5b android-ndk-r5b-windows.7z
+        mkdir -p $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data
         mv android-ndk-r5b-windows.7z $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-windows.7z
         rm -fr android-ndk-r5b
     fi
@@ -155,14 +154,12 @@ function perpareNDKs
             tar xvfa android-ndk-r5b-darwin-x86.tar.bz2
         fi
         $SDK_TOOLS_PATH/archivegen android-ndk-r5b android-ndk-r5b-darwin-x86.7z
+        mkdir -p $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data
         mv android-ndk-r5b-darwin-x86.7z $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-darwin-x86.7z
         rm -fr android-ndk-r5b
     fi
-}
 
-function perpareSDKs
-{
-    # prepare linux-x86 SDK
+    # repack linux-x86 NDK, it must be the last one because we need it to build qt
     if [ ! -f $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-linux-x86.7z ]
     then
         downloadIfNotExits android-ndk-r5b-linux-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-linux-x86.tar.bz2
@@ -171,41 +168,175 @@ function perpareSDKs
             tar xvfa android-ndk-r5b-linux-x86.tar.bz2
         fi
         $SDK_TOOLS_PATH/archivegen android-ndk-r5b android-ndk-r5b-linux-x86.7z
+        mkdir -p $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data
         mv android-ndk-r5b-linux-x86.7z $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-linux-x86.7z
-        rm -fr android-ndk-r5b
-    fi
-
-    # prepare windows SDK
-    if [ ! -f $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-windows.7z ]
-    then
-        downloadIfNotExits android-ndk-r5b-windows.zip http://dl.google.com/android/ndk/android-ndk-r5b-windows.zip
-        if [ ! -d android-ndk-r5b ]
-        then
-            unzip android-ndk-r5b-windows.zip
-        fi
-        $SDK_TOOLS_PATH/archivegen android-ndk-r5b android-ndk-r5b-windows.7z
-        mv android-ndk-r5b-windows.7z $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-windows.7z
-        rm -fr android-ndk-r5b
-    fi
-
-    # repack mac NDK
-    if [ ! -f $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-darwin-x86.7z ]
-    then
-        downloadIfNotExits android-ndk-r5b-darwin-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-darwin-x86.tar.bz2
-        if [ ! -d android-ndk-r5b ]
-        then
-            tar xvfa android-ndk-r5b-darwin-x86.tar.bz2
-        fi
-        $SDK_TOOLS_PATH/archivegen android-ndk-r5b android-ndk-r5b-darwin-x86.7z
-        mv android-ndk-r5b-darwin-x86.7z $REPO_SRC_DIR/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-darwin-x86.7z
-        rm -fr android-ndk-r5b
     fi
 }
 
+function repackSDK
+{
+    package_name=${3//-/_} # replace - with _
+    if [ ! -f $REPO_SRC_DIR/packages/org.kde.necessitas.misc.sdk.$package_name/data/$1.7z ]
+    then
+        downloadIfNotExits $1.zip http://dl.google.com/android/repository/$1.zip
+        unzip $1.zip
+        mkdir -p $2
+        mv $1 $2/$3
+        $SDK_TOOLS_PATH/archivegen $2 $1.7z
+        mkdir -p $REPO_SRC_DIR/packages/org.kde.necessitas.misc.sdk.$package_name/data
+        mv $1.7z $REPO_SRC_DIR/packages/org.kde.necessitas.misc.sdk.$package_name/data/$1.7z
+        rm -fr $2
+    fi
+}
 
+function perpareSDKs
+{
+    echo "prepare SDKs"
+    if [ ! -f $REPO_SRC_DIR/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-linux_x86.7z ]
+    then
+        downloadIfNotExits android-sdk_r10-linux_x86.tgz http://dl.google.com/android/android-sdk_r10-linux_x86.tgz
+        if [ ! -d android-sdk-linux_x86 ]
+        then
+            tar xvfa android-sdk_r10-linux_x86.tgz
+        fi
+        $SDK_TOOLS_PATH/archivegen android-sdk-linux_x86 android-sdk_r10-linux_x86.7z
+        mkdir -p $REPO_SRC_DIR/packages/org.kde.necessitas.misc.sdk.base/data
+        mv android-sdk_r10-linux_x86.7z $REPO_SRC_DIR/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-linux_x86.7z
+        rm -fr android-sdk-linux_x86
+    fi
+
+    if [ ! -f $REPO_SRC_DIR/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-mac_x86.7z ]
+    then
+        downloadIfNotExits android-sdk_r10-mac_x86.zip http://dl.google.com/android/android-sdk_r10-mac_x86.zip
+        if [ ! -d android-sdk-mac_x86 ]
+        then
+            unzip android-sdk_r10-mac_x86.zip
+        fi
+        $SDK_TOOLS_PATH/archivegen android-sdk-mac_x86 android-sdk_r10-mac_x86.7z
+        mkdir -p $REPO_SRC_DIR/packages/org.kde.necessitas.misc.sdk.base/data
+        mv android-sdk_r10-mac_x86.7z $REPO_SRC_DIR/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-mac_x86.7z
+        rm -fr android-sdk-mac_x86
+    fi
+
+    if [ ! -f $REPO_SRC_DIR/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-windows.7z ]
+    then
+        downloadIfNotExits android-sdk_r10-windows.zip http://dl.google.com/android/android-sdk_r10-windows.zip
+        if [ ! -d android-sdk-windows ]
+        then
+            unzip android-sdk_r10-windows.zip
+        fi
+        $SDK_TOOLS_PATH/archivegen android-sdk-windows android-sdk_r10-windows.7z
+        mkdir -p $REPO_SRC_DIR/packages/org.kde.necessitas.misc.sdk.base/data
+        mv android-sdk_r10-windows.7z $REPO_SRC_DIR/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-windows.7z
+        rm -fr android-sdk-windows
+    fi
+
+    # repack platform-tools
+    repackSDK platform-tools_r03-linux android-sdk-linux_x86 platform-tools
+    repackSDK platform-tools_r03-macosx android-sdk-mac_x86 platform-tools
+# should we also include ant binary for windows ?
+    repackSDK platform-tools_r03-windows android-sdk-windows platform-tools
+
+    # repack api-4
+    repackSDK android-1.6_r03-linux android-sdk-linux_x86/platforms android-4
+    repackSDK android-1.6_r03-macosx android-sdk-mac_x86/platforms android-4
+    repackSDK android-1.6_r03-windows android-sdk-windows/platforms android-4
+
+    # repack api-5
+    repackSDK android-2.0_r01-linux android-sdk-linux_x86/platforms android-5
+    repackSDK android-2.0_r01-macosx android-sdk-mac_x86/platforms android-5
+    repackSDK android-2.0_r01-windows android-sdk-windows/platforms android-5
+
+    # repack api-6
+    repackSDK android-2.0.1_r01-linux  android-sdk-linux_x86/platforms android-6
+    repackSDK android-2.0.1_r01-macosx android-sdk-mac_x86/platforms android-6
+    repackSDK android-2.0.1_r01-windows android-sdk-windows/platforms android-6
+
+    # repack api-7
+    repackSDK android-2.1_r02-linux android-sdk-linux_x86/platforms android-7
+    repackSDK android-2.1_r02-macosx android-sdk-mac_x86/platforms android-7
+    repackSDK android-2.1_r02-windows android-sdk-windows/platforms android-7
+
+    # repack api-8
+    repackSDK android-2.2_r02-linux android-sdk-linux_x86/platforms android-8
+    repackSDK android-2.2_r02-macosx android-sdk-mac_x86/platforms android-8
+    repackSDK android-2.2_r02-windows android-sdk-windows/platforms android-8
+
+    # repack api-9
+    repackSDK android-2.3.1_r02-linux android-sdk-linux_x86/platforms android-9
+    repackSDK android-2.3.1_r02-linux android-sdk-mac_x86/platforms android-9
+    repackSDK android-2.3.1_r02-linux android-sdk-windows/platforms android-9
+
+    # repack api-10
+    repackSDK android-2.3.3_r01-linux android-sdk-linux_x86/platforms android-10
+    repackSDK android-2.3.3_r01-linux android-sdk-mac_x86/platforms android-10
+    repackSDK android-2.3.3_r01-linux android-sdk-windows/platforms android-10
+
+    # repack api-11
+    repackSDK android-3.0_r01-linux android-sdk-linux_x86/platforms android-11
+    repackSDK android-3.0_r01-linux android-sdk-mac_x86/platforms android-11
+    repackSDK android-3.0_r01-linux android-sdk-windows/platforms android-11
+}
+
+
+function compileNecessitasQt
+{
+    if [ ! -f all_done ]
+    then
+        git checkout testing
+        ../qt-src/androidconfigbuild.sh -q 1 -n $TEMP_PATH/android-ndk-r5b -a $1 -k 1 -i /data/data/eu.licentia.necessitas.ministro/files/qt || error_msg "Can't configure android-qt-creator"
+        echo "all done">all_done
+    fi
+    package_name=${1//-/_} # replace - with _
+    rm -fr data
+    INSTALL_ROOT=$PWD make install
+    mkdir -p $2/$1
+    mv data/data/eu.licentia.necessitas.ministro/files/qt/bin $2/$1
+    $SDK_TOOLS_PATH/archivegen Android qt-tools-linux-x86.7z
+    rm -fr $2/$1/bin
+    mkdir -p $REPO_SRC_DIR/packages/org.kde.necessitas.android.qt.$NECESSITAS_QT_VERSION.$package_name/data
+    mv qt-tools-linux-x86.7z $REPO_SRC_DIR/packages/org.kde.necessitas.android.qt.$NECESSITAS_QT_VERSION.$package_name/data/qt-tools-linux-x86.7z
+    mv data/data/eu.licentia.necessitas.ministro/files/qt/* $2/$1
+    $SDK_TOOLS_PATH/archivegen Android qt-farmework.7z
+    mv qt-farmework.7z $REPO_SRC_DIR/packages/org.kde.necessitas.android.qt.$NECESSITAS_QT_VERSION.$package_name/data/qt-farmework.7z
+}
+
+
+function perpareNecessitasQt
+{
+    mkdir -p Android/Qt/$NECESSITAS_QT_VERSION
+    pushd Android/Qt/$NECESSITAS_QT_VERSION
+    if [ ! -d qt-src ]
+    then
+        git clone git://anongit.kde.org/android-qt.git qt-src|| error_msg "Can't clone android-qt-creator"
+        pushd qt-src
+        git checkout testing
+        popd
+    fi
+
+    if [ ! -f $REPO_SRC_DIR/packages/org.kde.necessitas.android.qt.$NECESSITAS_QT_VERSION.armeabi/data/qt-tools-linux-x86.7z ]
+    then
+        mkdir build-armeabi
+        pushd build-armeabi
+        compileNecessitasQt armeabi Android/Qt/$NECESSITAS_QT_VERSION
+        popd #build-armeabi
+    fi
+
+    if [ ! -f $REPO_SRC_DIR/packages/org.kde.necessitas.android.qt.$NECESSITAS_QT_VERSION.armeabi_v7a/data/qt-tools-linux-x86.7z ]
+    then
+        mkdir build-armeabi-v7a
+        pushd build-armeabi-v7a
+        compileNecessitasQt armeabi-v7a Android/Qt/$NECESSITAS_QT_VERSION
+        popd #build-armeabi-v7a
+    fi
+    popd #Android/Qt/$NECESSITAS_QT_VERSION
+}
+
+perpareNDKs
+perpareSDKs
 prepareHostQt
 perpareSdkInstallerTools
 perpareNecessitasQtCreator
-perpareNDKs
-popd
+perpareNecessitasQt
 
+popd
