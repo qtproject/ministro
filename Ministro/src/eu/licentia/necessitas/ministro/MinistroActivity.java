@@ -46,6 +46,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -54,7 +55,7 @@ public class MinistroActivity extends Activity {
 
 	private native int nativeChmode(String filepath, int mode);
 
-	private static final String DOMAIN_NAME="ministro.licentia.eu";
+	private static final String DOMAIN_NAME="http://ministro.licentia.eu";
 
 	private String[] m_modules;
 	private int m_id=-1;
@@ -105,12 +106,12 @@ public class MinistroActivity extends Activity {
 	
 	private static URL getVersionUrl() throws MalformedURLException
 	{
-		return new URL("http://"+DOMAIN_NAME+"/qt/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/versions.xml");
+		return new URL(DOMAIN_NAME+"/qt/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/versions.xml");
 	}
 
 	private static URL getLibsXmlUrl(double version) throws MalformedURLException
 	{
-		return new URL("http://"+DOMAIN_NAME+"/qt/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/libs-"+version+".xml");
+		return new URL(DOMAIN_NAME+"/qt/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/libs-"+version+".xml");
 	}
 
 	public static double downloadVersionXmlFile()
@@ -459,7 +460,13 @@ public class MinistroActivity extends Activity {
     	super.onDestroy();
     	unbindService(m_ministroConnection);
 	}
-    
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+    	//Avoid activity from being destroyed/created
+    	super.onConfigurationChanged(newConfig);
+    }
+
     static {
         System.loadLibrary("chmode");
     }

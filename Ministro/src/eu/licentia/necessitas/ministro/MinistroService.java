@@ -178,7 +178,7 @@ public class MinistroService extends Service {
         refreshLibraries();
 		super.onCreate();
 	}
-	
+
 	public void activityFinished(int id)
 	{
 		for (int i=0;i<m_actions.size();i++)
