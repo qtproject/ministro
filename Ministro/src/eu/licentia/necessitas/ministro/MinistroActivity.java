@@ -32,6 +32,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -147,8 +148,8 @@ public class MinistroActivity extends Activity {
             while ((downloaded = instream.read(tmp)) != -1) {
                 outstream.write(tmp, 0, downloaded);
             }
-            outstream.flush();
             outstream.close();
+            MinistroService.instance().refreshLibraries();
             return version;
         } catch (ClientProtocolException e) {
             e.printStackTrace();
@@ -180,6 +181,7 @@ public class MinistroActivity extends Activity {
                         @Override
                         public void onCancel(DialogInterface dialog) {
                             DownloadManager.this.cancel(false);
+                            finishMe();
                         }
             });
             m_dialog.show();
@@ -219,7 +221,6 @@ public class MinistroActivity extends Activity {
                 String sha1 =  Library.convertToHex(digester.digest());
                 if (sha1.equalsIgnoreCase(fileSha1))
                 {
-                    outstream.flush();
                     outstream.close();
                     nativeChmode(filePath, 0644);
                     return true;
@@ -295,7 +296,6 @@ public class MinistroActivity extends Activity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
             return null;
         }
 
@@ -325,7 +325,7 @@ public class MinistroActivity extends Activity {
 
         private ProgressDialog dialog = null;
         private ArrayList<Library> newLibs = new ArrayList<Library>();
-
+        private String m_message;
         @Override
         protected void onPreExecute() {
             dialog = ProgressDialog.show(MinistroActivity.this, "",
@@ -348,17 +348,28 @@ public class MinistroActivity extends Activity {
                 else
                     version = MinistroService.instance().getVersion();
 
+                ArrayList<String> notFoundModules = new ArrayList<String>();
+                if (m_modules!=null)
+                {
+	                ArrayList<String> requiredModules = new ArrayList<String>();
+	                Collections.addAll(requiredModules, m_modules);
+	                MinistroService.instance().checkModules(requiredModules, notFoundModules);
+                }
                 dom = builder.parse(new FileInputStream(MinistroService.instance().getVersionXmlFile()));
 
                 factory = DocumentBuilderFactory.newInstance();
                 builder = factory.newDocumentBuilder();
                 root = dom.getDocumentElement();
                 root.normalize();
+
+                // extract device root certificates
                 SharedPreferences preferences=getSharedPreferences("Ministro", MODE_PRIVATE);
                 if (!preferences.getString("CODENAME", "").equals(android.os.Build.VERSION.CODENAME) ||
                         !preferences.getString("INCREMENTAL", "").equals(android.os.Build.VERSION.INCREMENTAL) ||
                         !preferences.getString("RELEASE", "").equals(android.os.Build.VERSION.RELEASE))
                 {
+                    m_message = "Extracting SSL root certificates. Please wait...";
+                    publishProgress((Void[])null);
                     String environmentVariables=root.getAttribute("environmentVariables");
                     environmentVariables=environmentVariables.replaceAll("MINISTRO_PATH", "");
                     String environmentVariablesList[]=environmentVariables.split("\t");
@@ -431,8 +442,8 @@ public class MinistroActivity extends Activity {
                         }
                         else
                         {// download missing libraries
-                            for (int j=0;j<m_modules.length;j++)
-                                if (m_modules[j].equals(lib.name))
+                            for(String module : notFoundModules)
+                                if (module.equals(lib.name))
                                 {
                                     newLibs.add(lib);
                                     break;
@@ -465,7 +476,7 @@ public class MinistroActivity extends Activity {
 
         @Override
         protected void onProgressUpdate(Void... nothing) {
-            dialog.setMessage("Found new version, compute required files to download. Please wait...");
+            dialog.setMessage(m_message);
             super.onProgressUpdate(nothing);
         }
         @Override
@@ -477,7 +488,6 @@ public class MinistroActivity extends Activity {
             }
             if (newLibs.size()>0 && result>0)
             {
-                MinistroService.instance().refreshLibraries();
                 Library[] libs = new Library[newLibs.size()];
                 libs = newLibs.toArray(libs);
                 new DownloadManager().execute(libs);

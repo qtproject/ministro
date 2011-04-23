@@ -76,7 +76,7 @@ public class MinistroService extends Service {
 
 
     // this method reload all downloaded libraries
-    ArrayList<Library> refreshLibraries()
+    synchronized ArrayList<Library> refreshLibraries()
     {
         synchronized (this) {
             try {
@@ -252,7 +252,7 @@ public class MinistroService extends Service {
 
     // check/add all modules. Returns true if all modules are found.
     @SuppressWarnings("unchecked")
-    private boolean checkModules(Object lbs, Object notFoundModules)
+    public boolean checkModules(Object lbs, Object notFoundModules)
     {
         ArrayList<Module> modules= new ArrayList<Module>();
         ArrayList<String> libs = (ArrayList<String>) lbs;
