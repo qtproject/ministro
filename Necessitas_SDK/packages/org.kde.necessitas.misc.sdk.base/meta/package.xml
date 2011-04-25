@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>Android SDK base</DisplayName>
+    <DisplayName>Base package</DisplayName>
     <Description>Android SDK base package</Description>
     <Version>10.0.0</Version>
     <ReleaseDate>2011-04-09</ReleaseDate>
