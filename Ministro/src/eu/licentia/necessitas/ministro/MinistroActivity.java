@@ -46,6 +46,7 @@ import org.w3c.dom.Node;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -62,7 +63,7 @@ public class MinistroActivity extends Activity {
 
     public native static int nativeChmode(String filepath, int mode);
 
-    private static final String DOMAIN_NAME="http://ministro.licentia.eu";
+    private static final String DOMAIN_NAME="http://files.kde.org/necessitas";
 
     private String[] m_modules;
     private int m_id=-1;
@@ -108,6 +109,11 @@ public class MinistroActivity extends Activity {
     {
         if (-1 != m_id && null != MinistroService.instance())
             MinistroService.instance().activityFinished(m_id);
+        else
+        {
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            nm.cancelAll();
+        }
         finish();
     }
 
@@ -121,7 +127,7 @@ public class MinistroActivity extends Activity {
         return new URL(DOMAIN_NAME+"/qt/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/libs-"+version+".xml");
     }
 
-    public static double downloadVersionXmlFile()
+    public static double downloadVersionXmlFile(boolean checkOnly)
     {
         try
         {
@@ -137,6 +143,9 @@ public class MinistroActivity extends Activity {
             if ( MinistroService.instance().getVersion() >= version )
                 return MinistroService.instance().getVersion();
 
+            if (checkOnly)
+                return version;
+
             connection = getLibsXmlUrl(version).openConnection();
             connection.setRequestProperty("Accept-Encoding", "gzip,deflate");
             File file= new File(MinistroService.instance().getVersionXmlFile());
@@ -149,7 +158,7 @@ public class MinistroActivity extends Activity {
                 outstream.write(tmp, 0, downloaded);
             }
             outstream.close();
-            MinistroService.instance().refreshLibraries();
+            MinistroService.instance().refreshLibraries(false);
             return version;
         } catch (ClientProtocolException e) {
             e.printStackTrace();
@@ -223,6 +232,7 @@ public class MinistroActivity extends Activity {
                 {
                     outstream.close();
                     nativeChmode(filePath, 0644);
+                    MinistroService.instance().refreshLibraries(false);
                     return true;
                 }
                 outstream.close();
@@ -316,7 +326,6 @@ public class MinistroActivity extends Activity {
                 m_dialog.dismiss();
                 m_dialog = null;
             }
-            MinistroService.instance().refreshLibraries();
             finishMe();
         }
     }
@@ -337,17 +346,17 @@ public class MinistroActivity extends Activity {
         protected Double doInBackground(Boolean... update) {
             double version=0.0;
             try {
-                ArrayList<Library> libraries = MinistroService.instance().getAvailableLibraries();
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder builder = factory.newDocumentBuilder();
                 Document dom = null;
                 Element root = null;
 
                 if (update[0] || MinistroService.instance().getVersion()<0)
-                    version = downloadVersionXmlFile();
+                    version = downloadVersionXmlFile(false);
                 else
                     version = MinistroService.instance().getVersion();
 
+                ArrayList<Library> libraries = MinistroService.instance().getAvailableLibraries();
                 ArrayList<String> notFoundModules = new ArrayList<String>();
                 if (m_modules!=null)
                 {

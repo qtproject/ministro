@@ -30,8 +30,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.RemoteException;
 
@@ -44,6 +50,7 @@ public class MinistroService extends Service {
     private static MinistroService m_instance = null;
     private String m_environmentVariables = null;
     private String m_applicationParams = null;
+
     public static MinistroService instance()
     {
         return m_instance;
@@ -74,9 +81,50 @@ public class MinistroService extends Service {
         }
     }
 
+    class CheckForUpdates extends AsyncTask<Void, Void, Void>
+    {
+
+        @Override
+        protected void onPreExecute() {
+            if (m_version<MinistroActivity.downloadVersionXmlFile(true))
+            {
+                NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+                int icon = R.drawable.icon;
+                CharSequence tickerText = "New Qt libs found";              // ticker-text
+                long when = System.currentTimeMillis();         // notification time
+                Context context = getApplicationContext();      // application Context
+                CharSequence contentTitle = "Ministro update";  // expanded message title
+                CharSequence contentText = "New Qt libs has been found tap to update."; // expanded message text
+
+                Intent notificationIntent = new Intent(MinistroService.this, MinistroActivity.class);
+                PendingIntent contentIntent = PendingIntent.getActivity(MinistroService.this, 0, notificationIntent, 0);
+
+                // the next two lines initialize the Notification, using the configurations above
+                Notification notification = new Notification(icon, tickerText, when);
+                notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+                notification.defaults |= Notification.DEFAULT_SOUND;
+                notification.defaults |= Notification.DEFAULT_VIBRATE;
+                notification.defaults |= Notification.DEFAULT_LIGHTS;
+                try{
+                    nm.notify(1, notification);
+                }catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+    }
+
 
     // this method reload all downloaded libraries
-    synchronized ArrayList<Library> refreshLibraries()
+    synchronized ArrayList<Library> refreshLibraries(boolean checkCrc)
     {
         synchronized (this) {
             try {
@@ -103,7 +151,7 @@ public class MinistroService extends Service {
                         File file=new File(m_qtLibsRootPath + lib.filePath);
                         if ((file).exists())
                         {
-                            if (!Library.checkCRC(file.getAbsolutePath(), lib.sha1))
+                            if (checkCrc && !Library.checkCRC(file.getAbsolutePath(), lib.sha1))
                                 file.delete();
                             else
                                 m_downloadedLibraries.add(lib);
@@ -181,7 +229,16 @@ public class MinistroService extends Service {
     public void onCreate() {
         m_versionXmlFile = getFilesDir().getAbsolutePath()+"/version.xml";
         m_qtLibsRootPath = getFilesDir().getAbsolutePath()+"/qt/";
-        refreshLibraries();
+        refreshLibraries(true);
+        SharedPreferences preferences=getSharedPreferences("Ministro", MODE_PRIVATE);
+        long lastCheck = preferences.getLong("LASTCHECK",0);
+        if (System.currentTimeMillis()-lastCheck>24l*3600*100) // check once/day
+        {
+            SharedPreferences.Editor editor= preferences.edit();
+            editor.putLong("LASTCHECK",System.currentTimeMillis());
+            editor.commit();
+            new CheckForUpdates().execute((Void[])null);
+        }
         super.onCreate();
     }
 
