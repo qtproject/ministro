@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>Android SDK</DisplayName>
-    <Description>Android SDK</Description>
+    <DisplayName>Android SDK platform tools</DisplayName>
+    <Description>Android SDK platform tools package</Description>
     <Version>10.0.0</Version>
     <ReleaseDate>2011-04-09</ReleaseDate>
     <Name>org.kde.necessitas.misc.sdk.platform_tools</Name>

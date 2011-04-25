@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>Android Qt</DisplayName>
+    <DisplayName>Android Qt 4.7.62-src</DisplayName>
     <Description>Development libraries for development applications on Android devices, source package.</Description>
     <Version>4.7.62</Version>
     <ReleaseDate>2011-04-09</ReleaseDate>

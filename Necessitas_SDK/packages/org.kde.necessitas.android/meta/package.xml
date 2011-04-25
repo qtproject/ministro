@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>Android Qt</DisplayName>
-    <Description>Development libraries for development applications on Android devices.</Description>
-    <Version>4.7.62</Version>
+    <DisplayName>Android</DisplayName>
+    <Description>Android</Description>
+    <Version>1.0</Version>
     <ReleaseDate>2011-04-09</ReleaseDate>
     <Name>org.kde.necessitas.android</Name>
     <SortingPriority>0</SortingPriority>
