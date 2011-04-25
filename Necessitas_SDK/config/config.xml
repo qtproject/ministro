@@ -9,10 +9,10 @@
     <License>license.txt</License>
     <Icon>qticon</Icon>
     <Watermark>watermark.png</Watermark>
-    <UninstallerName>SDKMaintain</UninstallerName>
+    <UninstallerName>SDKMaintainer</UninstallerName>
     <RemoteRepositories>
         <Repository>
-            <Url>http://localhost/necessitas</Url>
+            <Url>http://localhost/necessitas/sdk</Url>
             <Required>true</Required>
         </Repository>
     </RemoteRepositories>

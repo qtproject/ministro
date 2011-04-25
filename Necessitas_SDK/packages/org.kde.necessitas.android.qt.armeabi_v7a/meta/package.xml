@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Package>
+    <DisplayName>Android Qt</DisplayName>
+    <Description>Development libraries for development applications on Android devices, armeabi_v7a architecture.</Description>
+    <Version>4.7.62</Version>
+    <ReleaseDate>2011-04-09</ReleaseDate>
+    <Name>org.kde.necessitas.android.qt.armeabi_v7a</Name>
+    <Script>installscript.qs</Script>
+    <InstallPriority>0</InstallPriority>
+    <SortingPriority>0</SortingPriority>
+</Package>

@@ -13,8 +13,7 @@ function Component()
     {
         if (installer.value("os") == "x11")
         {
-            component.addDownloadableArchive( "QtCreator.7z" );
-//            component.addDownloadableArchive( "qtcreator-linux-x86.7z" );
+            component.addDownloadableArchive( "qtcreator-linux-x86.7z" );
         }
         else if (installer.value("os") == "win")
         {

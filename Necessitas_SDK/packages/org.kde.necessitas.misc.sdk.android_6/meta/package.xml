@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Package>
+    <DisplayName>Android SDK</DisplayName>
+    <Description>Android SDK</Description>
+    <Version>2.0.1.1</Version>
+    <ReleaseDate>2011-04-09</ReleaseDate>
+    <Name>org.kde.necessitas.misc.sdk.android_6</Name>
+    <Dependencies>org.kde.necessitas.misc.sdk.base</Dependencies>
+    <Dependencies>org.kde.necessitas.misc.sdk.platform_tools</Dependencies>
+    <Script>installscript.qs</Script>
+</Package>
