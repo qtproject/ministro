@@ -172,6 +172,7 @@ function perpareNDKs
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data
         mv android-ndk-r5b-linux-x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-linux-x86.7z
     fi
+    export ANDROID_NDK_ROOT=$PWD/android-ndk-r5b
 }
 
 function repackSDK
@@ -279,16 +280,36 @@ function perpareSDKs
     repackSDK android-3.0_r01-linux android-sdk-windows/platforms android-11
 }
 
+function patchQtFiles
+{
+    echo "bin/qmake" >files_to_patch
+    echo "bin/lrelease" >>files_to_patch
+    echo "%%" >>files_to_patch
+    find -name *.pc >>files_to_patch
+    find -name *.la >>files_to_patch
+    find -name *.prl >>files_to_patch
+    find -name *.prf >>files_to_patch
+    ../qt-src/qpatch files_to_patch /data/data/eu.licentia.necessitas.ministro/files/qt $PWD
+}
 
 function compileNecessitasQt
 {
     if [ ! -f all_done ]
     then
         git checkout testing
-        ../qt-src/androidconfigbuild.sh -q 1 -n $TEMP_PATH/android-ndk-r5b -a $1 -k 1 -i /data/data/eu.licentia.necessitas.ministro/files/qt || error_msg "Can't configure android-qt-creator"
+        ../qt-src/androidconfigbuild.sh -q 1 -n $TEMP_PATH/android-ndk-r5b -a $1 -k 1 -i /data/data/eu.licentia.necessitas.ministro/files/qt || error_msg "Can't configure android-qt"
         echo "all done">all_done
     fi
+
     package_name=${1//-/_} # replace - with _
+
+    if [ $package_name = "armeabi_v7a" ]
+    then 
+        sed 's/= armeabi/= armeabi-v7a/g' -i mkspecs/default/qmake.conf
+    else
+        sed 's/= armeabi-v7a/= armeabi/g' -i mkspecs/default/qmake.conf
+    fi
+
     rm -fr data
     INSTALL_ROOT=$PWD make install
     mkdir -p $2/$1
@@ -300,6 +321,7 @@ function compileNecessitasQt
     mv data/data/eu.licentia.necessitas.ministro/files/qt/* $2/$1
     $SDK_TOOLS_PATH/archivegen Android qt-farmework.7z
     mv qt-farmework.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-farmework.7z
+    patchQtFiles
 }
 
 
@@ -307,6 +329,7 @@ function perpareNecessitasQt
 {
     mkdir -p Android/Qt/$NECESSITAS_QT_VERSION
     pushd Android/Qt/$NECESSITAS_QT_VERSION
+
     if [ ! -d qt-src ]
     then
         git clone git://anongit.kde.org/android-qt.git qt-src|| error_msg "Can't clone android-qt-creator"
@@ -334,22 +357,169 @@ function perpareNecessitasQt
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.src/data/qt-src.7z ]
     then
         mv qt-src/.git .
+        mv qt-src/src/3rdparty/webkit .
         $SDK_TOOLS_PATH/archivegen qt-src qt-src.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.src/data
         mv qt-src.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.src/data/qt-src.7z
         mv .git qt-src/
+        mv webkit qt-src/src/3rdparty/
+    fi
+
+    popd #Android/Qt/$NECESSITAS_QT_VERSION
+}
+
+function compileNecessitasQtMobility
+{
+    export ANDROID_TARGET_ARCH=$1
+    if [ ! -f all_done ]
+    then
+        git checkout testing
+#        ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -qmake-exec ../build-$1/bin/qmake -modules "bearer contacts gallery location messaging multimedia systeminfo sensors versit organizer feedback" || error_msg "Can't configure android-qtmobility"
+        ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -qmake-exec ../build-$1/bin/qmake -modules "bearer contacts gallery location messaging systeminfo sensors versit organizer feedback" || error_msg "Can't configure android-qtmobility"
+        make -j4 || error_msg "Can't compile android-qtmobility"
+        echo "all done">all_done
+    fi
+    package_name=${1//-/_} # replace - with _
+    rm -fr data
+    INSTALL_ROOT=$PWD make install
+    mkdir -p $2/$1
+    mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.$package_name/data
+    mv data/data/eu.licentia.necessitas.ministro/files/qt/* $2/$1
+    cp -a $PWD/$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/* $2/$1
+    rm -fr $PWD/$TEMP_PATH
+    $SDK_TOOLS_PATH/archivegen Android qtmobility.7z
+    mv qtmobility.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.$package_name/data/qtmobility.7z
+    cp -a $2/$1/* ../build-$1
+    pushd ../build-$1
+    patchQtFiles
+    popd
+}
+
+
+function perpareNecessitasQtMobility
+{
+    mkdir -p Android/Qt/$NECESSITAS_QT_VERSION
+    pushd Android/Qt/$NECESSITAS_QT_VERSION
+
+    if [ ! -d qtmobility-src ]
+    then
+        git clone git://anongit.kde.org/android-qt-mobility.git qtmobility-src || error_msg "Can't clone android-qt-mobility"
+        pushd qtmobility-src
+        git checkout testing
+        popd
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.armeabi/data/qtmobility.7z ]
+    then
+        mkdir build-mobility-armeabi
+        pushd build-mobility-armeabi
+        compileNecessitasQtMobility armeabi Android/Qt/$NECESSITAS_QT_VERSION
+        popd #build-mobility-armeabi
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.armeabi_v7a/data/qtmobility.7z ]
+    then
+        mkdir build-mobility-armeabi-v7a
+        pushd build-mobility-armeabi-v7a
+        compileNecessitasQtMobility armeabi-v7a Android/Qt/$NECESSITAS_QT_VERSION
+        popd #build-mobility-armeabi-v7a
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.src/data/qtmobility-src.7z ]
+    then
+        mv qtmobility-src/.git .
+        $SDK_TOOLS_PATH/archivegen qtmobility-src qtmobility-src.7z
+        mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.src/data
+        mv qtmobility-src.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.src/data/qtmobility-src.7z
+        mv .git qtmobility-src/
     fi
     popd #Android/Qt/$NECESSITAS_QT_VERSION
 }
 
+function compileNecessitasQtWebkit
+{
+    export ANDROID_TARGET_ARCH=$1
+    export SQLITE3SRCDIR=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/qt-src/src/3rdparty/sqlite
+    if [ ! -f all_done ]
+    then
+        git checkout stable
+        WEBKITOUTPUTDIR=$PWD ../qtwebkit-src/Tools/Scripts/build-webkit --qt --prefix=/data/data/eu.licentia.necessitas.ministro/files/qt --makeargs="-j4" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake || error_msg "Can't configure android-qtwebkit"
+        echo "all done">all_done
+    fi
+    package_name=${1//-/_} # replace - with _
+    rm -fr $PWD/$TEMP_PATH
+    pushd Release
+    INSTALL_ROOT=$PWD/../ make install
+    popd
+    rm -fr $2
+    mkdir -p $2/$1
+    mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.$package_name/data
+    mv $PWD/$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/* $2/$1
+    pushd $2/$1
+    qt_build_path=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1
+    qt_build_path=${qt_build_path//\//\\\/}
+    sed_cmd="s/$qt_build_path/\/data\/data\/eu.licentia.necessitas.ministro\/files\/qt/g"
+    find -name *.pc | xargs sed $sed_cmd -i 
+    popd
+    rm -fr $PWD/$TEMP_PATH
+    $SDK_TOOLS_PATH/archivegen Android qtwebkit.7z
+    mv qtwebkit.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.$package_name/data/qtwebkit.7z
+    cp -a $2/$1/* ../build-$1/
+    pushd ../build-$1
+    patchQtFiles
+    popd
+}
+
+function perpareNecessitasQtWebkit
+{
+    mkdir -p Android/Qt/$NECESSITAS_QT_VERSION
+    pushd Android/Qt/$NECESSITAS_QT_VERSION
+
+    if [ ! -d qtwebkit-src ]
+    then
+        git clone git://gitorious.org/~taipan/webkit/android-qtwebkit.git qtwebkit-src || error_msg "Can't clone android-qtwebkit"
+        pushd qtwebkit-src
+        git checkout stable
+        popd
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.armeabi/data/qtwebkit.7z ]
+    then
+        mkdir build-webkit-armeabi
+        pushd build-webkit-armeabi
+        compileNecessitasQtWebkit armeabi Android/Qt/$NECESSITAS_QT_VERSION
+        popd #build-webkit-armeabi
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.armeabi_v7a/data/qtwebkit.7z ]
+    then
+        mkdir build-webkit-armeabi-v7a
+        pushd build-webkit-armeabi-v7a
+        compileNecessitasQtWebkit armeabi-v7a Android/Qt/$NECESSITAS_QT_VERSION
+        popd #build-webkit-armeabi-v7a
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.src/data/qtwebkit-src.7z ]
+    then
+        mv qtwebkit-src/.git .
+        $SDK_TOOLS_PATH/archivegen qtwebkit-src qtwebkit-src.7z
+        mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.src/data
+        mv qtwebkit-src.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.src/data/qtwebkit-src.7z
+        mv .git qtwebkit-src/
+    fi
+    popd #Android/Qt/$NECESSITAS_QT_VERSION
+}
+
+
 function prepareSDKBinary
 {
-        $SDK_TOOLS_PATH/binarycreator -v -t $SDK_TOOLS_PATH/installerbase -c $REPO_SRC_PATH/config -p $REPO_SRC_PATH/packages -n $REPO_SRC_PATH/necessitas-sdk-installer org.kde.necessitas
+    $SDK_TOOLS_PATH/binarycreator -v -t $SDK_TOOLS_PATH/installerbase -c $REPO_SRC_PATH/config -p $REPO_SRC_PATH/packages -n $REPO_SRC_PATH/necessitas-sdk-installer org.kde.necessitas
 }
 
 function prepareSDKRepository
 {
-        $SDK_TOOLS_PATH/repogen -v  -p $REPO_SRC_PATH/packages -c $REPO_SRC_PATH/config $REPO_PATH org.kde.necessitas
+    rm -fr $REPO_PATH
+    $SDK_TOOLS_PATH/repogen -v  -p $REPO_SRC_PATH/packages -c $REPO_SRC_PATH/config $REPO_PATH org.kde.necessitas
 }
 
 perpareNDKs
@@ -358,6 +528,8 @@ prepareHostQt
 perpareSdkInstallerTools
 perpareNecessitasQtCreator
 perpareNecessitasQt
+perpareNecessitasQtMobility
+perpareNecessitasQtWebkit
 prepareSDKBinary
 prepareSDKRepository
 

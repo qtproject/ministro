@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Package>
+    <DisplayName>4.7.62-armeabi</DisplayName>
+    <Description>Development libraries for development applications on Android devices, armeabi architecture.</Description>
+    <Version>4.7.62</Version>
+    <ReleaseDate>2011-04-09</ReleaseDate>
+    <Name>org.kde.necessitas.android.qtwebkit</Name>
+    <Script>installscript.qs</Script>
+    <InstallPriority>1</InstallPriority>
+    <SortingPriority>1</SortingPriority>
+</Package>
