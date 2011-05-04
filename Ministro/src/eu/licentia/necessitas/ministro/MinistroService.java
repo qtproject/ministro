@@ -229,16 +229,18 @@ public class MinistroService extends Service {
     public void onCreate() {
         m_versionXmlFile = getFilesDir().getAbsolutePath()+"/version.xml";
         m_qtLibsRootPath = getFilesDir().getAbsolutePath()+"/qt/";
-        refreshLibraries(true);
         SharedPreferences preferences=getSharedPreferences("Ministro", MODE_PRIVATE);
         long lastCheck = preferences.getLong("LASTCHECK",0);
         if (System.currentTimeMillis()-lastCheck>24l*3600*100) // check once/day
         {
+            refreshLibraries(true);
             SharedPreferences.Editor editor= preferences.edit();
             editor.putLong("LASTCHECK",System.currentTimeMillis());
             editor.commit();
             new CheckForUpdates().execute((Void[])null);
         }
+        else
+            refreshLibraries(false);
         super.onCreate();
     }
 
