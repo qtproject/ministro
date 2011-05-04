@@ -1,0 +1,78 @@
+<root>
+    <platforms>
+        <version value="4"/>
+        <version value="5"/>
+        <version value="6" symlink="5"/>
+        <version value="7" symlink="5"/>
+        <version value="8"/>
+        <version value="9" symlink="8"/>
+        <version value="10" symlink="8"/>
+        <version value="11" symlink="8"/>
+    </platforms>
+
+    <libs excludePaths="imports;plugins" applicationParameters="-platform	android" environmentVariables="MINISTRO_SSL_CERTS_PATH=MINISTRO_PATH/qt/ssl	QT_IMPORT_PATH=MINISTRO_PATH/qt/imports	QT_PLUGIN_PATH=MINISTRO_PATH/qt/plugins">
+        <lib file="lib/libQtNetwork.so" >
+            <needs>
+                <item name="GenericBearerPlugin" file="plugins/sqldrivers/libqgenericbearer.so"/>
+            </needs>
+        </lib>
+
+        <lib file="lib/libQtSvg.so" >
+            <needs>
+                <item name="QSQLitePlugin" file="plugins/sqldrivers/libqsqlite.so"/>
+            </needs>
+        </lib>
+
+        <lib file="lib/libQtGui.so">
+            <needs>
+                <item name="QtAccessibleWidgets" file="plugins/accessible/libqtaccessiblewidgets.so"/>
+                <item name="QtGifPlugin" file="plugins/imageformats/libqgif.so" />
+                <item name="QtIcoPlugin" file="plugins/imageformats/libqico.so" />
+                <item name="QtJpegPlugin" file="plugins/imageformats/libqjpeg.so" />
+                <item name="QtMngPlugin"  file="plugins/imageformats/libqmng.so" />
+                <item name="QtTiffPlugin"  file="plugins/imageformats/libqtiff.so" />
+            </needs>
+        </lib>-
+
+        <lib file="lib/libQtSvg.so" >
+            <needs>
+                <item name="QtSvgIconPlugin" file="plugins/iconengines/libqsvgicon.so"/>
+                <item name="QtSvgPlugin" file="plugins/imageformats/libqsvg.so"/>
+            </needs>
+        </lib>
+
+        <lib file="lib/libQtWebKit.so" >
+            <needs>
+                <item name="QmlWebkitPlugin" file="imports/QtWebKit/libqmlwebkitplugin.so" />
+                <item name="QmlDir" file="imports/QtWebKit/qmldir" />
+            </needs>
+        </lib>
+
+        <lib file="lib/libQtDeclarative.so">
+            <needs>
+                <item name="QmlFolderListModelPlugin" file="imports/Qt/labs/folderlistmodel/libqmlfolderlistmodelplugin.so" />
+                <item name="QmlDir" file="imports/Qt/labs/folderlistmodel/qmldir" />
+                <item name="QmlGesturesPlugin" file="imports/Qt/labs/gestures/libqmlgesturesplugin.so" />
+                <item name="QmlDir" file="imports/Qt/labs/gestures/qmldir" />
+                <item name="QmlParticlesPlugin" file="imports/Qt/labs/particles/libqmlparticlesplugin.so" />
+                <item name="QmlDir" file="imports/Qt/labs/particles/qmldir" />
+            </needs>
+        </lib>
+
+        <lib file="plugins/platforms/android/libandroid-4.so" name="QtAndroidPlatformPlugin" platform="4" level="9999" >
+            <depends>
+                <lib name="libQtGui.so"/>
+            </depends>
+        </lib>
+        <lib file="plugins/platforms/android/libandroid-5.so" name="QtAndroidPlatformPlugin" platform="5" level="9999" >
+            <depends>
+                <lib name="libQtGui.so"/>
+            </depends>
+        </lib>
+        <lib file="plugins/platforms/android/libandroid-8.so" name="QtAndroidPlatformPlugin" platform="8" level="9999" >
+            <depends>
+                <lib name="libQtGui.so"/>
+            </depends>
+        </lib>
+    </libs>
+</root>
