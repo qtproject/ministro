@@ -304,7 +304,7 @@ function compileNecessitasQt
     package_name=${1//-/_} # replace - with _
 
     if [ $package_name = "armeabi_v7a" ]
-    then 
+    then
         sed 's/= armeabi/= armeabi-v7a/g' -i mkspecs/default/qmake.conf
     else
         sed 's/= armeabi-v7a/= armeabi/g' -i mkspecs/default/qmake.conf
@@ -381,6 +381,7 @@ function compileNecessitasQtMobility
     fi
     package_name=${1//-/_} # replace - with _
     rm -fr data
+    rm -fr $2
     INSTALL_ROOT=$PWD make install
     mkdir -p $2/$1
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.$package_name/data
@@ -459,7 +460,7 @@ function compileNecessitasQtWebkit
     qt_build_path=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1
     qt_build_path=${qt_build_path//\//\\\/}
     sed_cmd="s/$qt_build_path/\/data\/data\/eu.licentia.necessitas.ministro\/files\/qt/g"
-    find -name *.pc | xargs sed $sed_cmd -i 
+    find -name *.pc | xargs sed $sed_cmd -i
     popd
     rm -fr $PWD/$TEMP_PATH
     $SDK_TOOLS_PATH/archivegen Android qtwebkit.7z
@@ -522,10 +523,10 @@ function prepareSDKRepository
     $SDK_TOOLS_PATH/repogen -v  -p $REPO_SRC_PATH/packages -c $REPO_SRC_PATH/config $REPO_PATH org.kde.necessitas
 }
 
-perpareNDKs
-perpareSDKs
 prepareHostQt
 perpareSdkInstallerTools
+perpareNDKs
+perpareSDKs
 perpareNecessitasQtCreator
 perpareNecessitasQt
 perpareNecessitasQtMobility
