@@ -233,15 +233,17 @@ function perpareNDKs
         rm -fr android-ndk-r5b
     fi
 
-    if [ "$HOST_OS"="msys" ]; then
+    rm -fr android-ndk-r5b
+
+    if [ "$OSTYPE" = "msys" ]; then
         unzip android-ndk-r5b-windows.zip
     fi
 
-    if [ "$HOST_OS"="darwin9.0" -o "$HOST_OS"="darwin10.0" ]; then
+    if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
         tar xvfa android-ndk-r5b-darwin-x86.tar.bz2
     fi
 
-    if [ "$HOST_OS"="linux" ]; then
+    if [ "$OSTYPE" = "linux" ]; then
         tar xvfa android-ndk-r5b-linux-x86.tar.bz2
     fi
 
@@ -309,7 +311,7 @@ function perpareSDKs
     # repack platform-tools
     repackSDK platform-tools_r03-linux android-sdk-linux_x86 platform-tools
     repackSDK platform-tools_r03-macosx android-sdk-mac_x86 platform-tools
-# should we also include ant binary for windows ?
+    # should we also include ant binary for windows ?
     repackSDK platform-tools_r03-windows android-sdk-windows platform-tools
 
     # repack api-4
