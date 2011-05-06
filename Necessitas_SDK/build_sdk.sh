@@ -141,7 +141,6 @@ function perpareSdkInstallerTools
     fi
 
     pushd necessitas-installer-framework/installerbuilder
-    SDK_TOOLS_PATH=$PWD/bin
 
     if [ ! -f all_done ]
     then
@@ -231,7 +230,21 @@ function perpareNDKs
         $SDK_TOOLS_PATH/archivegen android-ndk-r5b android-ndk-r5b-linux-x86.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data
         mv android-ndk-r5b-linux-x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-linux-x86.7z
+        rm -fr android-ndk-r5b
     fi
+
+    if [ "$HOST_OS"="msys" ]; then
+        unzip android-ndk-r5b-windows.zip
+    fi
+
+    if [ "$HOST_OS"="darwin9.0" -o "$HOST_OS"="darwin10.0" ]; then
+        tar xvfa android-ndk-r5b-darwin-x86.tar.bz2
+    fi
+
+    if [ "$HOST_OS"="linux" ]; then
+        tar xvfa android-ndk-r5b-linux-x86.tar.bz2
+    fi
+
     export ANDROID_NDK_ROOT=$PWD/android-ndk-r5b
 }
 
@@ -581,6 +594,10 @@ function prepareSDKRepository
     rm -fr $REPO_PATH
     $SDK_TOOLS_PATH/repogen -v  -p $REPO_SRC_PATH/packages -c $REPO_SRC_PATH/config $REPO_PATH org.kde.necessitas
 }
+
+pushd necessitas-installer-framework/installerbuilder
+SDK_TOOLS_PATH=$PWD/bin
+popd
 
 prepareHostQt
 perpareSdkInstallerTools
