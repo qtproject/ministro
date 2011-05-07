@@ -75,12 +75,12 @@ function makeInstallMinGWBits
     cd python
     ./build-python.sh
 	PYTHONVER=$PWD/install-python-mingw
-    # If successful, the build is packaged into /usr/src/others/python-mingw.7z
+    # If successful, the build is packaged into /usr/ndk-build/python-mingw.7z
     cp ../python-mingw.7z $REPO_SRC_PATH/
     cd ..
 
     rm -rf android-various
-    git clone git://gitorious.org:mingw-android-various/mingw-android-various.git android-various
+    git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various
     mkdir -p android-various/make-3.82-build
     cd android-various/make-3.82-build
     ../make-3.82/build-mingw.sh
