@@ -33,11 +33,15 @@ SDK_TOOLS_PATH=""
 
 if [ "$OSTYPE" = "msys" ] ; then
 	HOST_CFG_OPTIONS=" -platform win32-g++ "
+	HOST_TAG=windows-x86
+	EXE_EXT=.exe
 else
 	if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
 		HOST_CFG_OPTIONS=" -platform macx-g++ -sdk /Developer/SDKs/MacOSX10.5.sdk -arch i386 -arch x86_64 "
+		HOST_TAG=darwin-x86
 	else
 		HOST_CFG_OPTIONS=" -platform linux-g++ "
+		HOST_TAG=linux-x86
 	fi
 fi
 
@@ -52,7 +56,7 @@ function removeAndExit
     rm -fr $1 && error_msg "Can't download $1"
 }
 
-function downloadIfNotExits
+function downloadIfNotExists
 {
     if [ ! -f $1 ]
     then
@@ -84,7 +88,28 @@ function doMake
 
 function prepareHostQt
 {
-    # download compile & compile qt, it is used to compile the installer
+    # download, compile & install qt, it is used to compile the installer
+    if [ "$OSTYPE" = "msys" ]
+    then
+        # Get a more recent sed, one that can do -i.
+        downloadIfNotExists sed-4.2.1-2-msys-1.0.13-bin.tar.lzma http://downloads.sourceforge.net/project/mingw/MSYS/BaseSystem/sed/sed-4.2.1-2/sed-4.2.1-2-msys-1.0.13-bin.tar.lzma
+        rm -rf sed-4.2.1-2-msys-1.0.13-bin.tar
+        rm /usr/bin/sed.exe
+        7za x sed-4.2.1-2-msys-1.0.13-bin.tar.lzma
+        tar -xvf sed-4.2.1-2-msys-1.0.13-bin.tar
+        mv bin/sed.exe /usr/bin
+
+        # download, compile & install zlib to /usr
+        downloadIfNotExists zlib-1.2.5.tar.gz http://downloads.sourceforge.net/libpng/zlib/1.2.5/zlib-1.2.5.tar.gz
+        tar -xvzf zlib-1.2.5.tar.gz
+        cd zlib-1.2.5
+        sed 's/usr\/local/usr/' win32/Makefile.gcc > win32/Makefile-fixed.gcc
+        make -f win32/Makefile-fixed.gcc
+        export INCLUDE_PATH=/usr/include && export LIBRARY_PATH=/usr/lib && make -f win32/Makefile-fixed.gcc install
+        rm -rf zlib-1.2.5
+        cd ..
+    fi
+	
     if [ "$OSTYPE" = "msys" -o  "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
     then
         if [ ! -d $HOST_QT_VERSION ]
@@ -92,7 +117,7 @@ function prepareHostQt
             git clone git://gitorious.org/~mingwandroid/qt/mingw-android-official-qt.git $HOST_QT_VERSION
         fi
     else
-        downloadIfNotExits $HOST_QT_VERSION.tar.gz http://get.qt.nokia.com/qt/source/$HOST_QT_VERSION.tar.gz
+        downloadIfNotExists $HOST_QT_VERSION.tar.gz http://get.qt.nokia.com/qt/source/$HOST_QT_VERSION.tar.gz
 
         if [ ! -d $HOST_QT_VERSION ]
         then
@@ -154,7 +179,7 @@ function perpareSdkInstallerTools
 
 function perpareNecessitasQtCreator
 {
-    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-linux-x86.7z ]
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-${HOST_TAG}.7z ]
     then
         if [ ! -d android-qt-creator ]
         then
@@ -178,12 +203,12 @@ function perpareNecessitasQtCreator
         find $PWD/QtCreator/Qt -name *.la | xargs rm -fr
         find $PWD/QtCreator/Qt -name *.prl | xargs rm -fr
         cp -a $SHARED_QT_PATH/imports/* $PWD/QtCreator/Qt/imports/
-        cp -a bin/necessitas $PWD/QtCreator/bin/
+        cp -a bin/necessitas$EXE_EXT $PWD/QtCreator/bin/
         mkdir $PWD/QtCreator/images
         cp -a bin/necessitas*.png $PWD/QtCreator/images/
-        $SDK_TOOLS_PATH/archivegen QtCreator qtcreator-linux-x86.7z
+        $SDK_TOOLS_PATH/archivegen QtCreator qtcreator-${HOST_TAG}.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data
-        mv qtcreator-linux-x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-linux-x86.7z
+        mv qtcreator-${HOST_TAG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-${HOST_TAG}.7z
         popd
     fi
 }
@@ -194,7 +219,7 @@ function perpareNDKs
     # repack windows NDK
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-windows.7z ]
     then
-        downloadIfNotExits android-ndk-r5b-windows.zip http://dl.google.com/android/ndk/android-ndk-r5b-windows.zip
+        downloadIfNotExists android-ndk-r5b-windows.zip http://dl.google.com/android/ndk/android-ndk-r5b-windows.zip
         if [ ! -d android-ndk-r5b ]
         then
             unzip android-ndk-r5b-windows.zip
@@ -208,7 +233,7 @@ function perpareNDKs
     # repack mac NDK
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-darwin-x86.7z ]
     then
-        downloadIfNotExits android-ndk-r5b-darwin-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-darwin-x86.tar.bz2
+        downloadIfNotExists android-ndk-r5b-darwin-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-darwin-x86.tar.bz2
         if [ ! -d android-ndk-r5b ]
         then
             tar xvfa android-ndk-r5b-darwin-x86.tar.bz2
@@ -222,7 +247,7 @@ function perpareNDKs
     # repack linux-x86 NDK, it must be the last one because we need it to build qt
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-linux-x86.7z ]
     then
-        downloadIfNotExits android-ndk-r5b-linux-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-linux-x86.tar.bz2
+        downloadIfNotExists android-ndk-r5b-linux-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-linux-x86.tar.bz2
         if [ ! -d android-ndk-r5b ]
         then
             tar xvfa android-ndk-r5b-linux-x86.tar.bz2
@@ -255,7 +280,7 @@ function repackSDK
     package_name=${3//-/_} # replace - with _
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.$package_name/data/$1.7z ]
     then
-        downloadIfNotExits $1.zip http://dl.google.com/android/repository/$1.zip
+        downloadIfNotExists $1.zip http://dl.google.com/android/repository/$1.zip
         unzip $1.zip
         mkdir -p $2
         mv $1 $2/$3
@@ -271,7 +296,7 @@ function perpareSDKs
     echo "prepare SDKs"
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-linux_x86.7z ]
     then
-        downloadIfNotExits android-sdk_r10-linux_x86.tgz http://dl.google.com/android/android-sdk_r10-linux_x86.tgz
+        downloadIfNotExists android-sdk_r10-linux_x86.tgz http://dl.google.com/android/android-sdk_r10-linux_x86.tgz
         if [ ! -d android-sdk-linux_x86 ]
         then
             tar xvfa android-sdk_r10-linux_x86.tgz
@@ -284,7 +309,7 @@ function perpareSDKs
 
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-mac_x86.7z ]
     then
-        downloadIfNotExits android-sdk_r10-mac_x86.zip http://dl.google.com/android/android-sdk_r10-mac_x86.zip
+        downloadIfNotExists android-sdk_r10-mac_x86.zip http://dl.google.com/android/android-sdk_r10-mac_x86.zip
         if [ ! -d android-sdk-mac_x86 ]
         then
             unzip android-sdk_r10-mac_x86.zip
@@ -297,7 +322,7 @@ function perpareSDKs
 
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-windows.7z ]
     then
-        downloadIfNotExits android-sdk_r10-windows.zip http://dl.google.com/android/android-sdk_r10-windows.zip
+        downloadIfNotExists android-sdk_r10-windows.zip http://dl.google.com/android/android-sdk_r10-windows.zip
         if [ ! -d android-sdk-windows ]
         then
             unzip android-sdk_r10-windows.zip
@@ -357,14 +382,17 @@ function perpareSDKs
 
 function patchQtFiles
 {
-    echo "bin/qmake" >files_to_patch
-    echo "bin/lrelease" >>files_to_patch
+    echo "bin/qmake$EXE_EXT" >files_to_patch
+    echo "bin/lrelease$EXE_EXT" >>files_to_patch
     echo "%%" >>files_to_patch
     find -name *.pc >>files_to_patch
     find -name *.la >>files_to_patch
     find -name *.prl >>files_to_patch
     find -name *.prf >>files_to_patch
-    ../qt-src/qpatch files_to_patch /data/data/eu.licentia.necessitas.ministro/files/qt $PWD
+    if [ "$OSTYPE" = "msys" ] ; then
+        cp -a $SHARED_QT_PATH/bin/*.dll ../qt-src/
+    fi
+    ../qt-src/qpatch$EXE_EXT files_to_patch /data/data/eu.licentia.necessitas.ministro/files/qt $PWD
 }
 
 function compileNecessitasQt
@@ -380,19 +408,19 @@ function compileNecessitasQt
 
     if [ $package_name = "armeabi_v7a" ]
     then
-        sed 's/= armeabi/= armeabi-v7a/g' -i mkspecs/default/qmake.conf
+        sed 's/= armeabi/= armeabi-v7a/g' -i mkspecs/android-g++/qmake.conf
     else
-        sed 's/= armeabi-v7a/= armeabi/g' -i mkspecs/default/qmake.conf
+        sed 's/= armeabi-v7a/= armeabi/g' -i mkspecs/android-g++/qmake.conf
     fi
 
     rm -fr data
     INSTALL_ROOT=$PWD make install
     mkdir -p $2/$1
     mv data/data/eu.licentia.necessitas.ministro/files/qt/bin $2/$1
-    $SDK_TOOLS_PATH/archivegen Android qt-tools-linux-x86.7z
+    $SDK_TOOLS_PATH/archivegen Android qt-tools-${HOST_TAG}.7z
     rm -fr $2/$1/bin
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data
-    mv qt-tools-linux-x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-tools-linux-x86.7z
+    mv qt-tools-${HOST_TAG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-tools-${HOST_TAG}.7z
     mv data/data/eu.licentia.necessitas.ministro/files/qt/* $2/$1
     $SDK_TOOLS_PATH/archivegen Android qt-farmework.7z
     mv qt-farmework.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-farmework.7z
@@ -413,7 +441,7 @@ function perpareNecessitasQt
         popd
     fi
 
-    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.armeabi/data/qt-tools-linux-x86.7z ]
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.armeabi/data/qt-tools-${HOST_TAG}.7z ]
     then
         mkdir build-armeabi
         pushd build-armeabi
@@ -421,7 +449,7 @@ function perpareNecessitasQt
         popd #build-armeabi
     fi
 
-    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.armeabi_v7a/data/qt-tools-linux-x86.7z ]
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.armeabi_v7a/data/qt-tools-${HOST_TAG}.7z ]
     then
         mkdir build-armeabi-v7a
         pushd build-armeabi-v7a
