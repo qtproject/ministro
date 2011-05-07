@@ -19,7 +19,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-TEMP_PATH=/usr/ndk-build
+if [ "$OSTYPE" = "msys" ]; then
+    TEMP_PATH=/usr/ndk-build
+else
+    pushd ~
+    TEMP_PATH=$PWD/ndk-build
+    popd
+fi
 
 REPO_SRC_PATH=$PWD
 PYTHONVER=/usr
@@ -80,7 +86,7 @@ function makeInstallMinGWBits
     cd ..
 
     rm -rf android-various
-    git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various
+    git clone git://gitorious.org:mingw-android-various/mingw-android-various.git android-various
     mkdir -p android-various/make-3.82-build
     cd android-various/make-3.82-build
     ../make-3.82/build-mingw.sh
@@ -125,10 +131,10 @@ function makeNDK
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb
     fi
-	cd ..
-	mkdir ndk && cd ndk
+    cd ..
+    mkdir ndk && cd ndk
     git clone git://android.git.kernel.org/platform/development.git development
-    git clone git://gitorious.org/mingw-android-ndk/mingw-android-ndk.git ndk
+    git clone git@gitorious.org:mingw-android-ndk/mingw-android-ndk.git ndk
     cd ndk && git checkout -b integration origin/integration && cd ..
     export NDK=`pwd`/ndk
     export ANDROID_NDK_ROOT=$NDK && $NDK/build/tools/build-platforms.sh --verbose
