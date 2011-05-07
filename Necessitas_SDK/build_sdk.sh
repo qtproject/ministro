@@ -380,6 +380,21 @@ function perpareSDKs
     repackSDK android-3.0_r01-linux android-sdk-windows/platforms android-11
 }
 
+function buildQPatch
+{
+    mkdir qpatch-build
+    pushd qpatch-build
+    $STATIC_QT_PATH/bin/qmake "QT_CONFIG=release" -r ../android-qt-creator/src/tools/qpatch/qpatch.pro
+    if [ "$OSTYPE" = "msys" ]; then
+        make -f Makefile.Release
+    else
+        make
+    fi
+    echo release/qpatch${EXE_EXT} ../Android/Qt/$NECESSITAS_QT_VERSION/qt-src
+    cp release/qpatch${EXE_EXT} ../Android/Qt/$NECESSITAS_QT_VERSION/qt-src
+    popd
+}
+
 function patchQtFiles
 {
     echo "bin/qmake$EXE_EXT" >files_to_patch
@@ -392,7 +407,11 @@ function patchQtFiles
     if [ "$OSTYPE" = "msys" ] ; then
         cp -a $SHARED_QT_PATH/bin/*.dll ../qt-src/
     fi
-    ../qt-src/qpatch$EXE_EXT files_to_patch /data/data/eu.licentia.necessitas.ministro/files/qt $PWD
+    echo files-to-patch > qpatch.cmdline
+    echo /data/data/eu.licentia.necessitas.ministro/files/qt >> qpatch.cmdline
+    echo $PWD >> qpatch.cmdline
+    echo . >> qpatch.cmdline
+    ../qt-src/qpatch$EXE_EXT @qpatch.cmdline
 }
 
 function compileNecessitasQt
@@ -630,6 +649,7 @@ SDK_TOOLS_PATH=$PWD/bin
 popd
 
 prepareHostQt
+buildQPatch
 perpareSdkInstallerTools
 perpareNDKs
 perpareSDKs
