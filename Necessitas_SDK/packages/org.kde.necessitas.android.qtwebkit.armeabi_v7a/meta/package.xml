@@ -5,6 +5,7 @@
     <Version>4.7.62</Version>
     <ReleaseDate>2011-04-09</ReleaseDate>
     <Name>org.kde.necessitas.android.qtwebkit.armeabi_v7a</Name>
+    <Dependencies>org.kde.necessitas.android.qt.armeabi_v7a</Dependencies>
     <Script>installscript.qs</Script>
     <InstallPriority>1</InstallPriority>
     <SortingPriority>1</SortingPriority>

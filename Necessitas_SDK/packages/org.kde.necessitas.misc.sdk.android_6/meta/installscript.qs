@@ -22,5 +22,4 @@ Component.prototype.createOperations = function()
 {
     // Call the base createOperations(unpacking ...)
     component.createOperations();
-    // set SDK Location
 }

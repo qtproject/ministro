@@ -4,7 +4,8 @@
     <Description>Development libraries for development applications on Android devices, armeabi architecture.</Description>
     <Version>1.1.62</Version>
     <ReleaseDate>2011-04-09</ReleaseDate>
-    <Name>org.kde.necessitas.android.qtmobility</Name>
+    <Name>org.kde.necessitas.android.qtmobility.armeabi</Name>
+    <Dependencies>org.kde.necessitas.android.qt.armeabi</Dependencies>
     <Script>installscript.qs</Script>
     <InstallPriority>2</InstallPriority>
     <SortingPriority>2</SortingPriority>

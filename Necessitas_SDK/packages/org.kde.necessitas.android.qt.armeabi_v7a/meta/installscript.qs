@@ -22,7 +22,18 @@ function Component()
 
 Component.prototype.createOperations = function()
 {
-    // Call the base createOperations and afterwards set some registry settings
-    component.createOperations();
+    try
+    {
+        component.createOperations();
+        var qtPath = "@TargetDir@/Android/Qt/@@COMPACT_VERSION@@/armeabi-v7a";
+        component.addOperation( "QtPatch", qtPath );
+        component.addOperation( "RegisterQtInCreator",
+                                "@TargetDir@",
+                                "Necessitas Qt @@VERSION@@ for Android",
+                                qtPath );
+    }
+    catch( e )
+    {
+        print( e );
+    }
 }
-

@@ -12,7 +12,7 @@
     <UninstallerName>SDKMaintainer</UninstallerName>
     <RemoteRepositories>
         <Repository>
-            <Url>http://localhost/necessitas/sdk</Url>
+            <Url>http://files.kde.org/necessitas/sdk</Url>
             <Required>true</Required>
         </Repository>
     </RemoteRepositories>

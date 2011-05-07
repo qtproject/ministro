@@ -29,7 +29,8 @@ mkdir -p $TEMP_PATH
 pushd $TEMP_PATH
 
 HOST_QT_VERSION=qt-everywhere-opensource-src-4.7.2
-NECESSITAS_QT_VERSION=4761
+NECESSITAS_QT_VERSION=4762
+NECESSITAS_QT_VERSION_LONG="4.7.62"
 STATIC_QT_PATH=""
 SHARED_QT_PATH=""
 SDK_TOOLS_PATH=""
@@ -635,6 +636,13 @@ function perpareNecessitasQtWebkit
     popd #Android/Qt/$NECESSITAS_QT_VERSION
 }
 
+function patchPackages
+{
+    pushd $REPO_SRC_PATH/packages
+        find -name *.qs | xargs sed "s/@@COMPACT_VERSION@@/$NECESSITAS_QT_VERSION/g" -i
+        find -name *.qs | xargs sed "s/@@VERSION@@/$NECESSITAS_QT_VERSION_LONG/g" -i
+    popd
+}
 
 function prepareSDKBinary
 {
@@ -660,6 +668,7 @@ perpareNecessitasQtCreator
 perpareNecessitasQt
 perpareNecessitasQtMobility
 perpareNecessitasQtWebkit
+patchPackages
 prepareSDKBinary
 prepareSDKRepository
 
