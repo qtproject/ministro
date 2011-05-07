@@ -20,7 +20,10 @@
 
 
 REPO_SRC_PATH=$PWD
-TEMP_PATH=/usr/necessitas
+TEMP_PATH=/var/necessitas
+if [ "$OSTYPE" = "msys" ] ; then
+    TEMP_PATH=/usr/necessitas
+fi
 REPO_PATH=/var/www/necessitas/sdk
 mkdir -p $TEMP_PATH
 pushd $TEMP_PATH

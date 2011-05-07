@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # Copyright (c) 2011, Ray Donnelly <mingw.android@gmail.com>
