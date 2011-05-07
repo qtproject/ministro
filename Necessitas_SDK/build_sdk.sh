@@ -20,7 +20,7 @@
 
 
 REPO_SRC_PATH=$PWD
-TEMP_PATH=/var/necessitas
+TEMP_PATH=/usr/necessitas
 REPO_PATH=/var/www/necessitas/sdk
 mkdir -p $TEMP_PATH
 pushd $TEMP_PATH
@@ -31,6 +31,15 @@ STATIC_QT_PATH=""
 SHARED_QT_PATH=""
 SDK_TOOLS_PATH=""
 
+if [ "$OSTYPE" = "msys" ] ; then
+	HOST_CFG_OPTIONS=" -platform win32-g++ "
+else
+	if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+		HOST_CFG_OPTIONS=" -platform macx-g++ -sdk /Developer/SDKs/MacOSX10.5.sdk -arch i386 -arch x86_64 "
+	else
+		HOST_CFG_OPTIONS=" -platform linux-g++ "
+	fi
+fi
 
 function error_msg
 {
@@ -51,14 +60,44 @@ function downloadIfNotExits
     fi
 }
 
+function doMake
+{
+    if [ "$OSTYPE" = "msys" -o  "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+        MAKEDIR=`pwd -W`
+        MAKEFILE=$MAKEDIR/Makefile
+        make -f $MAKEFILE -j9
+        while [ "$?" != "0" ]
+        do
+            if [ -f /usr/break-make ]; then
+                echo "Detected break-make"
+                rm -f /usr/break-make
+				error_msg $1
+            fi
+            make -f $MAKEFILE -j9
+        done
+        echo $2>all_done
+    else
+        make -j4 || error_msg $1
+        echo $2>all_done
+	fi
+}
+
 function prepareHostQt
 {
     # download compile & compile qt, it is used to compile the installer
-    downloadIfNotExits $HOST_QT_VERSION.tar.gz http://get.qt.nokia.com/qt/source/$HOST_QT_VERSION.tar.gz
-
-    if [ ! -d $HOST_QT_VERSION ]
+    if [ "$OSTYPE" = "msys" -o  "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
     then
-        tar xvfz $HOST_QT_VERSION.tar.gz || error_msg "Can't untar $HOST_QT_VERSION.tar.gz"
+        if [ ! -d $HOST_QT_VERSION ]
+        then
+            git clone git://gitorious.org/~mingwandroid/qt/mingw-android-official-qt.git $HOST_QT_VERSION
+        fi
+    else
+        downloadIfNotExits $HOST_QT_VERSION.tar.gz http://get.qt.nokia.com/qt/source/$HOST_QT_VERSION.tar.gz
+
+        if [ ! -d $HOST_QT_VERSION ]
+        then
+            tar xvfz $HOST_QT_VERSION.tar.gz || error_msg "Can't untar $HOST_QT_VERSION.tar.gz"
+        fi
     fi
 
     #build qt statically, needed by Sdk installer
@@ -68,9 +107,8 @@ function prepareHostQt
     if [ ! -f all_done ]
     then
         rm -fr *
-        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -qt-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -developer-build -static -no-webkit -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -release -qt-sql-sqlite -plugin-sql-sqlite -confirm-license --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
-        make -j4  || error_msg "Can't compile $HOST_QT_VERSION"
-        echo "all done">all_done
+        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -developer-build -static -no-webkit -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -release -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        doMake "Can't compile static $HOST_QT_VERSION" "all done"
     fi
     popd
 
@@ -81,9 +119,14 @@ function prepareHostQt
     if [ ! -f all_done ]
     then
         rm -fr *
-        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -qt-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -developer-build -shared -webkit -no-phonon -release -qt-sql-sqlite -plugin-sql-sqlite -confirm-license --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
-        make -j4  || error_msg "Can't compile $HOST_QT_VERSION"
-        echo "all done">all_done
+        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -developer-build -shared -webkit -no-phonon -release -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        doMake "Can't compile shared $HOST_QT_VERSION" "all done"
+        if [ "$OSTYPE" = "msys" ]; then
+            # Horrible, need to fix this properly.
+            sed 's/qt warn_on release /qt shared warn_on release /' mkspecs/win32-g++/qmake.conf > mkspecs/win32-g++/qmake.conf-fixed
+            rm mkspecs/win32-g++/qmake.conf
+            mv mkspecs/win32-g++/qmake.conf-fixed mkspecs/win32-g++/qmake.conf
+        fi
     fi
     popd
 
@@ -104,8 +147,7 @@ function perpareSdkInstallerTools
     then
         git checkout master
         $STATIC_QT_PATH/bin/qmake -r || error_msg "Can't configure necessitas-installer-framework"
-        make -j4 || error_msg "Can't compile necessitas-installer-framework"
-        echo "all done">all_done
+        doMake "Can't compile necessitas-installer-framework" "all done"
     fi
     popd
 }
@@ -126,8 +168,7 @@ function perpareNecessitasQtCreator
         then
             git checkout testing
             $SHARED_QT_PATH/bin/qmake -r || error_msg "Can't configure android-qt-creator"
-            make -j4 || error_msg "Can't compile android-qt-creator"
-            echo "all done">all_done
+            doMake "Can't compile android-qt-creator" "all done"
         fi
         rm -fr QtCreator
         INSTALL_ROOT=$PWD/QtCreator make install
@@ -395,8 +436,7 @@ function compileNecessitasQtMobility
         git checkout testing
 #        ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -qmake-exec ../build-$1/bin/qmake -modules "bearer contacts gallery location messaging multimedia systeminfo sensors versit organizer feedback" || error_msg "Can't configure android-qtmobility"
         ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -qmake-exec ../build-$1/bin/qmake -modules "bearer contacts gallery location messaging systeminfo sensors versit organizer feedback" || error_msg "Can't configure android-qtmobility"
-        make -j4 || error_msg "Can't compile android-qtmobility"
-        echo "all done">all_done
+        doMake  "Can't compile android-qtmobility" "all done"
     fi
     package_name=${1//-/_} # replace - with _
     rm -fr data
