@@ -9,8 +9,6 @@ function Component()
 
 Component.prototype.createOperations = function()
 {
-    // Call the base createOperations and afterwards set some registry settings
-    component.createOperations();
     try
     {
         component.createOperations();

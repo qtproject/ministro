@@ -113,7 +113,7 @@ function prepareHostQt
         rm -rf zlib-1.2.5
         cd ..
     fi
-	
+
     if [ "$OSTYPE" = "msys" -o  "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
     then
         if [ ! -d $HOST_QT_VERSION ]
@@ -418,6 +418,31 @@ function patchQtFiles
     ../qt-src/qpatch$EXE_EXT @qpatch.cmdline
 }
 
+function packSource
+{
+    package_name=${1//-/.} # replace - with .
+    rm -fr $TEMP_PATH/source_temp_path
+    mkdir -p $TEMP_PATH/source_temp_path/Android/Qt/$NECESSITAS_QT_VERSION
+    mv $1/.git .
+    if [ $1 = "qt-src" ]
+    then
+        mv $1/src/3rdparty/webkit .
+    fi
+    mv $1 $TEMP_PATH/source_temp_path/Android/Qt/$NECESSITAS_QT_VERSION/
+    pushd $TEMP_PATH/source_temp_path
+    $SDK_TOOLS_PATH/archivegen Android $1.7z
+    mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.$package_name/data
+    mv $1.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.$package_name/data/$1.7z
+    popd
+    mv $TEMP_PATH/source_temp_path/Android/Qt/$NECESSITAS_QT_VERSION/$1 .
+    mv .git $1/
+    if [ $1 = "qt-src" ]
+    then
+        mv webkit $1/src/3rdparty/
+    fi
+    rm -fr $TEMP_PATH/source_temp_path
+}
+
 function compileNecessitasQt
 {
     if [ ! -f all_done ]
@@ -482,13 +507,7 @@ function perpareNecessitasQt
 
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.src/data/qt-src.7z ]
     then
-        mv qt-src/.git .
-        mv qt-src/src/3rdparty/webkit .
-        $SDK_TOOLS_PATH/archivegen qt-src qt-src.7z
-        mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.src/data
-        mv qt-src.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.src/data/qt-src.7z
-        mv .git qt-src/
-        mv webkit qt-src/src/3rdparty/
+        packSource qt-src
     fi
 
     popd #Android/Qt/$NECESSITAS_QT_VERSION
@@ -553,11 +572,7 @@ function perpareNecessitasQtMobility
 
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.src/data/qtmobility-src.7z ]
     then
-        mv qtmobility-src/.git .
-        $SDK_TOOLS_PATH/archivegen qtmobility-src qtmobility-src.7z
-        mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.src/data
-        mv qtmobility-src.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.src/data/qtmobility-src.7z
-        mv .git qtmobility-src/
+        packSource qtmobility-src
     fi
     popd #Android/Qt/$NECESSITAS_QT_VERSION
 }
@@ -627,11 +642,7 @@ function perpareNecessitasQtWebkit
 
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.src/data/qtwebkit-src.7z ]
     then
-        mv qtwebkit-src/.git .
-        $SDK_TOOLS_PATH/archivegen qtwebkit-src qtwebkit-src.7z
-        mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.src/data
-        mv qtwebkit-src.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.src/data/qtwebkit-src.7z
-        mv .git qtwebkit-src/
+        packSource qtwebkit-src
     fi
     popd #Android/Qt/$NECESSITAS_QT_VERSION
 }
@@ -641,6 +652,14 @@ function patchPackages
     pushd $REPO_SRC_PATH/packages
         find -name *.qs | xargs sed "s/@@COMPACT_VERSION@@/$NECESSITAS_QT_VERSION/g" -i
         find -name *.qs | xargs sed "s/@@VERSION@@/$NECESSITAS_QT_VERSION_LONG/g" -i
+    popd
+}
+
+function revertPatchPackages
+{
+    pushd $REPO_SRC_PATH/packages
+        find -name *.qs | xargs sed "s/$NECESSITAS_QT_VERSION/@@COMPACT_VERSION@@/g" -i
+        find -name *.qs | xargs sed "s/$NECESSITAS_QT_VERSION_LONG/@@VERSION@@/g" -i
     popd
 }
 
@@ -654,6 +673,7 @@ function prepareSDKRepository
     rm -fr $REPO_PATH
     $SDK_TOOLS_PATH/repogen -v  -p $REPO_SRC_PATH/packages -c $REPO_SRC_PATH/config $REPO_PATH org.kde.necessitas
 }
+
 
 pushd necessitas-installer-framework/installerbuilder
 SDK_TOOLS_PATH=$PWD/bin
@@ -671,5 +691,6 @@ perpareNecessitasQtWebkit
 patchPackages
 prepareSDKBinary
 prepareSDKRepository
+revertPatchPackages
 
 popd

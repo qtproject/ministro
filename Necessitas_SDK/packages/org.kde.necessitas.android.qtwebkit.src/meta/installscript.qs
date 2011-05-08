@@ -9,7 +9,15 @@ function Component()
 
 Component.prototype.createOperations = function()
 {
-    // Call the base createOperations and afterwards set some registry settings
-    component.createOperations();
+    try
+    {
+        component.createOperations();
+        var qtPath = "";
+        component.addOperation( "RegisterQtCreatorSourceMapping", "@TargetDir@", "/var/necessitas/Android/Qt/@@COMPACT_VERSION@@/qtwebkit-src", "@TargetDir@/Android/Qt/@@COMPACT_VERSION@@/qtwebkit-src" );
+    }
+    catch( e )
+    {
+        print( e );
+    }
 }
 

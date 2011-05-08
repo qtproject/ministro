@@ -75,7 +75,7 @@ function makeInstallMinGWBits
 
     if [ ! -d python ]
     then
-        git clone git@gitorious.org:mingw-python/mingw-python.git python
+        git clone git://gitorious.org:mingw-python/mingw-python.git python
     fi
     cd python
     ./build-python.sh
@@ -133,7 +133,7 @@ function makeNDK
     cd ..
     mkdir ndk && cd ndk
     git clone git://android.git.kernel.org/platform/development.git development
-    git clone git@gitorious.org:mingw-android-ndk/mingw-android-ndk.git ndk
+    git clone git://gitorious.org:mingw-android-ndk/mingw-android-ndk.git ndk
     cd ndk && git checkout -b integration origin/integration && cd ..
     export NDK=`pwd`/ndk
     export ANDROID_NDK_ROOT=$NDK && $NDK/build/tools/build-platforms.sh --verbose
