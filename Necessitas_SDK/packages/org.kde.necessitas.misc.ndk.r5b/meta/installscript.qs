@@ -37,6 +37,7 @@ Component.prototype.createOperations = function()
 
     // set DEFAULT gdb location
     var gdbPath = "@TargetDir@/android-ndk-r5b/toolchains/arm-linux-androideabi-4.4.3/prebuilt/";
+    var gdbserverPath = gdbPath+"gdbserver";
     if (installer.value("os") == "x11")
     {
         gdbPath+="linux-x86/bin/arm-linux-androideabi-gdb";
@@ -55,4 +56,9 @@ Component.prototype.createOperations = function()
                             "AndroidConfigurations",
                             "GdbLocation",
                             gdbPath );
+    component.addOperation( "SetQtCreatorValue",
+                            "@TargetDir@",
+                            "AndroidConfigurations",
+                            "GdbserverLocation",
+                            gdbserverPath );
 }
