@@ -13,7 +13,7 @@
     <libs excludePaths="imports;plugins" applicationParameters="-platform	android" environmentVariables="MINISTRO_SSL_CERTS_PATH=MINISTRO_PATH/qt/ssl	QT_IMPORT_PATH=MINISTRO_PATH/qt/imports	QT_PLUGIN_PATH=MINISTRO_PATH/qt/plugins">
         <lib file="lib/libQtNetwork.so" >
             <needs>
-                <item name="GenericBearerPlugin" file="plugins/sqldrivers/libqgenericbearer.so"/>
+                <item name="GenericBearerPlugin" file="plugins/bearer/libqgenericbearer.so"/>
             </needs>
         </lib>
 

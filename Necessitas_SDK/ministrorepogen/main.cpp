@@ -40,8 +40,8 @@ void getFileInfo(const QString & filePath, qint64 & fileSize, QString & sha1)
         return;
     QCryptographicHash hash(QCryptographicHash::Sha1);
     hash.addData(file.readAll());
-    fileSize=file.size();
     sha1=hash.result().toHex();
+    fileSize=file.size();
 }
 
 int main(int argc, char *argv[])
@@ -141,13 +141,15 @@ int main(int argc, char *argv[])
     SortLibraries(libs, readelfPath, libsPath, excludePaths);
 
     QDir path;
-    QString xmlPath(outputFolder+QString("/qt/android/%1/").arg(abiVersion));
+    QString xmlPath(outputFolder+QString("/android/%1/").arg(abiVersion));
     path.mkpath(xmlPath);
     path.cd(xmlPath);
     chdir(path.absolutePath().toUtf8().constData());
     foreach (int androdPlatform, platforms.keys())
     {
+        qDebug()<<"============================================";
         qDebug()<<"Generating repository for android platform :"<<androdPlatform;
+        qDebug()<<"--------------------------------------------";
         path.mkpath(QString("android-%1").arg(androdPlatform));
         xmlPath=QString("android-%1/libs-%2.xml").arg(androdPlatform).arg(version);
         foreach(int symLink, platforms[androdPlatform])
@@ -195,7 +197,7 @@ int main(int argc, char *argv[])
                     getFileInfo(libsPath+"/"+needed.relativePath, fileSize, sha1Hash);
                     if (-1==fileSize)
                     {
-                        qWarning()<<"Warning : Can't find \""<<libsPath+"/"+libs[key].relativePath<<"\" item will be skipped";
+                        qWarning()<<"Warning : Can't find \""<<libsPath+"/"+needed.relativePath<<"\" item will be skipped";
                         continue;
                     }
                     outXmlFile.write(QString("\t\t\t<item name=\"%1\" url=\"http://files.kde.org/necessitas/qt/android/%2/objects/%3/%4\" file=\"%4\" size=\"%5\" sha1=\"%6\" />\n")
