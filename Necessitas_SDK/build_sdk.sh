@@ -24,16 +24,22 @@ TEMP_PATH=/var/necessitas
 if [ "$OSTYPE" = "msys" ] ; then
     TEMP_PATH=/usr/necessitas
 fi
-REPO_PATH=/var/www/necessitas/sdk
+
 mkdir -p $TEMP_PATH
 pushd $TEMP_PATH
 
-HOST_QT_VERSION=qt-everywhere-opensource-src-4.7.2
 NECESSITAS_QT_VERSION=4762
 NECESSITAS_QT_VERSION_LONG="4.7.62"
+MINISTRO_VERSION="0.2"
+MINISTRO_REPO_PATH=/var/www/necessitas/qt
+REPO_PATH=/var/www/necessitas/sdk
+HOST_QT_VERSION=qt-everywhere-opensource-src-4.7.2
 STATIC_QT_PATH=""
 SHARED_QT_PATH=""
 SDK_TOOLS_PATH=""
+ANDROID_STRIP_BINARY=""
+ANDROID_READELF_BINARY=""
+
 
 if [ "$OSTYPE" = "msys" ] ; then
 	HOST_CFG_OPTIONS=" -platform win32-g++ "
@@ -262,38 +268,52 @@ function perpareNDKs
         rm -fr android-ndk-r5b
     fi
 
-    rm -fr android-ndk-r5b
+    export ANDROID_NDK_ROOT=$PWD/android-ndk-r5b
 
     if [ "$OSTYPE" = "msys" ]; then
-        unzip android-ndk-r5b-windows.zip
+        if [ ! -d android-ndk-r5b ]
+        then
+            unzip android-ndk-r5b-windows.zip
+        fi
+        ANDROID_STRIP_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/windows/bin/arm-linux-androideabi-strip.exe
+        ANDROID_READELF_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/windows/bin/arm-linux-androideabi-readelf.exe
     fi
 
     if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
-        tar xvfa android-ndk-r5b-darwin-x86.tar.bz2
+        if [ ! -d android-ndk-r5b ]
+        then
+            tar xvfa android-ndk-r5b-darwin-x86.tar.bz2
+        fi
+        ANDROID_STRIP_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi-strip
+        ANDROID_READELF_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi-readelf
     fi
 
-    if [ "$OSTYPE" = "linux" ]; then
-        tar xvfa android-ndk-r5b-linux-x86.tar.bz2
+    if [ "$OSTYPE" = "linux-gnu" ]; then
+        if [ ! -d android-ndk-r5b ]
+        then
+            tar xvfa android-ndk-r5b-linux-x86.tar.bz2
+        fi
+        ANDROID_STRIP_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin/arm-linux-androideabi-strip
+        ANDROID_READELF_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin/arm-linux-androideabi-readelf
     fi
-
-    export ANDROID_NDK_ROOT=$PWD/android-ndk-r5b
 }
 
 function repackSDK
 {
-    package_name=${3//-/_} # replace - with _
-    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.$package_name/data/$1.7z ]
+    package_name=${4//-/_} # replace - with _
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.$package_name/data/$2.7z ]
     then
         downloadIfNotExists $1.zip http://dl.google.com/android/repository/$1.zip
         unzip $1.zip
-        mkdir -p $2
-        mv $1 $2/$3
-        $SDK_TOOLS_PATH/archivegen $2 $1.7z
+        mkdir -p $3
+        mv $1 $3/$4
+        $SDK_TOOLS_PATH/archivegen $3 $2.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.$package_name/data
-        mv $1.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.$package_name/data/$1.7z
-        rm -fr $2
+        mv $2.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.$package_name/data/$2.7z
+        rm -fr $3
     fi
 }
+
 
 function perpareSDKs
 {
@@ -338,50 +358,50 @@ function perpareSDKs
     fi
 
     # repack platform-tools
-    repackSDK platform-tools_r03-linux android-sdk-linux_x86 platform-tools
-    repackSDK platform-tools_r03-macosx android-sdk-mac_x86 platform-tools
+    repackSDK platform-tools_r03-linux platform-tools_r03-linux android-sdk-linux_x86 platform-tools
+    repackSDK platform-tools_r03-macosx platform-tools_r03-macosx android-sdk-mac_x86 platform-tools
     # should we also include ant binary for windows ?
-    repackSDK platform-tools_r03-windows android-sdk-windows platform-tools
+    repackSDK platform-tools_r03-windows platform-tools_r03-windows android-sdk-windows platform-tools
 
     # repack api-4
-    repackSDK android-1.6_r03-linux android-sdk-linux_x86/platforms android-4
-    repackSDK android-1.6_r03-macosx android-sdk-mac_x86/platforms android-4
-    repackSDK android-1.6_r03-windows android-sdk-windows/platforms android-4
+    repackSDK android-1.6_r03-linux android-1.6_r03-linux android-sdk-linux_x86/platforms android-4
+    repackSDK android-1.6_r03-macosx android-1.6_r03-macosx android-sdk-mac_x86/platforms android-4
+    repackSDK android-1.6_r03-windows android-1.6_r03-windows android-sdk-windows/platforms android-4
 
     # repack api-5
-    repackSDK android-2.0_r01-linux android-sdk-linux_x86/platforms android-5
-    repackSDK android-2.0_r01-macosx android-sdk-mac_x86/platforms android-5
-    repackSDK android-2.0_r01-windows android-sdk-windows/platforms android-5
+    repackSDK android-2.0_r01-linux android-2.0_r01-linux android-sdk-linux_x86/platforms android-5
+    repackSDK android-2.0_r01-macosx android-2.0_r01-macosx android-sdk-mac_x86/platforms android-5
+    repackSDK android-2.0_r01-windows android-2.0_r01-windows android-sdk-windows/platforms android-5
 
     # repack api-6
-    repackSDK android-2.0.1_r01-linux  android-sdk-linux_x86/platforms android-6
-    repackSDK android-2.0.1_r01-macosx android-sdk-mac_x86/platforms android-6
-    repackSDK android-2.0.1_r01-windows android-sdk-windows/platforms android-6
+    repackSDK android-2.0.1_r01-linux  android-2.0.1_r01-linux  android-sdk-linux_x86/platforms android-6
+    repackSDK android-2.0.1_r01-macosx android-2.0.1_r01-macosx android-sdk-mac_x86/platforms android-6
+    repackSDK android-2.0.1_r01-windows android-2.0.1_r01-windows android-sdk-windows/platforms android-6
 
     # repack api-7
-    repackSDK android-2.1_r02-linux android-sdk-linux_x86/platforms android-7
-    repackSDK android-2.1_r02-macosx android-sdk-mac_x86/platforms android-7
-    repackSDK android-2.1_r02-windows android-sdk-windows/platforms android-7
+    repackSDK android-2.1_r02-linux android-2.1_r02-linux android-sdk-linux_x86/platforms android-7
+    repackSDK android-2.1_r02-macosx android-2.1_r02-macosx android-sdk-mac_x86/platforms android-7
+    repackSDK android-2.1_r02-windows android-2.1_r02-windows android-sdk-windows/platforms android-7
 
     # repack api-8
-    repackSDK android-2.2_r02-linux android-sdk-linux_x86/platforms android-8
-    repackSDK android-2.2_r02-macosx android-sdk-mac_x86/platforms android-8
-    repackSDK android-2.2_r02-windows android-sdk-windows/platforms android-8
+    repackSDK android-2.2_r02-linux android-2.2_r02-linux android-sdk-linux_x86/platforms android-8
+    repackSDK android-2.2_r02-macosx android-2.2_r02-macosx android-sdk-mac_x86/platforms android-8
+    repackSDK android-2.2_r02-windows android-2.2_r02-windows android-sdk-windows/platforms android-8
 
     # repack api-9
-    repackSDK android-2.3.1_r02-linux android-sdk-linux_x86/platforms android-9
-    repackSDK android-2.3.1_r02-linux android-sdk-mac_x86/platforms android-9
-    repackSDK android-2.3.1_r02-linux android-sdk-windows/platforms android-9
+    repackSDK android-2.3.1_r02-linux android-2.3.1_r02-linux android-sdk-linux_x86/platforms android-9
+    repackSDK android-2.3.1_r02-linux android-2.3.1_r02-macosx android-sdk-mac_x86/platforms android-9
+    repackSDK android-2.3.1_r02-linux android-2.3.1_r02-windows android-sdk-windows/platforms android-9
 
     # repack api-10
-    repackSDK android-2.3.3_r01-linux android-sdk-linux_x86/platforms android-10
-    repackSDK android-2.3.3_r01-linux android-sdk-mac_x86/platforms android-10
-    repackSDK android-2.3.3_r01-linux android-sdk-windows/platforms android-10
+    repackSDK android-2.3.3_r01-linux android-2.3.3_r01-linux android-sdk-linux_x86/platforms android-10
+    repackSDK android-2.3.3_r01-linux android-2.3.3_r01-macosx android-sdk-mac_x86/platforms android-10
+    repackSDK android-2.3.3_r01-linux android-2.3.3_r01-windows android-sdk-windows/platforms android-10
 
     # repack api-11
-    repackSDK android-3.0_r01-linux android-sdk-linux_x86/platforms android-11
-    repackSDK android-3.0_r01-linux android-sdk-mac_x86/platforms android-11
-    repackSDK android-3.0_r01-linux android-sdk-windows/platforms android-11
+    repackSDK android-3.0_r01-linux android-3.0_r01-linux android-sdk-linux_x86/platforms android-11
+    repackSDK android-3.0_r01-linux android-3.0_r01-macosx android-sdk-mac_x86/platforms android-11
+    repackSDK android-3.0_r01-linux android-3.0_r01-windows android-sdk-windows/platforms android-11
 }
 
 function buildQPatch
@@ -674,6 +694,39 @@ function prepareSDKRepository
     $SDK_TOOLS_PATH/repogen -v  -p $REPO_SRC_PATH/packages -c $REPO_SRC_PATH/config $REPO_PATH org.kde.necessitas
 }
 
+function prepareMinistroRepository
+{
+    pushd $REPO_SRC_PATH/ministrorepogen
+    if [ ! -f all_done ]
+    then
+        $STATIC_QT_PATH/bin/qmake -r || error_msg "Can't configure ministrorepogen"
+        doMake "Can't compile ministrorepogen" "all done"
+    fi
+    popd
+    for architecture in armeabi armeabi-v7a
+    do
+        rm -fr $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION
+        mkdir -p $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION
+        pushd $TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$architecture
+        rm -fr Android
+        for lib in `find -name *.so`
+        do
+            libDirname=`dirname $lib`
+            mkdir -p $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/$libDirname
+            cp $lib $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/$libDirname/
+            $ANDROID_STRIP_BINARY --strip-unneeded $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/$lib
+        done
+
+        for qmldirfile in `find -name qmldir`
+        do
+            qmldirfileDirname=`dirname $qmldirfile`
+            cp $qmldirfile $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/$qmldirfileDirname/
+        done
+
+        $REPO_SRC_PATH/ministrorepogen/ministrorepogen $ANDROID_READELF_BINARY $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/ $MINISTRO_VERSION $architecture $REPO_SRC_PATH/ministrorepogen/rules.xml $MINISTRO_REPO_PATH
+        popd
+    done
+}
 
 pushd necessitas-installer-framework/installerbuilder
 SDK_TOOLS_PATH=$PWD/bin
@@ -688,6 +741,10 @@ perpareNecessitasQtCreator
 perpareNecessitasQt
 perpareNecessitasQtMobility
 perpareNecessitasQtWebkit
+if [ "$OSTYPE" = "linux-gnu" ]; then
+    prepareMinistroRepository
+    echo $OSTYPE
+fi
 patchPackages
 prepareSDKBinary
 prepareSDKRepository
