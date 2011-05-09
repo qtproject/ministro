@@ -85,7 +85,7 @@ function doMake
             if [ -f /usr/break-make ]; then
                 echo "Detected break-make"
                 rm -f /usr/break-make
-				error_msg $1
+                error_msg $1
             fi
             make -f $MAKEFILE -j9
         done
@@ -93,7 +93,7 @@ function doMake
     else
         make -j4 || error_msg $1
         echo $2>all_done
-	fi
+    fi
 }
 
 function prepareHostQt
@@ -183,6 +183,7 @@ function perpareSdkInstallerTools
         $STATIC_QT_PATH/bin/qmake -r || error_msg "Can't configure necessitas-installer-framework"
         doMake "Can't compile necessitas-installer-framework" "all done"
     fi
+    SDK_TOOLS_PATH=$PWD/bin
     popd
 }
 
@@ -728,10 +729,6 @@ function prepareMinistroRepository
     done
 }
 
-pushd necessitas-installer-framework/installerbuilder
-SDK_TOOLS_PATH=$PWD/bin
-popd
-
 prepareHostQt
 buildQPatch
 perpareSdkInstallerTools
@@ -739,8 +736,8 @@ perpareNDKs
 perpareSDKs
 perpareNecessitasQtCreator
 perpareNecessitasQt
-perpareNecessitasQtMobility
 perpareNecessitasQtWebkit
+perpareNecessitasQtMobility
 if [ "$OSTYPE" = "linux-gnu" ]; then
     prepareMinistroRepository
     echo $OSTYPE
