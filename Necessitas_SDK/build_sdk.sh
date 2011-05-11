@@ -20,19 +20,22 @@
 
 
 REPO_SRC_PATH=$PWD
-TEMP_PATH=/var/necessitas
-if [ "$OSTYPE" = "msys" ] ; then
-    TEMP_PATH=/usr/necessitas
+TEMP_PATH_PREFIX=/var
+if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" -o "$OSTYPE" = "msys" ]; then
+    pushd ~ >/dev/null
+    TEMP_PATH_PREFIX=$PWD
+    popd
 fi
 
+TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
 mkdir -p $TEMP_PATH
 pushd $TEMP_PATH
 
 NECESSITAS_QT_VERSION=4762
 NECESSITAS_QT_VERSION_LONG="4.7.62"
 MINISTRO_VERSION="0.2"
-MINISTRO_REPO_PATH=/var/www/necessitas/qt
-REPO_PATH=/var/www/necessitas/sdk
+MINISTRO_REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/qt
+REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/sdk
 HOST_QT_VERSION=qt-everywhere-opensource-src-4.7.2
 STATIC_QT_PATH=""
 SHARED_QT_PATH=""
@@ -42,23 +45,32 @@ ANDROID_READELF_BINARY=""
 QPATCH_PATH=""
 
 if [ "$OSTYPE" = "msys" ] ; then
-	HOST_CFG_OPTIONS=" -platform win32-g++ "
-	HOST_TAG=windows-x86
-	EXE_EXT=.exe
+    HOST_CFG_OPTIONS=" -platform win32-g++ -reduce-exports "
+    HOST_TAG=windows-x86
+    HOST_TAG_NDK=windows
+    EXE_EXT=.exe
+    JOBS=9
 else
-	if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
-		HOST_CFG_OPTIONS=" -platform macx-g++ -sdk /Developer/SDKs/MacOSX10.5.sdk -arch i386 -arch x86_64 "
-		HOST_TAG=darwin-x86
-	else
-		HOST_CFG_OPTIONS=" -platform linux-g++ "
-		HOST_TAG=linux-x86
-	fi
+    if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+        HOST_CFG_OPTIONS=" -platform macx-g++42 -sdk /Developer/SDKs/MacOSX10.5.sdk -arch i386 -arch x86_64 -cocoa "
+        # -reduce-exports doesn't work for static Mac OS X i386 build.
+        # (ld: bad codegen, pointer diff in fulltextsearch::clucene::QHelpSearchIndexReaderClucene::run()     to global weak symbol vtable for QtSharedPointer::ExternalRefCountDatafor architecture i386)
+        HOST_CFG_OPTIONS_STATIC=" -no-reduce-exports "
+        HOST_TAG=darwin-x86
+        HOST_TAG_NDK=darwin-x86
+        JOBS=9
+    else
+        HOST_CFG_OPTIONS=" -platform linux-g++ "
+        HOST_TAG=linux-x86
+        HOST_TAG_NDK=linux-x86
+        JOBS=4
+    fi
 fi
 
 function error_msg
 {
-        echo $1 >&2
-        exit 1
+    echo $1 >&2
+    exit 1
 }
 
 function removeAndExit
@@ -77,9 +89,13 @@ function downloadIfNotExists
 function doMake
 {
     if [ "$OSTYPE" = "msys" -o  "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
-        MAKEDIR=`pwd -W`
+        if [ "$OSTYPE" = "msys" ] ; then
+            MAKEDIR=`pwd -W`
+        else
+            MAKEDIR=`pwd`
+        fi
         MAKEFILE=$MAKEDIR/Makefile
-        make -f $MAKEFILE -j9
+        make -f $MAKEFILE -j$JOBS
         while [ "$?" != "0" ]
         do
             if [ -f /usr/break-make ]; then
@@ -87,12 +103,23 @@ function doMake
                 rm -f /usr/break-make
                 error_msg $1
             fi
-            make -f $MAKEFILE -j9
+            make -f $MAKEFILE -j$JOBS
         done
         echo $2>all_done
     else
-        make -j4 || error_msg $1
+        make -j$JOBS || error_msg $1
         echo $2>all_done
+    fi
+}
+
+function doSed
+{
+    if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
+    then
+        sed -i '.bak' "$1" $2
+        rm ${2}.bak
+    else
+        sed "$1" -i $2
     fi
 }
 
@@ -113,14 +140,14 @@ function prepareHostQt
         downloadIfNotExists zlib-1.2.5.tar.gz http://downloads.sourceforge.net/libpng/zlib/1.2.5/zlib-1.2.5.tar.gz
         tar -xvzf zlib-1.2.5.tar.gz
         cd zlib-1.2.5
-        sed 's/usr\/local/usr/' win32/Makefile.gcc > win32/Makefile-fixed.gcc
-        make -f win32/Makefile-fixed.gcc
-        export INCLUDE_PATH=/usr/include && export LIBRARY_PATH=/usr/lib && make -f win32/Makefile-fixed.gcc install
+        doSed $"s/usr\/local/usr/" win32/Makefile.gcc
+        make -f win32/Makefile.gcc
+        export INCLUDE_PATH=/usr/include && export LIBRARY_PATH=/usr/lib && make -f win32/Makefile.gcc install
         rm -rf zlib-1.2.5
         cd ..
     fi
 
-    if [ "$OSTYPE" = "msys" -o  "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
+    if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
     then
         if [ ! -d $HOST_QT_VERSION ]
         then
@@ -141,8 +168,8 @@ function prepareHostQt
     STATIC_QT_PATH=$PWD
     if [ ! -f all_done ]
     then
-        rm -fr *
-        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -developer-build -static -no-webkit -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -release -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+	rm -fr *
+        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -developer-build -static -no-webkit -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -release -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         doMake "Can't compile static $HOST_QT_VERSION" "all done"
     fi
     popd
@@ -154,13 +181,11 @@ function prepareHostQt
     if [ ! -f all_done ]
     then
         rm -fr *
-        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -developer-build -shared -webkit -no-phonon -release -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -developer-build -shared -webkit -no-phonon -release -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         doMake "Can't compile shared $HOST_QT_VERSION" "all done"
         if [ "$OSTYPE" = "msys" ]; then
-            # Horrible, need to fix this properly.
-            sed 's/qt warn_on release /qt shared warn_on release /' mkspecs/win32-g++/qmake.conf > mkspecs/win32-g++/qmake.conf-fixed
-            rm mkspecs/win32-g++/qmake.conf
-            mv mkspecs/win32-g++/qmake.conf-fixed mkspecs/win32-g++/qmake.conf
+            # Horrible; need to fix this properly.
+            doSed $"s/qt warn_on release /qt shared warn_on release /" mkspecs/win32-g++/qmake.conf
         fi
     fi
     popd
@@ -183,7 +208,6 @@ function perpareSdkInstallerTools
         $STATIC_QT_PATH/bin/qmake -r || error_msg "Can't configure necessitas-installer-framework"
         doMake "Can't compile necessitas-installer-framework" "all done"
     fi
-    SDK_TOOLS_PATH=$PWD/bin
     popd
 }
 
@@ -206,13 +230,13 @@ function perpareNecessitasQtCreator
             doMake "Can't compile android-qt-creator" "all done"
         fi
         rm -fr QtCreator
-        INSTALL_ROOT=$PWD/QtCreator make install
+        export INSTALL_ROOT=$PWD/QtCreator && make install
         mkdir -p $PWD/QtCreator/Qt/lib
         mkdir -p $PWD/QtCreator/Qt/imports
         cp -a $SHARED_QT_PATH/lib/* $PWD/QtCreator/Qt/lib/
         rm -fr $PWD/QtCreator/Qt/lib/pkgconfig
-        find $PWD/QtCreator/Qt -name *.la | xargs rm -fr
-        find $PWD/QtCreator/Qt -name *.prl | xargs rm -fr
+        find . $PWD/QtCreator/Qt -name *.la | xargs rm -fr
+        find . $PWD/QtCreator/Qt -name *.prl | xargs rm -fr
         cp -a $SHARED_QT_PATH/imports/* $PWD/QtCreator/Qt/imports/
         cp -a bin/necessitas$EXE_EXT $PWD/QtCreator/bin/
         mkdir $PWD/QtCreator/images
@@ -267,7 +291,7 @@ function perpareNDKs
         downloadIfNotExists android-ndk-r5b-darwin-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-darwin-x86.tar.bz2
         if [ ! -d android-ndk-r5b ]
         then
-            tar xvfa android-ndk-r5b-darwin-x86.tar.bz2
+            tar xjvf android-ndk-r5b-darwin-x86.tar.bz2
         fi
         $SDK_TOOLS_PATH/archivegen android-ndk-r5b android-ndk-r5b-darwin-x86.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data
@@ -281,7 +305,7 @@ function perpareNDKs
         downloadIfNotExists android-ndk-r5b-linux-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-linux-x86.tar.bz2
         if [ ! -d android-ndk-r5b ]
         then
-            tar xvfa android-ndk-r5b-linux-x86.tar.bz2
+            tar xjvf android-ndk-r5b-linux-x86.tar.bz2
         fi
         $SDK_TOOLS_PATH/archivegen android-ndk-r5b android-ndk-r5b-linux-x86.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data
@@ -290,33 +314,24 @@ function perpareNDKs
     fi
 
     export ANDROID_NDK_ROOT=$PWD/android-ndk-r5b
+    if [ ! -d android-ndk-r5b ]; then
 
-    if [ "$OSTYPE" = "msys" ]; then
-        if [ ! -d android-ndk-r5b ]
-        then
+        if [ "$OSTYPE" = "msys" ]; then
             unzip android-ndk-r5b-windows.zip
         fi
-        ANDROID_STRIP_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/windows/bin/arm-linux-androideabi-strip.exe
-        ANDROID_READELF_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/windows/bin/arm-linux-androideabi-readelf.exe
+
+        if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
+            tar xjvf android-ndk-r5b-darwin-x86.tar.bz2
+        fi
+
+        if [ "$OSTYPE" = "linux-gnu" ]; then
+            tar xjvf android-ndk-r5b-linux-x86.tar.bz2
+        fi
     fi
 
-    if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
-        if [ ! -d android-ndk-r5b ]
-        then
-            tar xvfa android-ndk-r5b-darwin-x86.tar.bz2
-        fi
-        ANDROID_STRIP_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi-strip
-        ANDROID_READELF_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi-readelf
-    fi
+    ANDROID_STRIP_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi-strip$EXE_EXT
+    ANDROID_READELF_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi-readelf$EXE_EXT
 
-    if [ "$OSTYPE" = "linux-gnu" ]; then
-        if [ ! -d android-ndk-r5b ]
-        then
-            tar xvfa android-ndk-r5b-linux-x86.tar.bz2
-        fi
-        ANDROID_STRIP_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin/arm-linux-androideabi-strip
-        ANDROID_READELF_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin/arm-linux-androideabi-readelf
-    fi
 }
 
 function repackSDK
@@ -430,10 +445,10 @@ function patchQtFiles
     echo "bin/qmake$EXE_EXT" >files_to_patch
     echo "bin/lrelease$EXE_EXT" >>files_to_patch
     echo "%%" >>files_to_patch
-    find -name *.pc >>files_to_patch
-    find -name *.la >>files_to_patch
-    find -name *.prl >>files_to_patch
-    find -name *.prf >>files_to_patch
+    find . -name *.pc >>files_to_patch
+    find . -name *.la >>files_to_patch
+    find . -name *.prl >>files_to_patch
+    find . -name *.prf >>files_to_patch
     if [ "$OSTYPE" = "msys" ] ; then
         cp -a $SHARED_QT_PATH/bin/*.dll ../qt-src/
     fi
@@ -474,7 +489,7 @@ function compileNecessitasQt
     if [ ! -f all_done ]
     then
         git checkout testing
-        ../qt-src/androidconfigbuild.sh -q 1 -n $TEMP_PATH/android-ndk-r5b -a $1 -k 1 -i /data/data/eu.licentia.necessitas.ministro/files/qt || error_msg "Can't configure android-qt"
+        ../qt-src/androidconfigbuild.sh -c 1 -q 1 -n $TEMP_PATH/android-ndk-r5b -a $1 -k 1 -i /data/data/eu.licentia.necessitas.ministro/files/qt || error_msg "Can't configure android-qt"
         echo "all done">all_done
     fi
 
@@ -482,13 +497,13 @@ function compileNecessitasQt
 
     if [ $package_name = "armeabi_v7a" ]
     then
-        sed 's/= armeabi/= armeabi-v7a/g' -i mkspecs/android-g++/qmake.conf
+        doSed $"s/= armeabi/= armeabi-v7a/g" mkspecs/android-g++/qmake.conf
     else
-        sed 's/= armeabi-v7a/= armeabi/g' -i mkspecs/android-g++/qmake.conf
+        doSed $"s/= armeabi-v7a/= armeabi/g" mkspecs/android-g++/qmake.conf
     fi
 
     rm -fr data
-    INSTALL_ROOT=$PWD make install
+    export INSTALL_ROOT=$PWD && make install
     mkdir -p $2/$1
     mv data/data/eu.licentia.necessitas.ministro/files/qt/bin $2/$1
     $SDK_TOOLS_PATH/archivegen Android qt-tools-${HOST_TAG}.7z
@@ -509,7 +524,7 @@ function perpareNecessitasQt
 
     if [ ! -d qt-src ]
     then
-        git clone git://anongit.kde.org/android-qt.git qt-src|| error_msg "Can't clone android-qt-creator"
+        git clone git://anongit.kde.org/android-qt.git qt-src|| error_msg "Can't clone android-qt"
         pushd qt-src
         git checkout testing
         popd
@@ -547,12 +562,12 @@ function compileNecessitasQtMobility
         git checkout testing
 #        ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -qmake-exec ../build-$1/bin/qmake -modules "bearer contacts gallery location messaging multimedia systeminfo sensors versit organizer feedback" || error_msg "Can't configure android-qtmobility"
         ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -qmake-exec ../build-$1/bin/qmake -modules "bearer contacts gallery location messaging systeminfo sensors versit organizer feedback" || error_msg "Can't configure android-qtmobility"
-        doMake  "Can't compile android-qtmobility" "all done"
+        doMake "Can't compile android-qtmobility" "all done"
     fi
     package_name=${1//-/_} # replace - with _
     rm -fr data
     rm -fr $2
-    INSTALL_ROOT=$PWD make install
+    export INSTALL_ROOT=$PWD && make install
     mkdir -p $2/$1
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.$package_name/data
     mv data/data/eu.licentia.necessitas.ministro/files/qt/* $2/$1
@@ -610,13 +625,13 @@ function compileNecessitasQtWebkit
     if [ ! -f all_done ]
     then
         git checkout stable
-        WEBKITOUTPUTDIR=$PWD ../qtwebkit-src/Tools/Scripts/build-webkit --qt --prefix=/data/data/eu.licentia.necessitas.ministro/files/qt --makeargs="-j4" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake || error_msg "Can't configure android-qtwebkit"
+        WEBKITOUTPUTDIR=$PWD ../qtwebkit-src/Tools/Scripts/build-webkit --qt --prefix=/data/data/eu.licentia.necessitas.ministro/files/qt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake || error_msg "Can't configure android-qtwebkit"
         echo "all done">all_done
     fi
     package_name=${1//-/_} # replace - with _
     rm -fr data
     pushd Release
-    INSTALL_ROOT=$PWD/../ make install
+    export INSTALL_ROOT=$PWD/../ && make install
     popd
     rm -fr $2
     mkdir -p $2/$1
@@ -626,7 +641,12 @@ function compileNecessitasQtWebkit
     qt_build_path=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1
     qt_build_path=${qt_build_path//\//\\\/}
     sed_cmd="s/$qt_build_path/\/data\/data\/eu.licentia.necessitas.ministro\/files\/qt/g"
-    find -name *.pc | xargs sed $sed_cmd -i
+    if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
+        find . -name *.pc | xargs sed -i '.bak' $sed_cmd
+        find . -name *.pc.bak | xargs rm -f
+    else
+        find . -name *.pc | xargs sed $sed_cmd -i
+    fi
     popd
     rm -fr $PWD/$TEMP_PATH
     $SDK_TOOLS_PATH/archivegen Android qtwebkit.7z
@@ -676,16 +696,30 @@ function perpareNecessitasQtWebkit
 function patchPackages
 {
     pushd $REPO_SRC_PATH/packages
-        find -name *.qs | xargs sed "s/@@COMPACT_VERSION@@/$NECESSITAS_QT_VERSION/g" -i
-        find -name *.qs | xargs sed "s/@@VERSION@@/$NECESSITAS_QT_VERSION_LONG/g" -i
+        if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
+            find . -name *.qs | xargs sed -i '.bak' "s/@@COMPACT_VERSION@@/$NECESSITAS_QT_VERSION/g"
+            find . -name *.qs.bak | xargs rm -f
+            find . -name *.qs | xargs sed -i '.bak' "s/@@VERSION@@/$NECESSITAS_QT_VERSION_LONG/g"
+            find . -name *.qs.bak | xargs rm -f
+        else
+            find . -name *.qs | xargs sed "s/@@COMPACT_VERSION@@/$NECESSITAS_QT_VERSION/g" -i
+            find . -name *.qs | xargs sed "s/@@VERSION@@/$NECESSITAS_QT_VERSION_LONG/g" -i
+        fi
     popd
 }
 
 function revertPatchPackages
 {
     pushd $REPO_SRC_PATH/packages
-        find -name *.qs | xargs sed "s/$NECESSITAS_QT_VERSION/@@COMPACT_VERSION@@/g" -i
-        find -name *.qs | xargs sed "s/$NECESSITAS_QT_VERSION_LONG/@@VERSION@@/g" -i
+        if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
+            find . -name *.qs | xargs sed -i '.bak' "s/$NECESSITAS_QT_VERSION/@@COMPACT_VERSION@@/g"
+            find . -name *.qs.bak | xargs rm -f
+            find . -name *.qs | xargs sed -i '.bak' "s/$NECESSITAS_QT_VERSION_LONG/@@VERSION@@/g"
+            find . -name *.qs.bak | xargs rm -f
+        else
+            find . -name *.qs | xargs sed "s/$NECESSITAS_QT_VERSION/@@COMPACT_VERSION@@/g" -i
+            find . -name *.qs | xargs sed "s/$NECESSITAS_QT_VERSION_LONG/@@VERSION@@/g" -i
+        fi
     popd
 }
 
@@ -734,6 +768,9 @@ function prepareMinistroRepository
     done
 }
 
+# This is needed early.
+SDK_TOOLS_PATH=$PWD/necessitas-installer-framework/installerbuilder/bin
+
 prepareHostQt
 perpareSdkInstallerTools
 perpareNDKs
@@ -742,10 +779,11 @@ perpareNecessitasQtCreator
 perpareNecessitasQt
 perpareNecessitasQtWebkit
 perpareNecessitasQtMobility
-if [ "$OSTYPE" = "linux-gnu" ]; then
+# Want to be able to do this on all hosts.
+#if [ "$OSTYPE" = "linux-gnu" ]; then
     prepareMinistroRepository
-    echo $OSTYPE
-fi
+#    echo $OSTYPE
+#fi
 patchPackages
 prepareSDKBinary
 prepareSDKRepository
