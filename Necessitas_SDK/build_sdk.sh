@@ -441,7 +441,7 @@ function patchQtFiles
     echo /data/data/eu.licentia.necessitas.ministro/files/qt >> qpatch.cmdline
     echo $PWD >> qpatch.cmdline
     echo . >> qpatch.cmdline
-    $QPATCH_PATH qpatch.cmdline
+    $QPATCH_PATH @qpatch.cmdline
 }
 
 function packSource
