@@ -39,7 +39,7 @@ SHARED_QT_PATH=""
 SDK_TOOLS_PATH=""
 ANDROID_STRIP_BINARY=""
 ANDROID_READELF_BINARY=""
-
+QPATCH_PATH=""
 
 if [ "$OSTYPE" = "msys" ] ; then
 	HOST_CFG_OPTIONS=" -platform win32-g++ "
@@ -222,6 +222,26 @@ function perpareNecessitasQtCreator
         mv qtcreator-${HOST_TAG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-${HOST_TAG}.7z
         popd
     fi
+
+    mkdir qpatch-build
+    pushd qpatch-build
+    if [ ! -f all_done ]
+    then
+        $STATIC_QT_PATH/bin/qmake "QT_CONFIG=release" -r ../android-qt-creator/src/tools/qpatch/qpatch.pro
+        if [ "$OSTYPE" = "msys" ]; then
+            make -f Makefile.Release || error_msg "Can't compile qpatch"
+        else
+            make || error_msg "Can't compile qpatch"
+        fi
+        echo "all_done">all_done
+    fi
+
+    if [ "$OSTYPE" = "msys" ]; then
+        QPATCH_PATH=$PWD/release/qpatch${EXE_EXT}
+    else
+        QPATCH_PATH=$PWD/qpatch
+    fi
+    popd
 }
 
 
@@ -405,21 +425,6 @@ function perpareSDKs
     repackSDK android-3.0_r01-linux android-3.0_r01-windows android-sdk-windows/platforms android-11
 }
 
-function buildQPatch
-{
-    mkdir qpatch-build
-    pushd qpatch-build
-    $STATIC_QT_PATH/bin/qmake "QT_CONFIG=release" -r ../android-qt-creator/src/tools/qpatch/qpatch.pro
-    if [ "$OSTYPE" = "msys" ]; then
-        make -f Makefile.Release
-    else
-        make
-    fi
-    echo release/qpatch${EXE_EXT} ../Android/Qt/$NECESSITAS_QT_VERSION/qt-src
-    cp release/qpatch${EXE_EXT} ../Android/Qt/$NECESSITAS_QT_VERSION/qt-src
-    popd
-}
-
 function patchQtFiles
 {
     echo "bin/qmake$EXE_EXT" >files_to_patch
@@ -432,11 +437,11 @@ function patchQtFiles
     if [ "$OSTYPE" = "msys" ] ; then
         cp -a $SHARED_QT_PATH/bin/*.dll ../qt-src/
     fi
-    echo files-to-patch > qpatch.cmdline
+    echo files_to_patch > qpatch.cmdline
     echo /data/data/eu.licentia.necessitas.ministro/files/qt >> qpatch.cmdline
     echo $PWD >> qpatch.cmdline
     echo . >> qpatch.cmdline
-    ../qt-src/qpatch$EXE_EXT @qpatch.cmdline
+    $QPATCH_PATH qpatch.cmdline
 }
 
 function packSource
@@ -730,7 +735,6 @@ function prepareMinistroRepository
 }
 
 prepareHostQt
-buildQPatch
 perpareSdkInstallerTools
 perpareNDKs
 perpareSDKs
