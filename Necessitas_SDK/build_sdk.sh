@@ -21,10 +21,14 @@
 
 REPO_SRC_PATH=$PWD
 TEMP_PATH_PREFIX=/var
-if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" -o "$OSTYPE" = "msys" ]; then
+if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
     pushd ~ >/dev/null
     TEMP_PATH_PREFIX=$PWD
     popd
+else
+    if [ "$OSTYPE" = "msys"  ]; then
+        TEMP_PATH_PREFIX=/usr
+    fi
 fi
 
 TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
