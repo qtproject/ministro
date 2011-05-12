@@ -628,14 +628,14 @@ function compileNecessitasQtWebkit
         echo "all done">all_done
     fi
     package_name=${1//-/_} # replace - with _
-    rm -fr data
+    rm -fr $PWD/$TEMP_PATH
     pushd Release
     export INSTALL_ROOT=$PWD/../ && make install
     popd
     rm -fr $2
     mkdir -p $2/$1
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.$package_name/data
-    mv data/data/eu.licentia.necessitas.ministro/files/qt/* $2/$1
+    mv $PWD/$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/* $2/$1
     pushd $2/$1
     qt_build_path=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1
     qt_build_path=${qt_build_path//\//\\\/}
