@@ -623,8 +623,10 @@ function compileNecessitasQtWebkit
     export SQLITE3SRCDIR=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/qt-src/src/3rdparty/sqlite
     if [ ! -f all_done ]
     then
+        pushd ../qtwebkit-src
         git checkout stable
-        WEBKITOUTPUTDIR=$PWD ../qtwebkit-src/Tools/Scripts/build-webkit --qt --prefix=/data/data/eu.licentia.necessitas.ministro/files/qt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake || error_msg "Can't configure android-qtwebkit"
+        popd
+        export WEBKITOUTPUTDIR=$PWD && ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --prefix=/data/data/eu.licentia.necessitas.ministro/files/qt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake || error_msg "Can't configure android-qtwebkit"
         echo "all done">all_done
     fi
     package_name=${1//-/_} # replace - with _
