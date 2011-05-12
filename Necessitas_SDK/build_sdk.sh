@@ -358,7 +358,7 @@ function perpareSDKs
         downloadIfNotExists android-sdk_r10-linux_x86.tgz http://dl.google.com/android/android-sdk_r10-linux_x86.tgz
         if [ ! -d android-sdk-linux_x86 ]
         then
-            tar xvfa android-sdk_r10-linux_x86.tgz
+            tar xjvf android-sdk_r10-linux_x86.tgz
         fi
         $SDK_TOOLS_PATH/archivegen android-sdk-linux_x86 android-sdk_r10-linux_x86.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data
