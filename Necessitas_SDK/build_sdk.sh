@@ -316,14 +316,17 @@ function perpareNDKs
     if [ ! -d android-ndk-r5b ]; then
 
         if [ "$OSTYPE" = "msys" ]; then
+            downloadIfNotExists android-ndk-r5b-windows.zip http://dl.google.com/android/ndk/android-ndk-r5b-windows.zip
             unzip android-ndk-r5b-windows.zip
         fi
 
         if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
+            downloadIfNotExists android-ndk-r5b-darwin-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-darwin-x86.tar.bz2
             tar xjvf android-ndk-r5b-darwin-x86.tar.bz2
         fi
 
         if [ "$OSTYPE" = "linux-gnu" ]; then
+            downloadIfNotExists android-ndk-r5b-linux-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-linux-x86.tar.bz2
             tar xjvf android-ndk-r5b-linux-x86.tar.bz2
         fi
     fi
