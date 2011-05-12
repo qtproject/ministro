@@ -213,13 +213,13 @@ function perpareSdkInstallerTools
 
 function perpareNecessitasQtCreator
 {
+    if [ ! -d android-qt-creator ]
+    then
+        git clone git://anongit.kde.org/android-qt-creator.git android-qt-creator || error_msg "Can't clone android-qt-creator"
+    fi
+
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-${HOST_TAG}.7z ]
     then
-        if [ ! -d android-qt-creator ]
-        then
-            git clone git://anongit.kde.org/android-qt-creator.git android-qt-creator || error_msg "Can't clone android-qt-creator"
-        fi
-
         pushd android-qt-creator
 
         if [ ! -f all_done ]
