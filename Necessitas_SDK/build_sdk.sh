@@ -658,7 +658,7 @@ function compileNecessitasQtWebkit
             fi
         fi
         export WEBKITOUTPUTDIR=$PWD
-        ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --no-xslt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake$EXE_EXT || error_msg "Can't configure android-qtwebkit"
+        ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --no-video --no-xslt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake$EXE_EXT || error_msg "Can't configure android-qtwebkit"
         echo "all done">all_done
     fi
     package_name=${1//-/_} # replace - with _
