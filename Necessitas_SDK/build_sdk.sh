@@ -21,7 +21,7 @@
 
 
 REPO_SRC_PATH=$PWD
-TEMP_PATH_PREFIX=/var
+TEMP_PATH_PREFIX=/tmp
 
 if [ "$OSTYPE" = "msys"  ]; then
     TEMP_PATH_PREFIX=/usr
@@ -89,7 +89,7 @@ function downloadIfNotExists
 {
     if [ ! -f $1 ]
     then
-        wget $2 || removeAndExit $1
+        wget -c $2 || removeAndExit $1
     fi
 }
 
@@ -145,7 +145,7 @@ function prepareHostQt
 
         # download, compile & install zlib to /usr
         downloadIfNotExists zlib-1.2.5.tar.gz http://downloads.sourceforge.net/libpng/zlib/1.2.5/zlib-1.2.5.tar.gz
-        tar -xvzf zlib-1.2.5.tar.gz
+        tar -xzvf zlib-1.2.5.tar.gz
         cd zlib-1.2.5
         doSed $"s/usr\/local/usr/" win32/Makefile.gcc
         make -f win32/Makefile.gcc
@@ -167,7 +167,7 @@ function prepareHostQt
 
         if [ ! -d $HOST_QT_VERSION ]
         then
-            tar xvfz $HOST_QT_VERSION.tar.gz || error_msg "Can't untar $HOST_QT_VERSION.tar.gz"
+            tar -xzvf $HOST_QT_VERSION.tar.gz || error_msg "Can't untar $HOST_QT_VERSION.tar.gz"
         fi
     fi
 
@@ -372,7 +372,7 @@ function perpareSDKs
         downloadIfNotExists android-sdk_r10-linux_x86.tgz http://dl.google.com/android/android-sdk_r10-linux_x86.tgz
         if [ ! -d android-sdk-linux_x86 ]
         then
-            tar xjvf android-sdk_r10-linux_x86.tgz
+            tar -xzvf android-sdk_r10-linux_x86.tgz
         fi
         $SDK_TOOLS_PATH/archivegen android-sdk-linux_x86 android-sdk_r10-linux_x86.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data
@@ -643,7 +643,7 @@ function compileNecessitasQtWebkit
             if [ ! -f `which gprof` ] ; then
                 wget -c http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz
                 rm -rf gperf-3.0.4
-                tar -xvzf gperf-3.0.4.tar.gz
+                tar -xzvf gperf-3.0.4.tar.gz
                 pushd gperf-3.0.4
                 CFLAGS=-O2 LDFLAGS="-enable-auto-import" && ./configure --enable-static --disable-shared --prefix=/usr CFLAGS=-O2 LDFLAGS="-enable-auto-import"
                 make && make install
