@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Copyright (c) 2011, BogDan Vatra <bog_dan_ro@yahoo.com>
+# Copyright (c) 2011, Ray Donnelly <mingw.android@gmail.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -148,7 +149,9 @@ function prepareHostQt
         cd zlib-1.2.5
         doSed $"s/usr\/local/usr/" win32/Makefile.gcc
         make -f win32/Makefile.gcc
-        export INCLUDE_PATH=/usr/include && export LIBRARY_PATH=/usr/lib && make -f win32/Makefile.gcc install
+        export INCLUDE_PATH=/usr/include
+        export LIBRARY_PATH=/usr/lib
+        make -f win32/Makefile.gcc install
         rm -rf zlib-1.2.5
         cd ..
     fi
@@ -236,7 +239,8 @@ function perpareNecessitasQtCreator
             doMake "Can't compile android-qt-creator" "all done"
         fi
         rm -fr QtCreator
-        export INSTALL_ROOT=$PWD/QtCreator && make install
+        export INSTALL_ROOT=$PWD/QtCreator
+        make install
         mkdir -p $PWD/QtCreator/Qt/lib
         mkdir -p $PWD/QtCreator/Qt/imports
         cp -a $SHARED_QT_PATH/lib/* $PWD/QtCreator/Qt/lib/
@@ -512,7 +516,8 @@ function compileNecessitasQt
     fi
 
     rm -fr data
-    export INSTALL_ROOT=$PWD && make install
+    export INSTALL_ROOT=$PWD
+    make install
     mkdir -p $2/$1
     mv data/data/eu.licentia.necessitas.ministro/files/qt/bin $2/$1
     $SDK_TOOLS_PATH/archivegen Android qt-tools-${HOST_TAG}.7z
@@ -576,7 +581,8 @@ function compileNecessitasQtMobility
     package_name=${1//-/_} # replace - with _
     rm -fr data
     rm -fr $2
-    export INSTALL_ROOT=$PWD && make install
+    export INSTALL_ROOT=$PWD
+    make install
     mkdir -p $2/$1
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.$package_name/data
     mv data/data/eu.licentia.necessitas.ministro/files/qt/* $2/$1
@@ -633,9 +639,6 @@ function compileNecessitasQtWebkit
     export SQLITE3SRCDIR=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/qt-src/src/3rdparty/sqlite
     if [ ! -f all_done ]
     then
-        pushd ../qtwebkit-src
-        git checkout stable
-        popd
         if [ "$OSTYPE" = "msys" ] ; then
             if [ ! -f `which gprof` ] ; then
                 wget -c http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz
@@ -648,19 +651,21 @@ function compileNecessitasQtWebkit
             fi
             wget -c http://strawberryperl.com/download/5.12.2.0/strawberry-perl-5.12.2.0.msi
             if [ ! -f /${SYSTEMDRIVE:0:1}/strawberry/perl/bin/perl.exe ]; then
-                msiexec //i strawberry-perl-5.12.2.0.msi //q 
+                msiexec //i strawberry-perl-5.12.2.0.msi //q
             fi
             if [ "`which perl`" != "/${SYSTEMDRIVE:0:1}/strawberry/perl/bin/perl.exe" ]; then
                 export PATH=/${SYSTEMDRIVE:0:1}/strawberry/perl/bin:$PATH
             fi
         fi
-        export WEBKITOUTPUTDIR=$PWD && ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --prefix=/data/data/eu.licentia.necessitas.ministro/files/qt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake$EXE_EXT || error_msg "Can't configure android-qtwebkit"
+        export WEBKITOUTPUTDIR=$PWD
+        ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --no-xslt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake$EXE_EXT || error_msg "Can't configure android-qtwebkit"
         echo "all done">all_done
     fi
     package_name=${1//-/_} # replace - with _
     rm -fr $PWD/$TEMP_PATH
     pushd Release
-    export INSTALL_ROOT=$PWD/../ && make install
+    export INSTALL_ROOT=$PWD/../
+    make install
     popd
     rm -fr $2
     mkdir -p $2/$1
