@@ -27,7 +27,14 @@ if [ "$OSTYPE" = "msys"  ]; then
 fi
 
 TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
-mkdir -p $TEMP_PATH
+if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
+    # On Mac OS X, user accounts don't have write perms for /var
+    sudo mkdir -p $TEMP_PATH
+	sudo chmod 777 $TEMP_PATH
+else
+    mkdir -p $TEMP_PATH
+fi
+
 pushd $TEMP_PATH
 
 NECESSITAS_QT_VERSION=4762
@@ -629,7 +636,20 @@ function compileNecessitasQtWebkit
         pushd ../qtwebkit-src
         git checkout stable
         popd
-        export WEBKITOUTPUTDIR=$PWD && ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --prefix=/data/data/eu.licentia.necessitas.ministro/files/qt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake || error_msg "Can't configure android-qtwebkit"
+        if [ "$OSTYPE" = "msys" ] ; then
+            if [ ! -f `which gprof` ] ; then
+                wget -c http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz
+                rm -rf gperf-3.0.4
+                tar -xvzf gperf-3.0.4.tar.gz
+                pushd gperf-3.0.4
+                CFLAGS="-O2 -Wl,-enable-auto-import" LDFLAGS="-enable-auto-import" && ./configure --enable-static --disable-shared --prefix=/usr CFLAGS=-O2 LDFLAGS="-enable-auto-import"
+                make && make install
+                popd
+            fi
+            wget -c http://strawberryperl.com/download/5.12.2.0/strawberry-perl-5.12.2.0.msi
+            msiexec /i strawberry-perl-5.12.2.0.msi
+        fi
+        export WEBKITOUTPUTDIR=$PWD && ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --prefix=/data/data/eu.licentia.necessitas.ministro/files/qt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake$EXE_EXT || error_msg "Can't configure android-qtwebkit"
         echo "all done">all_done
     fi
     package_name=${1//-/_} # replace - with _
