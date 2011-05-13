@@ -642,12 +642,17 @@ function compileNecessitasQtWebkit
                 rm -rf gperf-3.0.4
                 tar -xvzf gperf-3.0.4.tar.gz
                 pushd gperf-3.0.4
-                CFLAGS="-O2 -Wl,-enable-auto-import" LDFLAGS="-enable-auto-import" && ./configure --enable-static --disable-shared --prefix=/usr CFLAGS=-O2 LDFLAGS="-enable-auto-import"
+                CFLAGS=-O2 LDFLAGS="-enable-auto-import" && ./configure --enable-static --disable-shared --prefix=/usr CFLAGS=-O2 LDFLAGS="-enable-auto-import"
                 make && make install
                 popd
             fi
             wget -c http://strawberryperl.com/download/5.12.2.0/strawberry-perl-5.12.2.0.msi
-            msiexec /i strawberry-perl-5.12.2.0.msi
+            if [ ! -f /${SYSTEMDRIVE:0:1}/strawberry/perl/bin/perl.exe ]; then
+                msiexec //i strawberry-perl-5.12.2.0.msi //q 
+            fi
+            if [ "`which perl`" != "/${SYSTEMDRIVE:0:1}/strawberry/perl/bin/perl.exe" ]; then
+                export PATH=/${SYSTEMDRIVE:0:1}/strawberry/perl/bin:$PATH
+            fi
         fi
         export WEBKITOUTPUTDIR=$PWD && ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --prefix=/data/data/eu.licentia.necessitas.ministro/files/qt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake$EXE_EXT || error_msg "Can't configure android-qtwebkit"
         echo "all done">all_done
