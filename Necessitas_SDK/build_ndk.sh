@@ -60,15 +60,17 @@ function makeInstallPython
     ./build-python.sh
     if [ "$OSTYPE" = "linux-gnu" ] ; then
         BUILD=linux
-    else if [ "$OSTYPE" = "msys" ] ; then
-        BUILD=mingw
     else
-        BUILD=macosx
+        if [ "$OSTYPE" = "msys" ] ; then
+            BUILD=mingw
+        else
+            BUILD=macosx
+        fi
     fi
 
     PYTHONVER=$PWD/install-python-$BUILD
     # If successful, the build is packaged into /usr/ndk-build/python-mingw.7z
-    cp ../python-${BUILD}.7z $REPO_SRC_PATH/
+    cp ../python-$(BUILD).7z $REPO_SRC_PATH/
     cd ..
 }
 
