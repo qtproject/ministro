@@ -273,7 +273,7 @@ function perpareNecessitasQtCreator
     fi
 
     if [ "$OSTYPE" = "msys" ]; then
-        QPATCH_PATH=$PWD/release/qpatch${EXE_EXT}
+        QPATCH_PATH=$PWD/release/qpatch$EXE_EXT
     else
         QPATCH_PATH=$PWD/qpatch
     fi
@@ -805,7 +805,10 @@ function prepareMinistroRepository
             cp $qmldirfile $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/$qmldirfileDirname/
         done
 
-        $REPO_SRC_PATH/ministrorepogen/ministrorepogen $ANDROID_READELF_BINARY $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/ $MINISTRO_VERSION $architecture $REPO_SRC_PATH/ministrorepogen/rules.xml $MINISTRO_REPO_PATH
+        if [ "$OSTYPE" = "msys" ] ; then
+            cp $REPO_SRC_PATH/ministrorepogen/release/ministrorepogen$EXE_EXT $REPO_SRC_PATH/ministrorepogen/ministrorepogen$EXE_EXT
+        fi
+        $REPO_SRC_PATH/ministrorepogen/ministrorepogen$EXE_EXT $ANDROID_READELF_BINARY $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/ $MINISTRO_VERSION $architecture $REPO_SRC_PATH/ministrorepogen/rules.xml $MINISTRO_REPO_PATH
         popd
     done
 }
