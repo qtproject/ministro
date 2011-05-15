@@ -98,6 +98,9 @@ function makeInstallMinGWBits
 
 function makeNDK
 {
+echo `pwd`
+echo `pwd`
+echo `pwd`
     mkdir src && cd src
     if [ ! -d mpfr ]
 	then
@@ -130,10 +133,11 @@ function makeNDK
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb
     fi
+    TCSRC=`pwd`
     cd ..
     mkdir ndk && cd ndk
     git clone git://android.git.kernel.org/platform/development.git development
-    git clone git://gitorious.org:mingw-android-ndk/mingw-android-ndk.git ndk
+    git clone git://gitorious.org/mingw-android-ndk/mingw-android-ndk.git ndk
     cd ndk && git checkout -b integration origin/integration && cd ..
     export NDK=`pwd`/ndk
     export ANDROID_NDK_ROOT=$NDK && $NDK/build/tools/build-platforms.sh --verbose
@@ -144,12 +148,12 @@ function makeNDK
     ANDROID_NDK_ROOT=$NDK
 
     if [ "$OSTYPE" = "msys" ]; then
-        $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-windows-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=`pwd`/src --gdb-with-python=$PYTHONVER --only-latest
+        $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-windows-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
     else
         if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
-            $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-darwin-x86-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=`pwd`/src --gdb-with-python=/usr --only-latest
+            $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-darwin-x86-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=/usr --only-latest
         else
-            $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-linux-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=`pwd`/src --gdb-with-python=/usr --only-latest
+            $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-linux-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=/usr --only-latest
         fi
     fi
 }
