@@ -50,6 +50,28 @@ function downloadIfNotExists
     fi
 }
 
+function makeInstallPython
+{
+    if [ ! -d python ]
+    then
+        git clone git://gitorious.org/mingw-python/mingw-python.git python
+    fi
+    cd python
+    ./build-python.sh
+    if [ "$OSTYPE" = "linux-gnu" ] ; then
+        BUILD=linux
+    else if [ "$OSTYPE" = "msys" ] ; then
+        BUILD=mingw
+    else
+        BUILD=macosx
+    fi
+
+    PYTHONVER=$PWD/install-python-$BUILD
+    # If successful, the build is packaged into /usr/ndk-build/python-mingw.7z
+    cp ../python-${BUILD}.7z $REPO_SRC_PATH/
+    cd ..
+}
+
 function makeInstallMinGWBits
 {
     wget -c http://downloads.sourceforge.net/pdcurses/pdcurses/3.4/PDCurses-3.4.tar.gz
@@ -73,17 +95,6 @@ function makeInstallMinGWBits
     make && make install
     cd ..
 
-    if [ ! -d python ]
-    then
-        git clone git://gitorious.org:mingw-python/mingw-python.git python
-    fi
-    cd python
-    ./build-python.sh
-	PYTHONVER=$PWD/install-python-mingw
-    # If successful, the build is packaged into /usr/ndk-build/python-mingw.7z
-    cp ../python-mingw.7z $REPO_SRC_PATH/
-    cd ..
-
     rm -rf android-various
     git clone git://gitorious.org:mingw-android-various/mingw-android-various.git android-various
     mkdir -p android-various/make-3.82-build
@@ -98,9 +109,6 @@ function makeInstallMinGWBits
 
 function makeNDK
 {
-echo `pwd`
-echo `pwd`
-echo `pwd`
     mkdir src && cd src
     if [ ! -d mpfr ]
 	then
@@ -151,9 +159,9 @@ echo `pwd`
         $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-windows-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
     else
         if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
-            $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-darwin-x86-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=/usr --only-latest
+            $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-darwin-x86-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
         else
-            $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-linux-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=/usr --only-latest
+            $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-linux-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
         fi
     fi
 }
@@ -161,6 +169,7 @@ echo `pwd`
 if [ "$OSTYPE" = "msys" ] ; then
      makeInstallMinGWBits
 fi
+makeInstallPython
 makeNDK
 
 popd
