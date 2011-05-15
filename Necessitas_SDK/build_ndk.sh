@@ -52,25 +52,31 @@ function downloadIfNotExists
 
 function makeInstallPython
 {
-    if [ ! -d python ]
-    then
-        git clone git://gitorious.org/mingw-python/mingw-python.git python
-    fi
-    cd python
-    ./build-python.sh
     if [ "$OSTYPE" = "linux-gnu" ] ; then
         BUILD=linux
     else
         if [ "$OSTYPE" = "msys" ] ; then
-            BUILD=mingw
+        BUILD=mingw
         else
             BUILD=macosx
         fi
     fi
 
-    PYTHONVER=$PWD/install-python-$BUILD
-    # If successful, the build is packaged into /usr/ndk-build/python-mingw.7z
-    cp ../python-$(BUILD).7z $REPO_SRC_PATH/
+    if [ -f $REPO_SRC_PATH/python-${BUILD}.7z ]
+    then
+        PYTHONVER=$PWD/python/install-python-$BUILD
+    else
+        if [ ! -d python ]
+        then
+            git clone git://gitorious.org/mingw-python/mingw-python.git python
+        fi
+        cd python
+        ./build-python.sh
+        PYTHONVER=$PWD/install-python-$BUILD
+        # If successful, the build is packaged into /usr/ndk-build/python-mingw.7z
+        cp ../python-${BUILD}.7z $REPO_SRC_PATH/
+    fi
+
     cd ..
 }
 
