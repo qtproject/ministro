@@ -576,8 +576,7 @@ function compileNecessitasQtMobility
     if [ ! -f all_done ]
     then
         git checkout testing
-#        ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -qmake-exec ../build-$1/bin/qmake -modules "bearer contacts gallery location messaging multimedia systeminfo sensors versit organizer feedback" || error_msg "Can't configure android-qtmobility"
-        ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -qmake-exec ../build-$1/bin/qmake -modules "bearer contacts gallery location messaging systeminfo sensors versit organizer feedback" || error_msg "Can't configure android-qtmobility"
+        ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -staticconfig android -qmake-exec ../build-$1/bin/qmake -modules "bearer location contacts multimedia versit messaging systeminfo serviceframework sensors gallery organizer feedback connectivity" || error_msg "Can't configure android-qtmobility"
         doMake "Can't compile android-qtmobility" "all done"
     fi
     package_name=${1//-/_} # replace - with _
