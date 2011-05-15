@@ -28,7 +28,7 @@ Component.prototype.createOperations = function()
         component.addOperation( "QtPatch", qtPath );
         component.addOperation( "RegisterQtInCreator",
                                 "@TargetDir@",
-                                "Necessitas Qt @@VERSION@@ for Android",
+                                "Necessitas Qt @@VERSION@@ for Android armv5",
                                 qtPath );
     }
     catch( e )

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>4.7.62-armeabi_v7a</DisplayName>
+    <DisplayName>Qt 4.7.62-armeabi_v7a</DisplayName>
     <Description>Development libraries for development applications on Android devices, armeabi_v7a architecture.</Description>
     <Version>4.7.62</Version>
     <ReleaseDate>2011-04-09</ReleaseDate>

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>4.7.62-armeabi_v7a</DisplayName>
+    <DisplayName>QtWebKit 2.1.0-armeabi_v7a</DisplayName>
     <Description>Development libraries for development applications on Android devices, armeabi_v7a architecture.</Description>
-    <Version>4.7.62</Version>
+    <Version>2.1.0</Version>
     <ReleaseDate>2011-04-09</ReleaseDate>
     <Name>org.kde.necessitas.android.qtwebkit.armeabi_v7a</Name>
     <Dependencies>org.kde.necessitas.android.qt.armeabi_v7a</Dependencies>
