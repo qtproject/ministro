@@ -575,7 +575,9 @@ function compileNecessitasQtMobility
     export ANDROID_TARGET_ARCH=$1
     if [ ! -f all_done ]
     then
-        git checkout testing
+        pushd ../qtmobility-src
+        git checkout master
+        popd
         ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -staticconfig android -qmake-exec ../build-$1/bin/qmake -modules "bearer location contacts multimedia versit messaging systeminfo serviceframework sensors gallery organizer feedback connectivity" || error_msg "Can't configure android-qtmobility"
         doMake "Can't compile android-qtmobility" "all done"
     fi
