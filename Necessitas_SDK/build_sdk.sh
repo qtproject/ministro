@@ -145,15 +145,17 @@ function prepareHostQt
 
         # download, compile & install zlib to /usr
         downloadIfNotExists zlib-1.2.5.tar.gz http://downloads.sourceforge.net/libpng/zlib/1.2.5/zlib-1.2.5.tar.gz
-        tar -xzvf zlib-1.2.5.tar.gz
-        cd zlib-1.2.5
-        doSed $"s/usr\/local/usr/" win32/Makefile.gcc
-        make -f win32/Makefile.gcc
-        export INCLUDE_PATH=/usr/include
-        export LIBRARY_PATH=/usr/lib
-        make -f win32/Makefile.gcc install
-        rm -rf zlib-1.2.5
-        cd ..
+        if [ ! -f /usr/lib/libz.a ] ; then
+            tar -xvzf zlib-1.2.5.tar.gz
+            cd zlib-1.2.5
+            doSed $"s/usr\/local/usr/" win32/Makefile.gcc
+            make -f win32/Makefile.gcc
+            export INCLUDE_PATH=/usr/include
+            export LIBRARY_PATH=/usr/lib
+            make -f win32/Makefile.gcc install
+            rm -rf zlib-1.2.5
+            cd ..
+        fi
     fi
 
     if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
@@ -540,7 +542,7 @@ function perpareNecessitasQt
     then
         git clone git://anongit.kde.org/android-qt.git qt-src|| error_msg "Can't clone android-qt"
         pushd qt-src
-        git checkout testing
+        git checkout experimental
         popd
     fi
 
@@ -637,11 +639,12 @@ function compileNecessitasQtWebkit
 {
     export ANDROID_TARGET_ARCH=$1
     export SQLITE3SRCDIR=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/qt-src/src/3rdparty/sqlite
-    if [ ! -f all_done ]
+#    if [ ! -f all_done ]
+    if [ "1" = "1" ]
     then
         if [ "$OSTYPE" = "msys" ] ; then
             if [ ! -f `which gprof` ] ; then
-                wget -c http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz
+                downloadIfNotExists gperf-3.0.4.tar.gz http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz
                 rm -rf gperf-3.0.4
                 tar -xzvf gperf-3.0.4.tar.gz
                 pushd gperf-3.0.4
@@ -649,16 +652,20 @@ function compileNecessitasQtWebkit
                 make && make install
                 popd
             fi
-            wget -c http://strawberryperl.com/download/5.12.2.0/strawberry-perl-5.12.2.0.msi
+            downloadIfNotExists strawberry-perl-5.12.2.0.msi http://strawberryperl.com/download/5.12.2.0/strawberry-perl-5.12.2.0.msi
             if [ ! -f /${SYSTEMDRIVE:0:1}/strawberry/perl/bin/perl.exe ]; then
                 msiexec //i strawberry-perl-5.12.2.0.msi //q
             fi
             if [ "`which perl`" != "/${SYSTEMDRIVE:0:1}/strawberry/perl/bin/perl.exe" ]; then
                 export PATH=/${SYSTEMDRIVE:0:1}/strawberry/perl/bin:$PATH
             fi
+            if [ "`which perl`" != "/${SYSTEMDRIVE:0:1}/strawberry/perl/bin/perl.exe" ]; then
+                error_msg "Not using the correct perl"
+            fi
         fi
         export WEBKITOUTPUTDIR=$PWD
-        ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --no-video --no-xslt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake$EXE_EXT || error_msg "Can't configure android-qtwebkit"
+		echo "doing perl"
+        ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake$EXE_EXT --no-video --no-xslt || error_msg "Can't configure android-qtwebkit"
         echo "all done">all_done
     fi
     package_name=${1//-/_} # replace - with _
