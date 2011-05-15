@@ -26,6 +26,10 @@
 #include <QDir>
 #include <QCryptographicHash>
 
+#if defined(__MINGW32__)
+#include <io.h>
+#endif
+
 void printHelp()
 {
     qDebug()<<"Usage:./ministrorepogen <readelf executable path> <libraries path> <version> <abi version> <xml rules file> <output folder> ";
