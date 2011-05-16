@@ -26,7 +26,8 @@ else
     popd
 fi
 
-REPO_SRC_PATH=$PWD
+REPO_SRC_PATH=$PWD/ndk
+mkdir $REPO_SRC_PATH
 PYTHONVER=/usr
 mkdir -p $TEMP_PATH
 pushd $TEMP_PATH
@@ -122,6 +123,15 @@ function makeNDK
     mkdir src
     cd src
 
+    if [ -f $REPO_SRC_PATH/python-${BUILD}.7z ]; then
+        rm -rf /tmp/python-install 
+        mkdir /tmp/python-install
+        pushd /tmp/python-install
+        7za x $REPO_SRC_PATH/python-${BUILD}.7z
+        PYTHONVER=$PWD
+        popd
+    fi
+
     if [ ! -d "mpfr" ]
 	then
         git clone git://android.git.kernel.org/toolchain/mpfr.git mpfr
@@ -176,6 +186,8 @@ function makeNDK
         echo "Skipping NDK build, already done."
         echo $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
     fi
+    cp $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
+    cp $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2
 }
 
 function mixPythonWithNDK
@@ -183,21 +195,22 @@ function mixPythonWithNDK
     if [ ! -f $REPO_SRC_PATH/python-${BUILD}.7z ]; then
        echo "Failed to find python, $REPO_SRC_PATH/python-${BUILD}.7z"
     fi
-    if [ ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 ]; then
-       echo "Failed to find gdbserver, $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2"
+    if [ ! -f $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 ]; then
+       echo "Failed to find gdbserver, $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2"
     fi
-    if [ ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
-       echo "Failed to find toolchain, arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2"
+    if [ ! -f $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
+       echo "Failed to find toolchain, $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2"
     fi
     rm -rf /tmp/android-ndk-r5b-${BUILD}
     mkdir -p /tmp/android-ndk-r5b-${BUILD}
     pushd /tmp/android-ndk-r5b-${BUILD}
-    tar -jxvf $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
-    tar -jxvf $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2
+    tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
+    tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2
     pushd toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
     7za x $REPO_SRC_PATH/python-${BUILD}.7z
     popd
     7za a -mx9 android-ndk-r5b-gdb-7.2-${BUILD}.7z toolchains
+    cp android-ndk-r5b-gdb-7.2-${BUILD}.7z $REPO_SRC_PATH
     popd
 }
 
@@ -210,3 +223,4 @@ makeNDK
 mixPythonWithNDK
 
 popd
+
