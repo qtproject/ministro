@@ -95,8 +95,12 @@ void SortLibraries(librariesMap & mapLibs, const QString & readelfPath, const QS
         if (!mapLibs[library].relativePath.length())
             mapLibs[library].relativePath=relativePath;
 
-        if (!mapLibs[library].dependencies.size())
-            mapLibs[library].dependencies=getLibs(readelfPath, libPath.absolutePath());
+            QStringList depends=getLibs(readelfPath, libPath.absolutePath());
+            foreach(const QString & libName, depends)
+            {
+                if (!mapLibs[library].dependencies.contains(libName))
+                        mapLibs[library].dependencies<<libName;
+            }
     }
 
     // clean dependencies
@@ -105,8 +109,11 @@ void SortLibraries(librariesMap & mapLibs, const QString & readelfPath, const QS
         int it=0;
         while(it<mapLibs[key].dependencies.size())
         {
-            if (!mapLibs.keys().contains(mapLibs[key].dependencies[it]))
+            const QString & dependName=mapLibs[key].dependencies[it];
+            if (!mapLibs.keys().contains(dependName) && dependName.startsWith("lib") && dependName.endsWith(".so"))
+            {
                 mapLibs[key].dependencies.removeAt(it);
+            }
             else
                 ++it;
         }
@@ -125,9 +132,9 @@ void SortLibraries(librariesMap & mapLibs, const QString & readelfPath, const QS
 
         for (int it=0;it<mapLibs[key].dependencies.size();it++)
         {
-            QString & libName=mapLibs[key].dependencies[it];
+            const QString & libName=mapLibs[key].dependencies[it];
             if (libName.startsWith("lib") && libName.endsWith(".so"))
-                libName=libName.mid(3,libName.length()-6);
+                mapLibs[key].dependencies[it]=libName.mid(3,libName.length()-6);
         }
     }
 }

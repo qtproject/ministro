@@ -23,17 +23,6 @@
             </needs>
         </lib>
 
-        <lib file="lib/libQtGui.so">
-            <needs>
-                <item name="QtAccessibleWidgets" file="plugins/accessible/libqtaccessiblewidgets.so"/>
-                <item name="QtGifPlugin" file="plugins/imageformats/libqgif.so" />
-                <item name="QtIcoPlugin" file="plugins/imageformats/libqico.so" />
-                <item name="QtJpegPlugin" file="plugins/imageformats/libqjpeg.so" />
-                <item name="QtMngPlugin"  file="plugins/imageformats/libqmng.so" />
-                <item name="QtTiffPlugin"  file="plugins/imageformats/libqtiff.so" />
-            </needs>
-        </lib>-
-
         <lib file="lib/libQtSvg.so" >
             <needs>
                 <item name="QtSvgIconPlugin" file="plugins/iconengines/libqsvgicon.so"/>
@@ -59,20 +48,138 @@
             </needs>
         </lib>
 
-        <lib file="plugins/platforms/android/libandroid-4.so" name="QtAndroidPlatformPlugin" platform="4" level="9999" >
+
+        <lib file="lib/libQtGui.so">
+            <needs>
+                <item name="QtAccessibleWidgets" file="plugins/accessible/libqtaccessiblewidgets.so"/>
+                <item name="QtGifPlugin" file="plugins/imageformats/libqgif.so" />
+                <item name="QtIcoPlugin" file="plugins/imageformats/libqico.so" />
+                <item name="QtJpegPlugin" file="plugins/imageformats/libqjpeg.so" />
+                <item name="QtMngPlugin"  file="plugins/imageformats/libqmng.so" />
+                <item name="QtTiffPlugin"  file="plugins/imageformats/libqtiff.so" />
+            </needs>
             <depends>
-                <lib name="libQtGui.so"/>
+                <lib name="QtAndroidPlatformPlugin"/>
             </depends>
         </lib>
-        <lib file="plugins/platforms/android/libandroid-5.so" name="QtAndroidPlatformPlugin" platform="5" level="9999" >
+        <lib file="plugins/platforms/android/libandroid-4.so" name="QtAndroidPlatformPlugin" platform="4" level="9999" />
+        <lib file="plugins/platforms/android/libandroid-5.so" name="QtAndroidPlatformPlugin" platform="5" level="9999" />
+        <lib file="plugins/platforms/android/libandroid-8.so" name="QtAndroidPlatformPlugin" platform="8" level="9999" />
+
+
+        <lib file="lib/libQtSystemInfo.so">
+            <needs>
+                <item name="QmlSystemInfoPlugin" file="imports/QtMobility/systeminfo/libdeclarative_systeminfo.so" />
+                <item name="QmlDir" file="imports/QtMobility/systeminfo/qmldir" />
+            </needs>
+        </lib>
+
+
+        <lib file="lib/libQtLocation.so">
+            <needs>
+                <item name="QmlLocationPlugin" file="imports/QtMobility/location/libdeclarative_location.so" />
+                <item name="QmlDir" file="imports/QtMobility/location/qmldir" />
+                <item name="QtGeoServicesNokiaPlugin" file="plugins/geoservices/libqtgeoservices_nokia.so" />
+            </needs>
             <depends>
-                <lib name="libQtGui.so"/>
+                <lib name="QtLandmarksPlugin"/>
             </depends>
         </lib>
-        <lib file="plugins/platforms/android/libandroid-8.so" name="QtAndroidPlatformPlugin" platform="8" level="9999" >
+        <lib file="plugins/landmarks/libqtlandmarks_sqlite.so" name="QtLandmarksPlugin" level="9999" />
+
+
+        <lib file="lib/libQtContacts.so">
+            <needs>
+                <item name="QmlContactsPlugin" file="imports/QtMobility/contacts/libdeclarative_contacts.so" />
+                <item name="QmlDir" file="imports/QtMobility/contacts/qmldir" />
+                <item name="QtContactsServiceActionManagerPlugin" file="plugins/contacts/libqtcontacts_serviceactionmanager.so" />
+            </needs>
             <depends>
-                <lib name="libQtGui.so"/>
+                <lib name="QtAndroidContactsPlugin"/>
             </depends>
         </lib>
-    </libs>
+        <lib file="plugins/contacts/libqtcontacts_android.so" name="QtAndroidContactsPlugin" platform="5" level="9999" />
+        <lib file="plugins/contacts/libqtcontacts_android.so" name="QtAndroidContactsPlugin" platform="8" level="9999" />
+
+
+        <lib file="lib/libQtFeedback.so">
+            <needs>
+                <item name="QmlFeedbackPlugin" file="imports/QtMobility/feedback/libdeclarative_feedback.so" />
+                <item name="QmlDir" file="imports/QtMobility/feedback/qmldir" />
+            </needs>
+            <depends>
+                <lib name="QtAndroidFeedbackPlugin"/>
+            </depends>
+        </lib>
+        <lib file="plugins/feedback/libqtfeedback_android.so" name="QtAndroidFeedbackPlugin" platform="5" level="9999" />
+        <lib file="plugins/feedback/libqtfeedback_android.so" name="QtAndroidFeedbackPlugin" platform="8" level="9999" />
+
+
+        <lib file="lib/libQtVersit.so">
+            <needs>
+                <item name="VersitBackupHandlerPlugin" file="plugins/versit/libqtversit_backuphandler.so" />
+                <item name="VersitVcardPreserverPlugin" file="plugins/versit/libqtversit_vcardpreserver.so" />
+            </needs>
+        </lib>
+
+
+        <lib file="lib/libQtSensors.so">
+            <needs>
+                <item name="QmlSensorsPlugin" file="imports/QtMobility/sensors/libdeclarative_sensors.so" />
+                <item name="QmlDir" file="imports/QtMobility/sensors/qmldir" />
+            </needs>
+            <depends>
+                <lib name="QtAndroidSensorsPlugin"/>
+            </depends>
+        </lib>
+        <lib file="plugins/sensors/libqtsensors_android.so" name="QtAndroidSensorsPlugin" platform="5" level="9999" />
+        <lib file="plugins/sensors/libqtsensors_android.so" name="QtAndroidSensorsPlugin" platform="8" level="9999" />
+
+
+        <lib file="lib/libQtOrganizer.so">
+            <needs>
+                <item name="QmlOrganizerPlugin" file="imports/QtMobility/organizer/libdeclarative_organizer.so" />
+                <item name="QmlDir" file="imports/QtMobility/organizer/qmldir" />
+            </needs>
+        </lib>
+
+
+        <lib file="lib/libQtConnectivity.so">
+            <needs>
+                <item name="QmlConnectivityPlugin" file="imports/QtMobility/connectivity/libdeclarative_connectivity.so" />
+                <item name="QmlDir" file="imports/QtMobility/connectivity/qmldir" />
+            </needs>
+        </lib>
+
+
+        <lib file="lib/libQtGallery.so">
+            <needs>
+                <item name="QmlGalleryPlugin" file="imports/QtMobility/gallery/libdeclarative_gallery.so" />
+                <item name="QmlDir" file="imports/QtMobility/gallery/qmldir" />
+            </needs>
+        </lib>
+
+
+        <lib file="lib/libQtServiceFramework.so">
+            <needs>
+                <item name="QmlServiceFrameworkPlugin" file="imports/QtMobility/serviceframework/libdeclarative_serviceframework.so" />
+                <item name="QmlDir" file="imports/QtMobility/serviceframework/qmldir" />
+            </needs>
+        </lib>
+
+
+        <lib file="lib/libQtMultimediaKit.so">
+            <needs>
+                <item name="QmlMultimediaKitPlugin" file="imports/QtMultimediaKit/libdeclarative_multimedia.so" />
+                <item name="QmlDir" file="imports/QtMultimediaKit/qmldir" />
+                <item name="QtMultimediaKitM3uPlugin" file="plugins/playlistformats/libqtmultimediakit_m3u.so" />
+            </needs>
+            <depends>
+                <lib name="QtAndroidMKMediaPlugin"/>
+                <lib name="QtAndroidMKCameraPlugin"/>
+            </depends>
+        </lib>
+        <lib file="plugins/mediaservice/libqtmultimediakit_androidmedia.so" name="QtAndroidMKMediaPlugin" platform="8" level="9999" />
+        <lib file="plugins/mediaservice/libqtmultimediakit_androidcam.so" name="QtAndroidMKCameraPlugin" platform="8" level="9999" />
+</libs>
 </root>
