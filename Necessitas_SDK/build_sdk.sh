@@ -31,7 +31,7 @@ TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
 if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" -o "$OSTYPE" = "linux-gnu" ]; then
     # On Mac OS X, user accounts don't have write perms for /var, same is true for Ubuntu.
     sudo mkdir -p $TEMP_PATH
-    sudo chmod 770 $TEMP_PATH
+    sudo chmod 777 $TEMP_PATH
 else
     mkdir -p $TEMP_PATH
 fi
@@ -280,6 +280,149 @@ function perpareNecessitasQtCreator
     popd
 }
 
+function makeInstallMinGWBits
+{
+    downloadIfNotExists PDCurses-3.4.tar.gz http://downloads.sourceforge.net/pdcurses/pdcurses/3.4/PDCurses-3.4.tar.gz
+    rm -rf PDCurses-3.4
+    tar -xvzf PDCurses-3.4.tar.gz
+    cd PDCurses-3.4/win32
+    sed '90s/-copy/-cp/' mingwin32.mak > mingwin32-fixed.mak
+    make -f mingwin32-fixed.mak WIDE=Y UTF8=Y DLL=N
+    mkdir -p $install_dir/lib
+    mkdir -p $install_dir/include
+    cp pdcurses.a $install_dir/lib/libcurses.a
+    cp pdcurses.a $install_dir/lib/libncurses.a
+    cp pdcurses.a $install_dir/lib/libpdcurses.a
+    cp ../curses.h $install_dir/include
+    cp ../panel.h $install_dir/include
+    cd ../..
+
+    downloadIfNotExists readline-6.2.tar.gz http://ftp.gnu.org/pub/gnu/readline/readline-6.2.tar.gz
+    rm -rf readline-6.2
+    tar -xvzf readline-6.2.tar.gz
+    cd readline-6.2
+    CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses --enable-multibyte --prefix=/  CFLAGS=-O2
+    make && make DESTDIR=$install_dir install
+    cd ..
+
+    rm -rf android-various
+    git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various
+    mkdir -p android-various/make-3.82-build
+    cd android-various/make-3.82-build
+    ../make-3.82/build-mingw.sh
+    cp make.exe $REPO_SRC_PATH/
+    cd ../..
+    cd android-various/android-sdk
+    gcc -Wl,-subsystem,windows -Wno-write-strings android.cpp -static-libgcc -s -O3 -o android.exe 
+    cp android.exe $REPO_SRC_PATH/
+}
+
+function prepareGDB
+{
+    mkdir gdb-build
+    pushd gdb-build
+    pyversion=2.7
+    pyfullversion=2.7.1
+    install_dir=$PWD/install
+    target_dir=$PWD/gdb-7.2.x
+
+    downloadIfNotExists expat-2.0.1.tar.gz http://downloads.sourceforge.net/sourceforge/expat/expat-2.0.1.tar.gz || error_msg "Can't download expat library"
+    if [ ! -d expat-2.0.1 ]
+    then
+        tar xzvf expat-2.0.1.tar.gz
+        pushd expat-2.0.1
+            ./configure --disable-shared -prefix=/ && make -j$JOBS && make DESTDIR=$install_dir install || error_msg "Can't compile expat library"
+        popd
+    fi
+
+#        downloadIfNotExists Python-$pyfullversion.tar.bz2 http://www.python.org/ftp/python/$pyfullversion/Python-$pyfullversion.tar.bz2 || error_msg "Can't download python library"
+#    fi
+
+    if [ ! -d Python-$pyfullversion ]
+    then
+        if [ $OSTYPE = "msys" -o $OSTYPE = "linux-gnu" ]; then
+            if [ $OSTYPE = "msys" ]; then
+                makeInstallMinGWBits $install_dir
+            fi
+            rm -rf Python-$pyfullversion
+            git clone git://gitorious.org/mingw-python/mingw-python.git Python-$pyfullversion
+        else
+            downloadIfNotExists Python-$pyfullversion.tar.bz2 http://www.python.org/ftp/python/$pyfullversion/Python-$pyfullversion.tar.bz2 || error_msg "Can't download python library"
+            tar xjvf Python-$pyfullversion.tar.bz2
+        fi
+        pushd Python-$pyfullversion
+        unset PYTHONHOME
+        OLDCC=$CC
+        OLDCXX=$CXX
+        OLDPATH=$PATH
+        if [ "$OSTYPE" = "linux-gnu" ] ; then
+            HOST=i386-linux-gnu
+            export CC="gcc -m32"
+            export CXX="g++ -m32"
+        else
+            EXE_EXT=.exe
+            HOST=i686-pc-mingw32
+            export CC=gcc.exe
+            export CXX=g++.exe
+            LIBSRCDIR=./build/lib.mingw-2.7
+            LIBDSTDIR=$PREFIX/bin/Lib
+        fi
+        export PATH=.:$PATH
+        autoconf
+        touch Include/Python-ast.h
+        touch Include/Python-ast.c
+        ./configure --prefix=$install_dir --host=$HOST && make -j$JOBS && make install || error_msg "Can't compile python library"
+        if [ "$OSTYPE" = "msys" ] ; then
+            cd pywin32-216
+            ../python$EXE_EXT setup.py build
+            cd ..
+        fi
+        mkdir -p $target_dir/python/lib
+        if [ "$OSTYPE" = "msys" ] ; then
+            mkdir -p $LIBDSTDIR/config
+            cp Modules/makesetup $LIBDSTDIR/config
+            cp Modules/config.c.in $LIBDSTDIR/config
+            cp Modules/config.c $LIBDSTDIR/config
+            cp libpython2.7.a $LIBDSTDIR/config
+            cp Makefile $LIBDSTDIR/config
+            cp Modules/python.o $LIBDSTDIR/config
+            cp Modules/Setup.local $LIBDSTDIR/config
+            cp install-sh  $LIBDSTDIR/config
+            cp Modules/Setup $LIBDSTDIR/config
+            cp Modules/Setup.config $LIBDSTDIR/config
+        fi
+        cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
+        mkdir -p $target_dir/python/include/python$pyversion
+        cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
+        popd
+        export CC=$OLDCC
+        export CXX=$OLDCXX
+        export PATH=$OLDPATH
+    fi
+
+    if [ ! -d gdb-src ]
+    then
+        export PYTHONHOME=$install_dir
+        OLDPATH=$PATH
+        export PATH=$install_dir/bin/:$PATH
+        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src
+        pushd gdb-src/gdb-7.2.50.20110211
+        ./configure --enable-initfini-array --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir
+          --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
+        make && make DESTDIR=$install_dir install 
+        export PATH=$OLDPATH
+        popd
+    fi
+
+    pushd $target_dir
+    find -name *.py[co] | xargs rm -f
+    find -name test | xargs rm -fr
+    popd
+   
+    $SDK_TOOLS_PATH/archivegen gdb-7.2.x gdb-7.2.x-${HOST_TAG}.7z
+
+    popd //gdb-build
+}
 
 function perpareNDKs
 {
@@ -818,6 +961,7 @@ SDK_TOOLS_PATH=$PWD/necessitas-installer-framework/installerbuilder/bin
 
 prepareHostQt
 perpareSdkInstallerTools
+#prepareGDB
 perpareNDKs
 perpareSDKs
 perpareNecessitasQtCreator
