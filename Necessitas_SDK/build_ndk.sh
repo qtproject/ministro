@@ -119,44 +119,49 @@ function makeInstallMinGWBits
 
 function makeNDK
 {
-    mkdir src && cd src
-    if [ ! -d mpfr ]
+    mkdir src
+    cd src
+
+    if [ ! -d "mpfr" ]
 	then
         git clone git://android.git.kernel.org/toolchain/mpfr.git mpfr
         cd mpfr
         downloadIfNotExists mpfr-2.4.2.tar.bz2 http://www.mpfr.org/mpfr-2.4.2/mpfr-2.4.2.tar.bz2
         cd ..
     fi
-    if [ ! -d binutils ]
+    if [ ! -d "binutils" ]
 	then
         git clone git://android.git.kernel.org/toolchain/binutils.git binutils
     fi
-    if [ ! -d gmp ]
+    if [ ! -d "gmp" ]
 	then
         git clone git://android.git.kernel.org/toolchain/gmp.git gmp
     fi
-	if [ ! -d gold ]
+	if [ ! -d "gold" ]
 	then
         git clone git://android.git.kernel.org/toolchain/gold.git gold
     fi
-	if [ ! -d build ]
+	if [ ! -d "build" ]
 	then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-build.git build
     fi
-	if [ ! -d gcc ]
+	if [ ! -d "gcc" ]
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gcc.git gcc
     fi
-	if [ ! -d gdb ]
+	if [ ! -d "gdb" ]
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb
     fi
     TCSRC=`pwd`
     cd ..
-    mkdir ndk && cd ndk
+    mkdir ndk
+    cd ndk
     git clone git://android.git.kernel.org/platform/development.git development
     git clone git://gitorious.org/mingw-android-ndk/mingw-android-ndk.git ndk
-    cd ndk && git checkout -b integration origin/integration && cd ..
+    cd ndk
+    git checkout -b integration origin/integration
+    cd ..
     export NDK=`pwd`/ndk
     export ANDROID_NDK_ROOT=$NDK && $NDK/build/tools/build-platforms.sh --verbose
 
@@ -165,11 +170,11 @@ function makeNDK
     NDK=`pwd`/ndk
     ANDROID_NDK_ROOT=$NDK
 
-
     if [ ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 -o ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
         $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
     else
         echo "Skipping NDK build, already done."
+        echo $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
     fi
 }
 
