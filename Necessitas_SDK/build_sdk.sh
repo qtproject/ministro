@@ -21,17 +21,17 @@
 
 
 REPO_SRC_PATH=$PWD
-TEMP_PATH_PREFIX=/tmp
+TEMP_PATH_PREFIX=/var
 
-if [ "$OSTYPE" = "msys"  ]; then
+if [ "$OSTYPE" = "msys" ]; then
     TEMP_PATH_PREFIX=/usr
 fi
 
 TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
-if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
-    # On Mac OS X, user accounts don't have write perms for /var
+if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" -o "$OSTYPE" = "linux-gnu" ]; then
+    # On Mac OS X, user accounts don't have write perms for /var, same is true for Ubuntu.
     sudo mkdir -p $TEMP_PATH
-	sudo chmod 777 $TEMP_PATH
+    sudo chmod 770 $TEMP_PATH
 else
     mkdir -p $TEMP_PATH
 fi
