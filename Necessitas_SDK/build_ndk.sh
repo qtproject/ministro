@@ -106,7 +106,7 @@ function makeInstallMinGWBits
     cd ..
 
     rm -rf android-various
-    git clone git://gitorious.org:mingw-android-various/mingw-android-various.git android-various
+    git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various
     mkdir -p android-various/make-3.82-build
     cd android-various/make-3.82-build
     ../make-3.82/build-mingw.sh
