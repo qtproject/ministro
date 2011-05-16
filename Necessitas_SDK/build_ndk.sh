@@ -54,11 +54,14 @@ function makeInstallPython
 {
     if [ "$OSTYPE" = "linux-gnu" ] ; then
         BUILD=linux
+        BUILD_NDK=linux-x86
     else
         if [ "$OSTYPE" = "msys" ] ; then
-        BUILD=mingw
+        BUILD=windows
+        BUILD_NDK=windows
         else
             BUILD=macosx
+            BUILD_NDK=darwin-x86
         fi
     fi
 
@@ -75,9 +78,8 @@ function makeInstallPython
         PYTHONVER=$PWD/install-python-$BUILD
         # If successful, the build is packaged into /usr/ndk-build/python-mingw.7z
         cp ../python-${BUILD}.7z $REPO_SRC_PATH/
+        cd ..
     fi
-
-    cd ..
 }
 
 function makeInstallMinGWBits
@@ -163,21 +165,43 @@ function makeNDK
     NDK=`pwd`/ndk
     ANDROID_NDK_ROOT=$NDK
 
-    if [ "$OSTYPE" = "msys" ]; then
-        $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-windows-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
+
+    if [ ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 -o ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
+        $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
     else
-        if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
-            $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-darwin-x86-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
-        else
-            $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-linux-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
-        fi
+        echo "Skipping NDK build, already done."
     fi
+}
+
+function mixPythonWithNDK
+{
+    if [ ! -f $REPO_SRC_PATH/python-${BUILD}.7z ]; then
+       echo "Failed to find python, $REPO_SRC_PATH/python-${BUILD}.7z"
+    fi
+    if [ ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 ]; then
+       echo "Failed to find gdbserver, $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2"
+    fi
+    if [ ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
+       echo "Failed to find toolchain, arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2"
+    fi
+    rm -rf /tmp/android-ndk-r5b-${BUILD}
+    mkdir -p /tmp/android-ndk-r5b-${BUILD}
+    pushd /tmp/android-ndk-r5b-${BUILD}
+    tar -jxvf $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
+    tar -jxvf $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2
+    pushd toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
+    7za x $REPO_SRC_PATH/python-${BUILD}.7z
+    popd
+    7za a -mx9 android-ndk-r5b-gdb-7.2-${BUILD}.7z toolchains
+    popd
 }
 
 if [ "$OSTYPE" = "msys" ] ; then
      makeInstallMinGWBits
 fi
+
 makeInstallPython
 makeNDK
+mixPythonWithNDK
 
 popd
