@@ -28,7 +28,7 @@ if [ "$OSTYPE" = "msys" ]; then
 fi
 
 TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
-if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" -o "$OSTYPE" = "linux-gnu" ]; then
+if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
     # On Mac OS X, user accounts don't have write perms for /var, same is true for Ubuntu.
     sudo mkdir -p $TEMP_PATH
     sudo chmod 777 $TEMP_PATH
@@ -180,7 +180,7 @@ function prepareHostQt
     STATIC_QT_PATH=$PWD
     if [ ! -f all_done ]
     then
-	rm -fr *
+        rm -fr *
         ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -developer-build -static -no-webkit -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -release -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         doMake "Can't compile static $HOST_QT_VERSION" "all done"
     fi
@@ -438,7 +438,7 @@ function prepareGDB
             HOST=i386-linux-gnu
             export CC="gcc -m32"
             export CXX="g++ -m32"
-			PYCFGDIR=$install_dir/lib/python$pyversion/config
+            PYCFGDIR=$install_dir/lib/python$pyversion/config
         else
             HOST_EXE=.exe
             HOST=i686-pc-mingw32
@@ -448,7 +448,7 @@ function prepareGDB
             LIBCFGDIR=$install_dir/$PREFIX/bin/Lib/config
             export PATH=.:$PATH
         fi
-		
+
         if [ "$USINGMAPYTHON" = "1" ] ; then
             autoconf
             touch Include/Python-ast.h
@@ -476,19 +476,17 @@ function prepareGDB
             cp install-sh  $PYCFGDIR
             cp Modules/Setup $PYCFGDIR
             cp Modules/Setup.config $PYCFGDIR
+            find $PYCFGDIR -name "*.a" | xargs rm -fr
+            find $PYCFGDIR -name "*.lib" | xargs rm -fr
         fi
-        find $PYCFGDIR -name "*.a" | xargs rm -fr
-        find $PYCFGDIR -name "*.lib" | xargs rm -fr
+
         cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
+        mkdir -p $target_dir/python/include/python$pyversion
         cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
         cp -a $install_dir/bin/python$pyversion$EXE_EXT $target_dir/
         if [ "$OSTYPE" = "msys" ] ; then
             cp -fr $install_dir/bin/Lib $target_dir/
         fi
-        cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
-        mkdir -p $target_dir/python/include/python$pyversion
-        cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
-        cp -a $install_dir/bin/python$pyversion$EXE_EXT $target_dir/
         strip -s $target_dir/python$pyversion$EXE_EXT
         popd
         export CC=$OLDCC
