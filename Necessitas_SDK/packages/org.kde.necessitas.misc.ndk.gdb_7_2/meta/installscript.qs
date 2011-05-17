@@ -26,9 +26,11 @@ Component.prototype.createOperations = function()
 
     var gdbPath = "@TargetDir@/gdb-7.2/gdb";
     var gdbserverPath = "@TargetDir@/gdbserver-7.2/gdbserver";
+    var pythonPath="@TargetDir@/gdb-7.2/python2.7"
     if (installer.value("os") == "win")
     {
         gdbPath+=".exe";
+        pythonPath+=".exe";
     }
 
     component.addOperation( "SetQtCreatorValue",
@@ -36,9 +38,20 @@ Component.prototype.createOperations = function()
                             "AndroidConfigurations",
                             "GdbLocation",
                             gdbPath );
+
     component.addOperation( "SetQtCreatorValue",
                             "@TargetDir@",
                             "AndroidConfigurations",
                             "GdbserverLocation",
                             gdbserverPath );
+
+    component.addOperation( "EnvironmentVariable",
+                            "PYTHONHOME",
+                            "@TargetDir@/gdb-7.2/python" );
+
+    // Compile python sources
+    component.addOperation( "Execute",
+                            pythonPath,
+                            "-OO", "@TargetDir@/gdb-7.2/python/lib/python2.7/compileall.py",
+                            "-f", "@TargetDir@/gdb-7.2/python/lib" );
 }
