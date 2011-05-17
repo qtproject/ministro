@@ -289,7 +289,7 @@ function makeInstallMinGWBits
     downloadIfNotExists PDCurses-3.4.tar.gz http://downloads.sourceforge.net/pdcurses/pdcurses/3.4/PDCurses-3.4.tar.gz
     rm -rf PDCurses-3.4
     tar -xvzf PDCurses-3.4.tar.gz
-    cd PDCurses-3.4/win32
+    pushd PDCurses-3.4/win32
     sed '90s/-copy/-cp/' mingwin32.mak > mingwin32-fixed.mak
     make -f mingwin32-fixed.mak WIDE=Y UTF8=Y DLL=N
     mkdir -p $install_dir/lib
@@ -299,26 +299,27 @@ function makeInstallMinGWBits
     cp pdcurses.a $install_dir/lib/libpdcurses.a
     cp ../curses.h $install_dir/include
     cp ../panel.h $install_dir/include
-    cd ../..
+    popd
 
     downloadIfNotExists readline-6.2.tar.gz http://ftp.gnu.org/pub/gnu/readline/readline-6.2.tar.gz
     rm -rf readline-6.2
     tar -xvzf readline-6.2.tar.gz
-    cd readline-6.2
-    CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses --enable-multibyte --prefix=/  CFLAGS=-O2
+    pushd readline-6.2
+    CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses --enable-multibyte --prefix=  CFLAGS=-O2
     make && make DESTDIR=$install_dir install
-    cd ..
+    popd
 
     rm -rf android-various
     git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various
     mkdir -p android-various/make-3.82-build
-    cd android-various/make-3.82-build
+    pushd android-various/make-3.82-build
     ../make-3.82/build-mingw.sh
     cp make.exe $REPO_SRC_PATH/
-    cd ../..
-    cd android-various/android-sdk
+    popd
+    pushd android-various/android-sdk
     gcc -Wl,-subsystem,windows -Wno-write-strings android.cpp -static-libgcc -s -O3 -o android.exe
     cp android.exe $REPO_SRC_PATH/
+    popd
 }
 
 function perpareNDKs
@@ -409,7 +410,7 @@ function prepareGDB
     then
         tar xzvf expat-2.0.1.tar.gz
         pushd expat-2.0.1
-            ./configure --disable-shared -prefix=/ && make -j$JOBS && make DESTDIR=$install_dir install || error_msg "Can't compile expat library"
+            ./configure --disable-shared --enable-static -prefix=/ && make -j$JOBS && make DESTDIR=$install_dir install || error_msg "Can't compile expat library"
         popd
     fi
 
@@ -444,8 +445,7 @@ function prepareGDB
             HOST=i686-pc-mingw32
             export CC=gcc.exe
             export CXX=g++.exe
-            LIBSRCDIR=./build/lib.mingw-2.7
-            LIBCFGDIR=$install_dir/$PREFIX/bin/Lib/config
+            PYCFGDIR=$install_dir/$PREFIX/bin/Lib/config
             export PATH=.:$PATH
         fi
 
@@ -476,8 +476,6 @@ function prepareGDB
             cp install-sh  $PYCFGDIR
             cp Modules/Setup $PYCFGDIR
             cp Modules/Setup.config $PYCFGDIR
-            find $PYCFGDIR -name "*.a" | xargs rm -fr
-            find $PYCFGDIR -name "*.lib" | xargs rm -fr
         fi
 
         cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
@@ -507,9 +505,9 @@ function prepareGDB
         OLDPATH=$PATH
         export PATH=$install_dir/bin/:$PATH
         ../gdb-7.2.50.20110211/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=no --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
-        make -j$JBBS
-        cp -a gdb/gdb $target_dir/
-        strip -s $target_dir/gdb
+        doMake "Can't compile android gdb 7.2" "all done"
+        cp -a gdb/gdb$EXE_EXT $target_dir/
+        strip -s $target_dir/gdb$EXE_EXT
         export PATH=$OLDPATH
         popd
     fi
@@ -553,7 +551,7 @@ function prepareGDBServer
     rm -f android-sysroot/usr/lib/libthread_db*
     rm -f android-sysroot/usr/include/thread_db.h
 
-    TOOLCHAIN_PREFIX=$TEMP_PATH/android-ndk-r5b/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin/arm-linux-androideabi
+    TOOLCHAIN_PREFIX=$TEMP_PATH/android-ndk-r5b/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi$EXE_EXT
 
     OLD_CC="$CC"
     OLD_CFLAGS="$CFLAGS"
