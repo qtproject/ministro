@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<Package>
+    <DisplayName>Android custom gdb-7.2</DisplayName>
+    <Description>Custom GDB/GDBServer with python capabilities used to replace Google's very old gdb</Description>
+    <Version>7.2.50.20110211</Version>
+    <ReleaseDate>2011-04-09</ReleaseDate>
+    <Name>org.kde.necessitas.misc.ndk.gdb_7_2</Name>
+    <Script>installscript.qs</Script>
+    <InstallPriority>99999</InstallPriority>
+    <SortingPriority>95</SortingPriority>
+    <ForcedInstallation>true</ForcedInstallation>
+</Package>

@@ -21,20 +21,15 @@
 
 
 REPO_SRC_PATH=$PWD
-TEMP_PATH_PREFIX=/var
+TEMP_PATH_PREFIX=/tmp
 
 if [ "$OSTYPE" = "msys" ]; then
     TEMP_PATH_PREFIX=/usr
 fi
 
 TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
-if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" -o "$OSTYPE" = "linux-gnu" ]; then
-    # On Mac OS X, user accounts don't have write perms for /var, same is true for Ubuntu.
-    sudo mkdir -p $TEMP_PATH
-    sudo chmod 777 $TEMP_PATH
-else
-    mkdir -p $TEMP_PATH
-fi
+
+mkdir -p $TEMP_PATH
 
 pushd $TEMP_PATH
 
@@ -70,7 +65,8 @@ else
         HOST_CFG_OPTIONS=" -platform linux-g++ "
         HOST_TAG=linux-x86
         HOST_TAG_NDK=linux-x86
-        JOBS=4
+        JOBS=`cat /proc/cpuinfo | grep processor | wc -l`
+        JOBS=`expr $JOBS + 2`
     fi
 fi
 
@@ -313,115 +309,8 @@ function makeInstallMinGWBits
     cp make.exe $REPO_SRC_PATH/
     cd ../..
     cd android-various/android-sdk
-    gcc -Wl,-subsystem,windows -Wno-write-strings android.cpp -static-libgcc -s -O3 -o android.exe 
+    gcc -Wl,-subsystem,windows -Wno-write-strings android.cpp -static-libgcc -s -O3 -o android.exe
     cp android.exe $REPO_SRC_PATH/
-}
-
-function prepareGDB
-{
-    mkdir gdb-build
-    pushd gdb-build
-    pyversion=2.7
-    pyfullversion=2.7.1
-    install_dir=$PWD/install
-    target_dir=$PWD/gdb-7.2.x
-
-    downloadIfNotExists expat-2.0.1.tar.gz http://downloads.sourceforge.net/sourceforge/expat/expat-2.0.1.tar.gz || error_msg "Can't download expat library"
-    if [ ! -d expat-2.0.1 ]
-    then
-        tar xzvf expat-2.0.1.tar.gz
-        pushd expat-2.0.1
-            ./configure --disable-shared -prefix=/ && make -j$JOBS && make DESTDIR=$install_dir install || error_msg "Can't compile expat library"
-        popd
-    fi
-
-#        downloadIfNotExists Python-$pyfullversion.tar.bz2 http://www.python.org/ftp/python/$pyfullversion/Python-$pyfullversion.tar.bz2 || error_msg "Can't download python library"
-#    fi
-
-    if [ ! -d Python-$pyfullversion ]
-    then
-        if [ $OSTYPE = "msys" -o $OSTYPE = "linux-gnu" ]; then
-            if [ $OSTYPE = "msys" ]; then
-                makeInstallMinGWBits $install_dir
-            fi
-            rm -rf Python-$pyfullversion
-            git clone git://gitorious.org/mingw-python/mingw-python.git Python-$pyfullversion
-        else
-            downloadIfNotExists Python-$pyfullversion.tar.bz2 http://www.python.org/ftp/python/$pyfullversion/Python-$pyfullversion.tar.bz2 || error_msg "Can't download python library"
-            tar xjvf Python-$pyfullversion.tar.bz2
-        fi
-        pushd Python-$pyfullversion
-        unset PYTHONHOME
-        OLDCC=$CC
-        OLDCXX=$CXX
-        OLDPATH=$PATH
-        if [ "$OSTYPE" = "linux-gnu" ] ; then
-            HOST=i386-linux-gnu
-            export CC="gcc -m32"
-            export CXX="g++ -m32"
-        else
-            EXE_EXT=.exe
-            HOST=i686-pc-mingw32
-            export CC=gcc.exe
-            export CXX=g++.exe
-            LIBSRCDIR=./build/lib.mingw-2.7
-            LIBDSTDIR=$PREFIX/bin/Lib
-        fi
-        export PATH=.:$PATH
-        autoconf
-        touch Include/Python-ast.h
-        touch Include/Python-ast.c
-        ./configure --prefix=$install_dir --host=$HOST && make -j$JOBS && make install || error_msg "Can't compile python library"
-        if [ "$OSTYPE" = "msys" ] ; then
-            cd pywin32-216
-            ../python$EXE_EXT setup.py build
-            cd ..
-        fi
-        mkdir -p $target_dir/python/lib
-        if [ "$OSTYPE" = "msys" ] ; then
-            mkdir -p $LIBDSTDIR/config
-            cp Modules/makesetup $LIBDSTDIR/config
-            cp Modules/config.c.in $LIBDSTDIR/config
-            cp Modules/config.c $LIBDSTDIR/config
-            cp libpython2.7.a $LIBDSTDIR/config
-            cp Makefile $LIBDSTDIR/config
-            cp Modules/python.o $LIBDSTDIR/config
-            cp Modules/Setup.local $LIBDSTDIR/config
-            cp install-sh  $LIBDSTDIR/config
-            cp Modules/Setup $LIBDSTDIR/config
-            cp Modules/Setup.config $LIBDSTDIR/config
-        fi
-        cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
-        mkdir -p $target_dir/python/include/python$pyversion
-        cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
-        popd
-        export CC=$OLDCC
-        export CXX=$OLDCXX
-        export PATH=$OLDPATH
-    fi
-
-    if [ ! -d gdb-src ]
-    then
-        export PYTHONHOME=$install_dir
-        OLDPATH=$PATH
-        export PATH=$install_dir/bin/:$PATH
-        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src
-        pushd gdb-src/gdb-7.2.50.20110211
-        ./configure --enable-initfini-array --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir
-          --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
-        make && make DESTDIR=$install_dir install 
-        export PATH=$OLDPATH
-        popd
-    fi
-
-    pushd $target_dir
-    find -name *.py[co] | xargs rm -f
-    find -name test | xargs rm -fr
-    popd
-   
-    $SDK_TOOLS_PATH/archivegen gdb-7.2.x gdb-7.2.x-${HOST_TAG}.7z
-
-    popd //gdb-build
 }
 
 function perpareNDKs
@@ -490,6 +379,190 @@ function perpareNDKs
     ANDROID_STRIP_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi-strip$EXE_EXT
     ANDROID_READELF_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi-readelf$EXE_EXT
 
+}
+
+function prepareGDB
+{
+#This function depends by perpareNDKs
+    if [ -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/gdb-7.2-${HOST_TAG}.7z ]
+    then
+        return
+    fi
+
+    mkdir gdb-build
+    pushd gdb-build
+    pyversion=2.7
+    pyfullversion=2.7.1
+    install_dir=$PWD/install
+    target_dir=$PWD/gdb-7.2
+
+    downloadIfNotExists expat-2.0.1.tar.gz http://downloads.sourceforge.net/sourceforge/expat/expat-2.0.1.tar.gz || error_msg "Can't download expat library"
+    if [ ! -d expat-2.0.1 ]
+    then
+        tar xzvf expat-2.0.1.tar.gz
+        pushd expat-2.0.1
+            ./configure --disable-shared -prefix=/ && make -j$JOBS && make DESTDIR=$install_dir install || error_msg "Can't compile expat library"
+        popd
+    fi
+
+    if [ ! -d Python-$pyfullversion ]
+    then
+        if [ $OSTYPE = "linux-gnu" ]; then
+            downloadIfNotExists Python-$pyfullversion.tar.bz2 http://www.python.org/ftp/python/$pyfullversion/Python-$pyfullversion.tar.bz2 || error_msg "Can't download python library"
+            tar xjvf Python-$pyfullversion.tar.bz2
+        else
+            if [ $OSTYPE = "msys" ]; then
+                makeInstallMinGWBits $install_dir
+            fi
+            rm -rf Python-$pyfullversion
+            git clone git://gitorious.org/mingw-python/mingw-python.git Python-$pyfullversion
+        fi
+
+        pushd Python-$pyfullversion
+        unset PYTHONHOME
+        OLDCC=$CC
+        OLDCXX=$CXX
+        OLDPATH=$PATH
+
+        if [ "$OSTYPE" = "linux-gnu" ] ; then
+             HOST=i386-linux-gnu
+            export CC="gcc -m32"
+            export CXX="g++ -m32"
+        else
+            HOST=i686-pc-mingw32
+            export CC=gcc.exe
+            export CXX=g++.exe
+            LIBSRCDIR=./build/lib.mingw-2.7
+            LIBDSTDIR=$PREFIX/bin/Lib
+            export PATH=.:$PATH
+            autoconf
+            touch Include/Python-ast.h
+            touch Include/Python-ast.c
+        fi
+
+        ./configure --host=$HOST --prefix=$install_dir && make -j$JOBS && make install || error_msg "Can't compile python library"
+        if [ "$OSTYPE" = "msys" ] ; then
+            cd pywin32-216
+            ../python$EXE_EXT setup.py build
+            cd ..
+        fi
+
+        mkdir -p $target_dir/python/lib
+
+        if [ "$OSTYPE" = "msys" ] ; then
+            mkdir -p $LIBDSTDIR/config
+            cp Modules/makesetup $LIBDSTDIR/config
+            cp Modules/config.c.in $LIBDSTDIR/config
+            cp Modules/config.c $LIBDSTDIR/config
+            cp libpython2.7.a $LIBDSTDIR/config
+            cp Makefile $LIBDSTDIR/config
+            cp Modules/python.o $LIBDSTDIR/config
+            cp Modules/Setup.local $LIBDSTDIR/config
+            cp install-sh  $LIBDSTDIR/config
+            cp Modules/Setup $LIBDSTDIR/config
+            cp Modules/Setup.config $LIBDSTDIR/config
+        fi
+        cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
+        rm -fr $target_dir/python/lib/python$pyversion/config
+#         mkdir -p $target_dir/python/include/python$pyversion
+#         cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
+        cp -a $install_dir/bin/python$pyversion$EXE_EXT $target_dir/
+        strip -s $target_dir/python$pyversion$EXE_EXT
+        popd
+        export CC=$OLDCC
+        export CXX=$OLDCXX
+        export PATH=$OLDPATH
+    fi
+
+    if [ ! -d gdb-src ]
+    then
+        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src
+    fi
+
+    if [ ! -d gdb-src/build-gdb ]
+    then
+        mkdir -p gdb-src/build-gdb
+        pushd gdb-src/build-gdb
+        export PYTHONHOME=$install_dir
+        OLDPATH=$PATH
+        export PATH=$install_dir/bin/:$PATH
+        ../gdb-7.2.50.20110211/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=no --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
+        make -j$JBBS
+        cp -a gdb/gdb $target_dir/
+        strip -s $target_dir/gdb
+        export PATH=$OLDPATH
+        popd
+    fi
+
+    pushd $target_dir
+    find -name *.py[co] | xargs rm -f
+    find -name test | xargs rm -fr
+    popd
+
+    $SDK_TOOLS_PATH/archivegen gdb-7.2 gdb-7.2-${HOST_TAG}.7z
+    mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/
+    mv gdb-7.2-${HOST_TAG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/
+
+    popd #gdb-build
+}
+
+function prepareGDBServer
+{
+    if [ -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/gdbserver-7.2.7z ]
+    then
+        return
+    fi
+
+    export NDK_DIR=$TEMP_PATH/android-ndk-r5b
+
+    mkdir gdb-build
+    pushd gdb-build
+
+    if [ ! -d gdb-src ]
+    then
+        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src
+    fi
+
+    mkdir -p gdb-src/build-gdbserver
+    pushd gdb-src/build-gdbserver
+
+    mkdir android-sysroot
+    cp -rL $TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm/* android-sysroot/ || error_msg "Can't copy android sysroot"
+
+    rm -f android-sysroot/usr/lib/libthread_db*
+    rm -f android-sysroot/usr/include/thread_db.h
+
+    TOOLCHAIN_PREFIX=$TEMP_PATH/android-ndk-r5b/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin/arm-linux-androideabi
+
+    OLD_CC="$CC"
+    OLD_CFLAGS="$CFLAGS"
+    OLD_LDFLAGS="$LDFLAGS"
+
+    export CC="$TOOLCHAIN_PREFIX-gcc --sysroot=$PWD/android-sysroot"
+    export CFLAGS="-O2 -nostdinc -nostdlib -D__ANDROID__ -DANDROID -DSTDC_HEADERS -I$TEMP_PATH/android-ndk-r5b/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/lib/gcc/arm-linux-androideabi/4.4.3/include -I$PWD/android-sysroot/usr/include -fno-short-enums"
+    export LDFLAGS="-static -Wl,-z,nocopyreloc -Wl,--no-undefined $PWD/android-sysroot/usr/lib/crtbegin_static.o -lc -lm -lgcc -lc $PWD/android-sysroot/usr/lib/crtend_android.o"
+
+    LIBTHREAD_DB_DIR=$TEMP_PATH/android-ndk-r5b/sources/android/libthread_db/gdb-7.1.x/
+    cp $LIBTHREAD_DB_DIR/thread_db.h android-sysroot/usr/include/
+    $TOOLCHAIN_PREFIX-gcc --sysroot=$PWD/android-sysroot -o $PWD/android-sysroot/usr/lib/libthread_db.a -c $LIBTHREAD_DB_DIR/libthread_db.c || error_msg "Can't compile android threaddb"
+
+    ../gdb-7.2.50.20110211/gdb/gdbserver/configure --host=arm-eabi-linux --with-libthread-db=$PWD/android-sysroot/usr/lib/libthread_db.a || error_msg "Can't configure gdbserver"
+    make -j$JBBS || error_msg "Can't compile gdbserver"
+
+    export CC="$OLD_CC"
+    export CFLAGS="$OLD_CFLAGS"
+    export LDFLAGS="$OLD_LDFLAGS"
+
+    mkdir gdbserver-7.2
+    $TOOLCHAIN_PREFIX-objcopy --strip-unneeded gdbserver $PWD/gdbserver-7.2/gdbserver
+
+    $SDK_TOOLS_PATH/archivegen gdbserver-7.2 gdbserver-7.2.7z
+    mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/
+    mv gdbserver-7.2.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/
+
+    popd #gdb-src/build-gdbserver
+
+    popd #gdb-build
 }
 
 function repackSDK
@@ -961,18 +1034,15 @@ SDK_TOOLS_PATH=$PWD/necessitas-installer-framework/installerbuilder/bin
 
 prepareHostQt
 perpareSdkInstallerTools
-#prepareGDB
 perpareNDKs
+prepareGDB
+prepareGDBServer
 perpareSDKs
 perpareNecessitasQtCreator
 perpareNecessitasQt
 perpareNecessitasQtWebkit
 perpareNecessitasQtMobility
-# Want to be able to do this on all hosts.
-#if [ "$OSTYPE" = "linux-gnu" ]; then
-    prepareMinistroRepository
-#    echo $OSTYPE
-#fi
+prepareMinistroRepository
 patchPackages
 prepareSDKBinary
 prepareSDKRepository
