@@ -221,6 +221,9 @@ function perpareSdkInstallerTools
         doMake "Can't compile necessitas-installer-framework" "all done"
     fi
     popd
+    pushd $SDK_TOOLS_PATH
+    strip -s *
+    popd
 }
 
 
@@ -516,6 +519,7 @@ function prepareGDB
     pushd $target_dir
     find -name *.py[co] | xargs rm -f
     find -name test | xargs rm -fr
+    find -name tests | xargs rm -fr
     popd
 
     $SDK_TOOLS_PATH/archivegen gdb-7.2 gdb-7.2-${HOST_TAG}.7z
@@ -1061,10 +1065,10 @@ perpareNecessitasQtCreator
 perpareNecessitasQt
 perpareNecessitasQtWebkit
 perpareNecessitasQtMobility
-prepareMinistroRepository
 patchPackages
 prepareSDKBinary
 prepareSDKRepository
 revertPatchPackages
+prepareMinistroRepository
 
 popd
