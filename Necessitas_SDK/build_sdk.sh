@@ -28,8 +28,13 @@ if [ "$OSTYPE" = "msys" ]; then
 fi
 
 TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
-
-mkdir -p $TEMP_PATH
+if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" -o "$OSTYPE" = "linux-gnu" ]; then
+    # On Mac OS X, user accounts don't have write perms for /var, same is true for Ubuntu.
+    sudo mkdir -p $TEMP_PATH
+    sudo chmod 777 $TEMP_PATH
+else
+    mkdir -p $TEMP_PATH
+fi
 
 pushd $TEMP_PATH
 
@@ -410,12 +415,14 @@ function prepareGDB
         if [ $OSTYPE = "linux-gnu" ]; then
             downloadIfNotExists Python-$pyfullversion.tar.bz2 http://www.python.org/ftp/python/$pyfullversion/Python-$pyfullversion.tar.bz2 || error_msg "Can't download python library"
             tar xjvf Python-$pyfullversion.tar.bz2
+            USINGMAPYTHON=0
         else
             if [ $OSTYPE = "msys" ]; then
                 makeInstallMinGWBits $install_dir
             fi
             rm -rf Python-$pyfullversion
             git clone git://gitorious.org/mingw-python/mingw-python.git Python-$pyfullversion
+            USINGMAPYTHON=1
         fi
 
         pushd Python-$pyfullversion
@@ -425,16 +432,21 @@ function prepareGDB
         OLDPATH=$PATH
 
         if [ "$OSTYPE" = "linux-gnu" ] ; then
-             HOST=i386-linux-gnu
+            HOST=i386-linux-gnu
             export CC="gcc -m32"
             export CXX="g++ -m32"
+			PYCFGDIR=$install_dir/lib/python$pyversion/config
         else
+            HOST_EXE=.exe
             HOST=i686-pc-mingw32
             export CC=gcc.exe
             export CXX=g++.exe
             LIBSRCDIR=./build/lib.mingw-2.7
-            LIBDSTDIR=$PREFIX/bin/Lib
+            LIBCFGDIR=$install_dir/$PREFIX/bin/Lib/config
             export PATH=.:$PATH
+        fi
+		
+        if [ "$USINGMAPYTHON" = "1" ] ; then
             autoconf
             touch Include/Python-ast.h
             touch Include/Python-ast.c
@@ -450,22 +462,29 @@ function prepareGDB
         mkdir -p $target_dir/python/lib
 
         if [ "$OSTYPE" = "msys" ] ; then
-            mkdir -p $LIBDSTDIR/config
-            cp Modules/makesetup $LIBDSTDIR/config
-            cp Modules/config.c.in $LIBDSTDIR/config
-            cp Modules/config.c $LIBDSTDIR/config
-            cp libpython2.7.a $LIBDSTDIR/config
-            cp Makefile $LIBDSTDIR/config
-            cp Modules/python.o $LIBDSTDIR/config
-            cp Modules/Setup.local $LIBDSTDIR/config
-            cp install-sh  $LIBDSTDIR/config
-            cp Modules/Setup $LIBDSTDIR/config
-            cp Modules/Setup.config $LIBDSTDIR/config
+            mkdir -p $PYCFGDIR
+            cp Modules/makesetup $PYCFGDIR
+            cp Modules/config.c.in $PYCFGDIR
+            cp Modules/config.c $PYCFGDIR
+            cp libpython2.7.a $PYCFGDIR
+            cp Makefile $PYCFGDIR
+            cp Modules/python.o $PYCFGDIR
+            cp Modules/Setup.local $PYCFGDIR
+            cp install-sh  $PYCFGDIR
+            cp Modules/Setup $PYCFGDIR
+            cp Modules/Setup.config $PYCFGDIR
+        fi
+        find $PYCFGDIR -name "*.a" | xargs rm -fr
+        find $PYCFGDIR -name "*.lib" | xargs rm -fr
+        cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
+        cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
+        cp -a $install_dir/bin/python$pyversion$EXE_EXT $target_dir/
+        if [ "$OSTYPE" = "msys" ] ; then
+            cp -fr $install_dir/bin/Lib $target_dir/
         fi
         cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
-        rm -fr $target_dir/python/lib/python$pyversion/config
-#         mkdir -p $target_dir/python/include/python$pyversion
-#         cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
+        mkdir -p $target_dir/python/include/python$pyversion
+        cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
         cp -a $install_dir/bin/python$pyversion$EXE_EXT $target_dir/
         strip -s $target_dir/python$pyversion$EXE_EXT
         popd
