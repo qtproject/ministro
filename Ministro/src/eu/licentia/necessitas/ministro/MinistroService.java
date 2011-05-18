@@ -42,6 +42,25 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 public class MinistroService extends Service {
+    private static final String MINISTRO_CHECK_UPDATES_KEY="LASTCHECK";
+    private static final String MINISTRO_REPOSITORY_KEY="REPOSITORY";
+    private static final String MINISTRO_DEFAULT_REPOSITORY="stable";
+
+    public static String getRepository(Context c)
+    {
+        SharedPreferences preferences=c.getSharedPreferences("Ministro", MODE_PRIVATE);
+        return preferences.getString(MINISTRO_REPOSITORY_KEY,MINISTRO_DEFAULT_REPOSITORY);
+    }
+
+    public static void setRepository(Context c, String value)
+    {
+        SharedPreferences preferences=c.getSharedPreferences("Ministro", MODE_PRIVATE);
+        SharedPreferences.Editor editor= preferences.edit();
+        editor.putString(MINISTRO_REPOSITORY_KEY,value);
+        editor.putLong(MINISTRO_CHECK_UPDATES_KEY,0);
+        editor.commit();
+    }
+
     // used to check Ministro Service compatibility
     private static final int MINISTRO_MIN_API_LEVEL=1;
     private static final int MINISTRO_MAX_API_LEVEL=1;
@@ -83,10 +102,9 @@ public class MinistroService extends Service {
 
     class CheckForUpdates extends AsyncTask<Void, Void, Void>
     {
-
         @Override
         protected void onPreExecute() {
-            if (m_version<MinistroActivity.downloadVersionXmlFile(true))
+            if (m_version<MinistroActivity.downloadVersionXmlFile(MinistroService.this, true))
             {
                 NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -230,12 +248,12 @@ public class MinistroService extends Service {
         m_versionXmlFile = getFilesDir().getAbsolutePath()+"/version.xml";
         m_qtLibsRootPath = getFilesDir().getAbsolutePath()+"/qt/";
         SharedPreferences preferences=getSharedPreferences("Ministro", MODE_PRIVATE);
-        long lastCheck = preferences.getLong("LASTCHECK",0);
+        long lastCheck = preferences.getLong(MINISTRO_CHECK_UPDATES_KEY,0);
         if (System.currentTimeMillis()-lastCheck>24l*3600*100) // check once/day
         {
             refreshLibraries(true);
             SharedPreferences.Editor editor= preferences.edit();
-            editor.putLong("LASTCHECK",System.currentTimeMillis());
+            editor.putLong(MINISTRO_CHECK_UPDATES_KEY,System.currentTimeMillis());
             editor.commit();
             new CheckForUpdates().execute((Void[])null);
         }

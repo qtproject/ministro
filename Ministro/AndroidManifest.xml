@@ -8,8 +8,15 @@
                   android:label="@string/app_name"
                    android:configChanges="orientation|locale|fontScale|keyboard|keyboardHidden" >
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.DEFAULT" />
+                <category android:name="android.intent.category.VIEW" />
+            </intent-filter>
+        </activity>
+        <activity android:name="MinistroConfigActivity"
+                  android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="eu.licentia.necessitas.ministro.MinistroConfigActivity" />
+                <category android:name="android.intent.category.VIEW" />
             </intent-filter>
         </activity>
         <service android:name=".MinistroService">

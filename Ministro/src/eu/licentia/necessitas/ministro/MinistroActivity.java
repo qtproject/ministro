@@ -62,8 +62,7 @@ import android.os.IBinder;
 public class MinistroActivity extends Activity {
 
     public native static int nativeChmode(String filepath, int mode);
-
-    private static final String DOMAIN_NAME="http://files.kde.org/necessitas";
+    private static final String DOMAIN_NAME="http://files.kde.org/necessitas/ministro/";
 
     private String[] m_modules;
     private int m_id=-1;
@@ -117,17 +116,17 @@ public class MinistroActivity extends Activity {
         finish();
     }
 
-    private static URL getVersionUrl() throws MalformedURLException
+    private static URL getVersionUrl(Context c) throws MalformedURLException
     {
-        return new URL(DOMAIN_NAME+"/qt/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/versions.xml");
+        return new URL(DOMAIN_NAME+MinistroService.getRepository(c)+"/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/versions.xml");
     }
 
-    private static URL getLibsXmlUrl(double version) throws MalformedURLException
+    private static URL getLibsXmlUrl(Context c, double version) throws MalformedURLException
     {
-        return new URL(DOMAIN_NAME+"/qt/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/libs-"+version+".xml");
+        return new URL(DOMAIN_NAME+MinistroService.getRepository(c)+"/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/libs-"+version+".xml");
     }
 
-    public static double downloadVersionXmlFile(boolean checkOnly)
+    public static double downloadVersionXmlFile(Context c, boolean checkOnly)
     {
         try
         {
@@ -135,7 +134,7 @@ public class MinistroActivity extends Activity {
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document dom = null;
             Element root = null;
-            URLConnection connection = getVersionUrl().openConnection();
+            URLConnection connection = getVersionUrl(c).openConnection();
             dom = builder.parse(connection.getInputStream());
             root = dom.getDocumentElement();
             root.normalize();
@@ -146,7 +145,7 @@ public class MinistroActivity extends Activity {
             if (checkOnly)
                 return version;
 
-            connection = getLibsXmlUrl(version).openConnection();
+            connection = getLibsXmlUrl(c, version).openConnection();
             connection.setRequestProperty("Accept-Encoding", "gzip,deflate");
             File file= new File(MinistroService.instance().getVersionXmlFile());
             file.delete();
@@ -352,7 +351,7 @@ public class MinistroActivity extends Activity {
                 Element root = null;
 
                 if (update[0] || MinistroService.instance().getVersion()<0)
-                    version = downloadVersionXmlFile(false);
+                    version = downloadVersionXmlFile(MinistroActivity.this, false);
                 else
                     version = MinistroService.instance().getVersion();
 

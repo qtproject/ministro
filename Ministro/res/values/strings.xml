@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Choose a repository</string>
 </resources>
