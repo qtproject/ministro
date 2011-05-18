@@ -286,6 +286,44 @@ function perpareNecessitasQtCreator
 
 function makeInstallMinGWBits
 {
+    mkdir mingw-bits
+    pushd mingw-bits
+    # Tools. Maybe move these bits to setup_mingw_for_necessitas_build.sh?
+    downloadIfNotExists autoconf-2.68.tar.bz2 http://ftp.gnu.org/gnu/autoconf/autoconf-2.68.tar.bz2
+    rm -rf autoconf-2.68
+    tar -xvjf autoconf-2.68.tar.bz2
+    pushd autoconf-2.68
+    ./configure -prefix=/usr/local
+    make
+    make install
+    popd
+
+    downloadIfNotExists automake-1.10.3.tar.bz2 http://ftp.gnu.org/gnu/automake/automake-1.10.3.tar.bz2
+    rm -rf automake-1.10.3
+    tar -xvjf automake-1.10.3.tar.bz2
+    pushd automake-1.10.3
+    ./configure -prefix=/usr/local
+    make
+    make install
+    popd
+
+    downloadIfNotExists libtool-2.4.tar.gz http://ftp.gnu.org/gnu/libtool/libtool-2.4.tar.gz
+    rm -rf libtool-2.4
+    tar -xvzf libtool-2.4.tar.gz
+    pushd libtool-2.4
+    ./configure -prefix=/usr/local
+    make
+    make install 
+    popd
+
+    downloadIfNotExists libiconv-1.13.tar.gz http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.tar.gz
+    rm -rf libiconv-1.13
+    tar -xvzf libiconv-1.13.tar.gz
+    pushd libiconv-1.13
+    CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses --enable-multibyte --prefix=  CFLAGS=-O2
+    make && make DESTDIR=$install_dir install
+    popd
+
     downloadIfNotExists PDCurses-3.4.tar.gz http://downloads.sourceforge.net/pdcurses/pdcurses/3.4/PDCurses-3.4.tar.gz
     rm -rf PDCurses-3.4
     tar -xvzf PDCurses-3.4.tar.gz
@@ -319,6 +357,7 @@ function makeInstallMinGWBits
     pushd android-various/android-sdk
     gcc -Wl,-subsystem,windows -Wno-write-strings android.cpp -static-libgcc -s -O3 -o android.exe
     cp android.exe $REPO_SRC_PATH/
+    popd
     popd
 }
 
@@ -469,13 +508,16 @@ function prepareGDB
             cp Modules/makesetup $PYCFGDIR
             cp Modules/config.c.in $PYCFGDIR
             cp Modules/config.c $PYCFGDIR
-            cp libpython2.7.a $PYCFGDIR
+            cp libpython$pyversion.a $PYCFGDIR
             cp Makefile $PYCFGDIR
             cp Modules/python.o $PYCFGDIR
             cp Modules/Setup.local $PYCFGDIR
             cp install-sh  $PYCFGDIR
             cp Modules/Setup $PYCFGDIR
             cp Modules/Setup.config $PYCFGDIR
+            cp libpython$pyversion.a $install_dir/lib/python$pyversion
+            cp libpython$pyversion.dll $install_dir/lib/python$pyversion
+            cp libpython$pyversion.dll $target_dir/
         fi
 
         cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
@@ -551,7 +593,7 @@ function prepareGDBServer
     rm -f android-sysroot/usr/lib/libthread_db*
     rm -f android-sysroot/usr/include/thread_db.h
 
-    TOOLCHAIN_PREFIX=$TEMP_PATH/android-ndk-r5b/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi$EXE_EXT
+    TOOLCHAIN_PREFIX=$TEMP_PATH/android-ndk-r5b/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi
 
     OLD_CC="$CC"
     OLD_CFLAGS="$CFLAGS"
@@ -563,8 +605,7 @@ function prepareGDBServer
 
     LIBTHREAD_DB_DIR=$TEMP_PATH/android-ndk-r5b/sources/android/libthread_db/gdb-7.1.x/
     cp $LIBTHREAD_DB_DIR/thread_db.h android-sysroot/usr/include/
-    $TOOLCHAIN_PREFIX-gcc --sysroot=$PWD/android-sysroot -o $PWD/android-sysroot/usr/lib/libthread_db.a -c $LIBTHREAD_DB_DIR/libthread_db.c || error_msg "Can't compile android threaddb"
-
+    $TOOLCHAIN_PREFIX-gcc$EXE_EXT --sysroot=$PWD/android-sysroot -o $PWD/android-sysroot/usr/lib/libthread_db.a -c $LIBTHREAD_DB_DIR/libthread_db.c || error_msg "Can't compile android threaddb"
     ../gdb-7.2.50.20110211/gdb/gdbserver/configure --host=arm-eabi-linux --with-libthread-db=$PWD/android-sysroot/usr/lib/libthread_db.a || error_msg "Can't configure gdbserver"
     make -j$JBBS || error_msg "Can't compile gdbserver"
 
