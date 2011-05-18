@@ -502,6 +502,7 @@ function prepareGDB
         fi
 
         mkdir -p $target_dir/python/lib
+        cp LICENCE $target_dir/PYTHON-LICENCE
 
         if [ "$OSTYPE" = "msys" ] ; then
             mkdir -p $PYCFGDIR
@@ -549,6 +550,8 @@ function prepareGDB
         ../gdb-7.2.50.20110211/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=no --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
         doMake "Can't compile android gdb 7.2" "all done"
         cp -a gdb/gdb$EXE_EXT $target_dir/
+        # Fix building gdb-tui, it used to work and was handy to have.
+        # cp -a gdb/gdb-tui$EXE_EXT $target_dir/
         strip -s $target_dir/gdb$EXE_EXT
         export PATH=$OLDPATH
         popd
@@ -600,7 +603,7 @@ function prepareGDBServer
     OLD_LDFLAGS="$LDFLAGS"
 
     export CC="$TOOLCHAIN_PREFIX-gcc --sysroot=$PWD/android-sysroot"
-    export CFLAGS="-O2 -nostdinc -nostdlib -D__ANDROID__ -DANDROID -DSTDC_HEADERS -I$TEMP_PATH/android-ndk-r5b/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/lib/gcc/arm-linux-androideabi/4.4.3/include -I$PWD/android-sysroot/usr/include -fno-short-enums"
+    export CFLAGS="-O2 -nostdlib -D__ANDROID__ -DANDROID -DSTDC_HEADERS -I$TEMP_PATH/android-ndk-r5b/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/lib/gcc/arm-linux-androideabi/4.4.3/include -I$PWD/android-sysroot/usr/include -fno-short-enums"
     export LDFLAGS="-static -Wl,-z,nocopyreloc -Wl,--no-undefined $PWD/android-sysroot/usr/lib/crtbegin_static.o -lc -lm -lgcc -lc $PWD/android-sysroot/usr/lib/crtend_android.o"
 
     LIBTHREAD_DB_DIR=$TEMP_PATH/android-ndk-r5b/sources/android/libthread_db/gdb-7.1.x/
