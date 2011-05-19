@@ -247,13 +247,22 @@ function perpareNecessitasQtCreator
         rm -fr QtCreator
         export INSTALL_ROOT=$PWD/QtCreator
         make install
-        mkdir -p $PWD/QtCreator/Qt/lib
         mkdir -p $PWD/QtCreator/Qt/imports
-        cp -a $SHARED_QT_PATH/lib/* $PWD/QtCreator/Qt/lib/
-        rm -fr $PWD/QtCreator/Qt/lib/pkgconfig
-        find . $PWD/QtCreator/Qt -name *.la | xargs rm -fr
-        find . $PWD/QtCreator/Qt -name *.prl | xargs rm -fr
-        cp -a $SHARED_QT_PATH/imports/* $PWD/QtCreator/Qt/imports/
+        if [ "$OSTYPE" = "msys" ]; then
+            mkdir -p $PWD/QtCreator/bin
+            cp -rf lib/qtcreator/* $PWD/QtCreator/bin/
+            cp -a /usr/bin/libgcc_s_dw2-1.dll $PWD/QtCreator/bin/
+            cp -a /usr/bin/libstdc++-6.dll $PWD/QtCreator/bin/
+            QT_LIB_DEST=$PWD/QtCreator/bin/
+        else
+            mkdir -p $PWD/QtCreator/Qt/lib
+            QT_LIB_DEST=$PWD/QtCreator/Qt/lib/
+		fi
+        cp -a $SHARED_QT_PATH/lib/* $QT_LIB_DEST
+        rm -fr $QT_LIB_DEST/pkgconfig
+        find . $QT_LIB_DEST -name *.la | xargs rm -fr
+        find . $QT_LIB_DEST -name *.prl | xargs rm -fr
+        cp -a $SHARED_QT_PATH/imports/* ${QT_LIB_DEST}../imports
         cp -a bin/necessitas$EXE_EXT $PWD/QtCreator/bin/
         mkdir $PWD/QtCreator/images
         cp -a bin/necessitas*.png $PWD/QtCreator/images/
@@ -502,7 +511,7 @@ function prepareGDB
         fi
 
         mkdir -p $target_dir/python/lib
-        cp LICENCE $target_dir/PYTHON-LICENCE
+        cp LICENSE $target_dir/PYTHON-LICENSE
 
         if [ "$OSTYPE" = "msys" ] ; then
             mkdir -p $PYCFGDIR
