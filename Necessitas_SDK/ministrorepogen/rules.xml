@@ -8,6 +8,7 @@
         <version value="9" symlink="8"/>
         <version value="10" symlink="8"/>
         <version value="11" symlink="8"/>
+        <version value="12" symlink="8"/>
     </platforms>
 
     <libs excludePaths="imports;plugins" applicationParameters="-platform	android" environmentVariables="MINISTRO_SSL_CERTS_PATH=MINISTRO_PATH/qt/ssl	QT_IMPORT_PATH=MINISTRO_PATH/qt/imports	QT_PLUGIN_PATH=MINISTRO_PATH/qt/plugins">
