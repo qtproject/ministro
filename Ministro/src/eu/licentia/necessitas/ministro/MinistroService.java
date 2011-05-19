@@ -167,7 +167,7 @@ public class MinistroService extends Service {
                     {
                         Library lib= Library.getLibrary((Element)node, false);
                         File file=new File(m_qtLibsRootPath + lib.filePath);
-                        if ((file).exists())
+                        if (file.exists())
                         {
                             if (checkCrc && !Library.checkCRC(file.getAbsolutePath(), lib.sha1))
                                 file.delete();

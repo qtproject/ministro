@@ -349,13 +349,22 @@ public class MinistroActivity extends Activity {
                 DocumentBuilder builder = factory.newDocumentBuilder();
                 Document dom = null;
                 Element root = null;
-
+                double oldVersion=MinistroService.instance().getVersion();
                 if (update[0] || MinistroService.instance().getVersion()<0)
                     version = downloadVersionXmlFile(MinistroActivity.this, false);
                 else
                     version = MinistroService.instance().getVersion();
 
-                ArrayList<Library> libraries = MinistroService.instance().getAvailableLibraries();
+                ArrayList<Library> libraries;
+                if (update[0])
+                {
+                    if (oldVersion!=version)
+                        libraries = MinistroService.instance().getDownloadedLibraries();
+                    else 
+                        return version;
+                }
+                else
+                    libraries = MinistroService.instance().getAvailableLibraries();
                 ArrayList<String> notFoundModules = new ArrayList<String>();
                 if (m_modules!=null)
                 {
@@ -442,7 +451,7 @@ public class MinistroActivity extends Activity {
                         if (update[0])
                         { // check for updates
                             for (int j=0;j<libraries.size();j++)
-                                if (libraries.get(j).name.equals(lib.name) && !libraries.get(j).sha1.equals(lib.sha1))
+                                if (libraries.get(j).name.equals(lib.name))
                                 {
                                     newLibs.add(lib);
                                     break;
