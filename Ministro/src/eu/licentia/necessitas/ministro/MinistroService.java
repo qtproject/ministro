@@ -334,7 +334,9 @@ public class MinistroService extends Service {
     }
 
     private void startRetrieval(IMinistroCallback callback,
-		String[] modules, ArrayList<String> notFoundModules, String appName) {
+		String[] modules, ArrayList<String> notFoundModules, String appName)
+        throws RemoteException
+    {
         ActionStruct as = new ActionStruct(callback, modules, notFoundModules, appName);
         m_actions.add(as); // if not, lets start an activity to do it.
 
@@ -351,7 +353,7 @@ public class MinistroService extends Service {
         }
         catch(Exception e)
         {
-            e.printStackTrace();
+            throw (RemoteException) new RemoteException().initCause(e);
         }
     }
 
