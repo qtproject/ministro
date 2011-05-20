@@ -219,21 +219,6 @@ public class MinistroService extends Service {
             id=++m_actionId;
             callback = cb;
             modules = m;
-            Intent intent = new Intent(MinistroService.this, MinistroActivity.class);
-            intent.putExtra("id", id);
-            String[] libs =  new String[notFoundMoules.size()];
-            libs = notFoundMoules.toArray(libs);
-            intent.putExtra("modules", libs);
-            intent.putExtra("name", appName);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            try
-            {
-                MinistroService.this.startActivity(intent);
-            }
-            catch(Exception e)
-            {
-                e.printStackTrace();
-            }
         }
         public int id;
         public IMinistroCallback callback;
@@ -333,16 +318,42 @@ public class MinistroService extends Service {
         ArrayList<String> notFoundModules = new ArrayList<String>();
         ArrayList<String> libraries = new ArrayList<String>();
         Collections.addAll(libraries, modules);
-        if (MinistroService.this.checkModules(libraries, notFoundModules))
+        if (checkModules(libraries, notFoundModules))
         {
+            // All modules are available, as such the other application can be notified that it
+            // can start without problems.
             String[] libs = new String[libraries.size()];
             libs = libraries.toArray(libs);
-            callback.libs(libs, m_environmentVariables, m_applicationParams, 0, null);// if we have all modules downloaded just call back the activity client.
+            callback.libs(libs, m_environmentVariables, m_applicationParams, 0, null);
         }
         else
-            m_actions.add(new ActionStruct(callback, modules, notFoundModules, appName)); // if not, lets start an activity to do it.
+        {
+            // Starts a retrieval of the modules which are not readily accessible. 
+            startRetrieval(callback, modules, notFoundModules, appName);
+        }
     }
 
+    private void startRetrieval(IMinistroCallback callback,
+		String[] modules, ArrayList<String> notFoundModules, String appName) {
+        ActionStruct as = new ActionStruct(callback, modules, notFoundModules, appName);
+        m_actions.add(as); // if not, lets start an activity to do it.
+
+        Intent intent = new Intent(MinistroService.this, MinistroActivity.class);
+        intent.putExtra("id", as.id);
+        String[] libs = notFoundModules.toArray(new String[notFoundModules.size()]);
+        intent.putExtra("modules", libs);
+        intent.putExtra("name", appName);
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try
+        {
+            MinistroService.this.startActivity(intent);
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Checks whether a given list of libraries are readily accessible (e.g. usable by a program).
