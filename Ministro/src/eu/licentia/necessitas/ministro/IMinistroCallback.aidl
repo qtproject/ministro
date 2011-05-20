@@ -29,7 +29,12 @@ package eu.licentia.necessitas.ministro;
 
 oneway interface IMinistroCallback {
     /**
-    * This method is called back by the Ministro service
+    * This method is called by the Ministro service back into the application which
+    * implements this interface.
+    *
+    * <p>The method allows notifying the application about the result of the library
+    * lookup. In case the <code>errorCode</code> argument is 0, the called application
+    * can start without problems.</p>
     *
     * param in - libs, you have to load before load the application
     * param in - evnVars, tab separated environment variables
