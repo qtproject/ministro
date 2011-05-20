@@ -62,7 +62,7 @@ import android.os.IBinder;
 public class MinistroActivity extends Activity {
 
     public native static int nativeChmode(String filepath, int mode);
-    private static final String DOMAIN_NAME="http://files.kde.org/necessitas/ministro/";
+    private static final String DOMAIN_NAME="http://ministro.licentia.eu/ministro/";
 
     private String[] m_modules;
     private int m_id=-1;
