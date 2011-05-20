@@ -283,6 +283,7 @@ public class MinistroService extends Service {
         if (ministroApiLevel<MINISTRO_MIN_API_LEVEL || ministroApiLevel>MINISTRO_MAX_API_LEVEL)
         {
             // panic !!! Ministro service is not compatible, user should upgrade Ministro package
+        	Log.w(TAG, "Ministro cannot satisfy API version: " + ministroApiLevel);
             return;
         }
 
