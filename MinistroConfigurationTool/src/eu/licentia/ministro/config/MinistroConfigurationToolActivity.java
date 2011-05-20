@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package eu.licentia.ministro.configurator;
+package eu.licentia.ministro.config;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -29,7 +29,6 @@ public class MinistroConfigurationToolActivity extends Activity {
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         try
         {
             Intent intent = new Intent();
@@ -61,6 +60,8 @@ public class MinistroConfigurationToolActivity extends Activity {
                     finish();
                 }
             });
-            downloadDialog.show();        }
+            downloadDialog.show();
+        }
+        super.onCreate(savedInstanceState);
     }
 }
