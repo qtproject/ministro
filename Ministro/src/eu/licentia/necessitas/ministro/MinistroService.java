@@ -301,31 +301,48 @@ public class MinistroService extends Service {
             @Override
             public void checkModules(IMinistroCallback callback,
                     String[] modules, String appName, int ministroApiLevel, int necessitasApiLevel) throws RemoteException {
-
-                if (ministroApiLevel<MINISTRO_MIN_API_LEVEL || ministroApiLevel>MINISTRO_MAX_API_LEVEL)
-                {
-                    // panic !!! Ministro service is not compatible, user should upgrade Ministro package
-                    return;
-                }
-
-                // check necessitasApiLevel !!! I'm pretty sure some people will completely ignore my warning
-                // and they will deploying apps to Android Market, so let's try to give them a chance.
-
-                // this method is called by the activity client who needs modules.
-                ArrayList<String> notFoundModules = new ArrayList<String>();
-                ArrayList<String> libraries = new ArrayList<String>();
-                Collections.addAll(libraries, modules);
-                if (MinistroService.this.checkModules(libraries, notFoundModules))
-                {
-                    String[] libs = new String[libraries.size()];
-                    libs = libraries.toArray(libs);
-                    callback.libs(libs, m_environmentVariables, m_applicationParams, 0, null);// if we have all modules downloaded just call back the activity client.
-                }
-                else
-                    m_actions.add(new ActionStruct(callback, modules, notFoundModules, appName)); // if not, lets start an activity to do it.
+                checkModules(callback, modules, appName, ministroApiLevel, necessitasApiLevel);
             }
         };
     }
+
+    /**
+     * Implements the {@link IMinistro.Stub#checkModules(IMinistroCallback, String[], String, int, int)}
+     * service method.
+     * 
+     * @param callback
+     * @param modules
+     * @param appName
+     * @param ministroApiLevel
+     * @param necessitasApiLevel
+     * @throws RemoteException
+     */
+    final void checkModulesImpl(IMinistroCallback callback,
+            String[] modules, String appName, int ministroApiLevel, int necessitasApiLevel) throws RemoteException {
+
+        if (ministroApiLevel<MINISTRO_MIN_API_LEVEL || ministroApiLevel>MINISTRO_MAX_API_LEVEL)
+        {
+            // panic !!! Ministro service is not compatible, user should upgrade Ministro package
+            return;
+        }
+
+        // check necessitasApiLevel !!! I'm pretty sure some people will completely ignore my warning
+        // and they will deploying apps to Android Market, so let's try to give them a chance.
+
+        // this method is called by the activity client who needs modules.
+        ArrayList<String> notFoundModules = new ArrayList<String>();
+        ArrayList<String> libraries = new ArrayList<String>();
+        Collections.addAll(libraries, modules);
+        if (MinistroService.this.checkModules(libraries, notFoundModules))
+        {
+            String[] libs = new String[libraries.size()];
+            libs = libraries.toArray(libs);
+            callback.libs(libs, m_environmentVariables, m_applicationParams, 0, null);// if we have all modules downloaded just call back the activity client.
+        }
+        else
+            m_actions.add(new ActionStruct(callback, modules, notFoundModules, appName)); // if not, lets start an activity to do it.
+    }
+
 
     /**
      * Checks whether a given list of libraries are readily accessible (e.g. usable by a program).
@@ -333,7 +350,7 @@ public class MinistroService extends Service {
      * <p>If the <code>notFoundModules</code> argument is given, the method fills the list with
      * libraries that need to be retrieved first.</p>
      * 
-     * @param requestedLibs
+     * @param libs
      * @param notFoundModules
      * @return
      */
