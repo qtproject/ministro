@@ -347,13 +347,21 @@ public class MinistroService extends Service {
         intent.putExtra("name", appName);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        boolean failed = false;
         try
         {
             MinistroService.this.startActivity(intent);
         }
         catch(Exception e)
         {
+            failed = true;
             throw (RemoteException) new RemoteException().initCause(e);
+        }
+        finally
+        {
+            // Removes the dead Activity from our list as it will never finish by itself.
+            if (failed)
+                m_actions.remove(as);
         }
     }
 
