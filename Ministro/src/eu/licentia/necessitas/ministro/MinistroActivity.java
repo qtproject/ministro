@@ -107,7 +107,7 @@ public class MinistroActivity extends Activity {
     void finishMe()
     {
         if (-1 != m_id && null != MinistroService.instance())
-            MinistroService.instance().activityFinished(m_id);
+            MinistroService.instance().retrievalFinished(m_id);
         else
         {
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

@@ -247,34 +247,6 @@ public class MinistroService extends Service {
         super.onCreate();
     }
 
-    public void activityFinished(int id)
-    {
-        for (int i=0;i<m_actions.size();i++)
-        {
-            ActionStruct action=m_actions.get(i);
-            if (action.id==id)
-            {
-                try {
-                    ArrayList<String> libraries = new ArrayList<String>();
-                    Collections.addAll(libraries, action.modules);
-                    boolean res = checkModules(libraries, null);
-                    String[] libs = new String[libraries.size()];
-                    libs = libraries.toArray(libs);
-                    if (res)
-                        action.callback.libs(libs, m_environmentVariables, m_applicationParams ,0, null);
-                    else
-                        action.callback.libs(libs, m_environmentVariables, m_applicationParams, 1, "Can't find all modules");
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-                m_actions.remove(i);
-                break;
-            }
-        }
-        if (m_actions.size() == 0)
-            m_actionId = 0;
-    }
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -333,6 +305,16 @@ public class MinistroService extends Service {
         }
     }
 
+    /**
+     * Creates and sets up a {@link MinistroActivity} to retrieve the modules specified in the
+     * <code>notFoundModules</code> argument.
+     * 
+     * @param callback
+     * @param modules
+     * @param notFoundModules
+     * @param appName
+     * @throws RemoteException
+     */
     private void startRetrieval(IMinistroCallback callback,
 		String[] modules, ArrayList<String> notFoundModules, String appName)
         throws RemoteException
@@ -363,6 +345,65 @@ public class MinistroService extends Service {
             if (failed)
                 m_actions.remove(as);
         }
+    }
+
+    /**
+     * Called by a finished {@link MinistroActivity} in order to let
+     * the service notify the application which caused the activity about
+     * the result of the retrieval.
+     * 
+     * @param id
+     */
+    void retrievalFinished(int id)
+    {
+        for (int i=0;i<m_actions.size();i++)
+        {
+            ActionStruct action=m_actions.get(i);
+            if (action.id==id)
+            {
+                postRetrieval(action.callback, action.modules);
+
+                m_actions.remove(i);
+                break;
+            }
+        }
+        if (m_actions.size() == 0)
+            m_actionId = 0;
+    }
+
+    /**
+     * Helper method for the last step of the retrieval process.
+     * 
+     * <p>Checks the availability of the requested modules and informs
+     * the requesting application about it via the {@link IMinistroCallback}
+     * instance.</p>
+     * 
+     * @param callback
+     * @param modules
+     */
+    private void postRetrieval(IMinistroCallback callback, String[] modules) {
+        ArrayList<String> libraries = new ArrayList<String>();
+        Collections.addAll(libraries, modules);
+
+        // Does a final check whether the libraries are accessible (without caring for
+        // the non-accessible ones).
+        boolean res = checkModules(libraries, null);
+
+        String[] libs = new String[libraries.size()];
+        libs = libraries.toArray(libs);
+
+        try
+        {
+            if (res)
+                callback.libs(libs, m_environmentVariables, m_applicationParams ,0, null);
+            else
+                callback.libs(libs, m_environmentVariables, m_applicationParams, 1, "Can't find all modules");
+        }
+        catch (RemoteException e)
+        {
+            e.printStackTrace();
+        }
+
     }
 
     /**
