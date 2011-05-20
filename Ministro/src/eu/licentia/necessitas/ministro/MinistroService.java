@@ -328,11 +328,9 @@ public class MinistroService extends Service {
     }
 
     // check/add all modules. Returns true if all modules are found.
-    @SuppressWarnings("unchecked")
-    public boolean checkModules(Object lbs, Object notFoundModules)
+    private boolean checkModules(ArrayList<String> libs, ArrayList<String> notFoundModules)
     {
         ArrayList<Module> modules= new ArrayList<Module>();
-        ArrayList<String> libs = (ArrayList<String>) lbs;
         boolean res=true;
         for (int i=0;i<libs.size();i++)
             res = res & addModules(libs.get(i), modules, notFoundModules); // don't stop on first error
@@ -346,11 +344,8 @@ public class MinistroService extends Service {
     }
 
     // adds recursively all modules and dependencies to modules list
-    @SuppressWarnings("unchecked")
-    boolean addModules(String module, Object modulesObject, Object notFoundModulesObject)
+    private boolean addModules(String module, ArrayList<Module> modules, ArrayList<String> notFoundModules)
     {
-        ArrayList<Module> modules = (ArrayList<Module>) modulesObject;
-        ArrayList<String> notFoundModules = (ArrayList<String>) notFoundModulesObject;
         if (modules == null)
             return false; // we are in deep shit if this happens
 
@@ -372,7 +367,7 @@ public class MinistroService extends Service {
                 boolean res = true;
                 if (m_downloadedLibraries.get(i).depends != null)
                     for (int depIt=0;depIt<m_downloadedLibraries.get(i).depends.length;depIt++)
-                        res &= addModules(m_downloadedLibraries.get(i).depends[depIt], modules, notFoundModulesObject);
+                        res &= addModules(m_downloadedLibraries.get(i).depends[depIt], modules, notFoundModules);
                 return res;
             }
         }
