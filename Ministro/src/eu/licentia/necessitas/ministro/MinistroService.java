@@ -393,14 +393,13 @@ public class MinistroService extends Service {
         }
         return false;
     }
-}
 
 /** Sorter for libraries.
  * 
  * Hence the order in which the libraries have to be loaded is important, it is neccessary
  * to sort them.
  */
-class ModuleCompare implements Comparator<Module> {
+static private class ModuleCompare implements Comparator<Module> {
     @Override
     public int compare(Module a, Module b) {
         return a.level-b.level;
@@ -411,9 +410,12 @@ class ModuleCompare implements Comparator<Module> {
  * 
  * It is similar to the {@link Library} class but has fewer fields.
  */
-class Module
+static private class Module
 {
     String path;
     String name;
     int level;
+
+}
+
 }
