@@ -328,7 +328,7 @@ public class MinistroService extends Service {
     }
 
     // check/add all modules. Returns true if all modules are found.
-    private boolean checkModules(ArrayList<String> libs, ArrayList<String> notFoundModules)
+    boolean checkModules(ArrayList<String> libs, ArrayList<String> notFoundModules)
     {
         ArrayList<Module> modules= new ArrayList<Module>();
         boolean res=true;
@@ -386,7 +386,7 @@ public class MinistroService extends Service {
                 {
                     if (m_availableLibraries.get(i).depends != null)
                         for (int depIt=0;depIt<m_availableLibraries.get(i).depends.length;depIt++)
-                            addModules(m_availableLibraries.get(i).depends[depIt], modules, notFoundModulesObject);
+                            addModules(m_availableLibraries.get(i).depends[depIt], modules, notFoundModules);
                     break;
                 }
             }
@@ -395,7 +395,11 @@ public class MinistroService extends Service {
     }
 }
 
-// libraries loading order if very important, that why we MUST sort the them !!!!
+/** Sorter for libraries.
+ * 
+ * Hence the order in which the libraries have to be loaded is important, it is neccessary
+ * to sort them.
+ */
 class ModuleCompare implements Comparator<Module> {
     @Override
     public int compare(Module a, Module b) {
@@ -403,7 +407,10 @@ class ModuleCompare implements Comparator<Module> {
     }
 }
 
-// extra class used to manipulate libraries, it is ~ the same as Library class, but it has less fields
+/** Helper class which allows manipulating libraries.
+ * 
+ * It is similar to the {@link Library} class but has fewer fields.
+ */
 class Module
 {
     String path;
