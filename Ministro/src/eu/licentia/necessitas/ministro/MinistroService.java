@@ -327,7 +327,16 @@ public class MinistroService extends Service {
         };
     }
 
-    // check/add all modules. Returns true if all modules are found.
+    /**
+     * Checks whether a given list of libraries are readily accessible (e.g. usable by a program).
+     * 
+     * <p>If the <code>notFoundModules</code> argument is given, the method fills the list with
+     * libraries that need to be retrieved first.</p>
+     * 
+     * @param requestedLibs
+     * @param notFoundModules
+     * @return
+     */
     boolean checkModules(ArrayList<String> libs, ArrayList<String> notFoundModules)
     {
         ArrayList<Module> modules= new ArrayList<Module>();
@@ -343,18 +352,45 @@ public class MinistroService extends Service {
         return res;
     }
 
-    // adds recursively all modules and dependencies to modules list
+   /**
+    * Helper method for the module resolution mechanism. It deals with an individual module's
+    * resolution request.
+    * 
+    * <p>The method checks whether a given <em>single</em> <code>module</code> is already
+    * accessible or needs to be retrieved first. In the latter case the method returns
+    * <code>false</code>.</p>
+    * 
+    * <p>The method traverses a <code>module<code>'s dependencies automatically.</p>
+    * 
+    * <p>In order to find out whether a <code>module</code> is accessible the method consults
+    * the list of downloaded libraries. If found, an entry to the <code>modules</code> list is
+    * added.</p>
+    * 
+    * <p>In case the <code>module</ocde> is not immediately accessible and the <code>notFoundModules</code>
+    * argument exists, a list of available libraries is consulted to fill a list of modules which
+    * yet need to be retrieved.</p>  
+    * 
+    * @param module
+    * @param modules
+    * @param notFoundModules
+    * @return <code>true</code> if the given module and all its dependencies are readily available.
+    */
     private boolean addModules(String module, ArrayList<Module> modules, ArrayList<String> notFoundModules)
     {
+        // Module argument is not supposed to be null at this point.
         if (modules == null)
             return false; // we are in deep shit if this happens
 
+        // Short-cut: If the module is already in our list of previously found modules then we do not
+        // need to consult the list of downloaded modules.
         for (int i=0;i<modules.size();i++)
         {
             if (modules.get(i).name.equals(module))
                 return true;
         }
 
+        // Consult the list of downloaded modules. If a matching entry is found, it is added to the
+        // list of readily accessible modules and its dependencies are checked via a recursive call.
         for (int i = 0; i< m_downloadedLibraries.size(); i++)
         {
             if (m_downloadedLibraries.get(i).name.equals(module))
@@ -372,13 +408,18 @@ public class MinistroService extends Service {
             }
         }
 
+        // Requested module is not readily accessible.
         if (notFoundModules != null)
         {
+            // Checks list of modules which are known to not be readily accessible and returns early to
+            // prevent double entries.
             for (int i=0;i<notFoundModules.size();i++)
             {
                 if (notFoundModules.get(i).equals(module))
                     return false;
             }
+
+            // Deal with not yet readily accessible module's dependencies.  
             notFoundModules.add(module);
             for (int i = 0; i< m_availableLibraries.size(); i++)
             {
