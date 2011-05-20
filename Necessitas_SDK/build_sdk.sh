@@ -136,6 +136,12 @@ function prepareHostQt
     # download, compile & install qt, it is used to compile the installer
     if [ "$OSTYPE" = "msys" ]
     then
+        downloadIfNotExists 7za920.zip http://downloads.sourceforge.net/sevenzip/7za920.zip
+        SEVEN7LOC=$PWD
+        pushd /usr/local/bin
+        unzip -o $SEVEN7LOC/7za920.zip
+        popd
+
         # Get a more recent sed, one that can do -i.
         downloadIfNotExists sed-4.2.1-2-msys-1.0.13-bin.tar.lzma http://downloads.sourceforge.net/project/mingw/MSYS/BaseSystem/sed/sed-4.2.1-2/sed-4.2.1-2-msys-1.0.13-bin.tar.lzma
         rm -rf sed-4.2.1-2-msys-1.0.13-bin.tar
@@ -440,7 +446,7 @@ function perpareNDKs
 
 function prepareGDB
 {
-#This function depends by perpareNDKs
+    #This function depends on perpareNDKs
     if [ -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/gdb-7.2-${HOST_TAG}.7z ]
     then
         return
