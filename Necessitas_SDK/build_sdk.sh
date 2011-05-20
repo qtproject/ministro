@@ -810,6 +810,10 @@ function compileNecessitasQt
     make install
     mkdir -p $2/$1
     mv data/data/eu.licentia.necessitas.ministro/files/qt/bin $2/$1
+	if [ "$OSTYPE" = "msys" ]; then
+        cp -a /usr/bin/libgcc_s_dw2-1.dll $2/$1/bin/
+        cp -a /usr/bin/libstdc++-6.dll $2/$1/bin/
+    fi
     $SDK_TOOLS_PATH/archivegen Android qt-tools-${HOST_TAG}.7z
     rm -fr $2/$1/bin
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data
