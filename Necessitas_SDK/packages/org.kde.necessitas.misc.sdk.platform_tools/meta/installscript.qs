@@ -27,6 +27,7 @@ function Component()
         else if (installer.value("os") == "win")
         {
             component.addDownloadableArchive( "platform-tools_r03-windows.7z" );
+            component.addDownloadableArchive( "android-sdk-windows-tools-mingw-android.7z" );
         }
         else if (installer.value("os") == "mac")
         {
