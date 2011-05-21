@@ -97,6 +97,7 @@
             </needs>
             <depends>
                 <lib name="QtAndroidContactsPlugin"/>
+                <lib name="QtVersit"/>
             </depends>
         </lib>
         <lib file="plugins/contacts/libqtcontacts_android.so" name="QtAndroidContactsPlugin" platform="5" level="9999" />
