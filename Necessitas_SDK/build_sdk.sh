@@ -814,7 +814,7 @@ function compileNecessitasQt
     if [ ! -f all_done ]
     then
         git checkout testing
-        ../qt-src/androidconfigbuild.sh -c 1 -q 1 -n $TEMP_PATH/android-ndk-r5b -a $1 -k 1 -i /data/data/eu.licentia.necessitas.ministro/files/qt || error_msg "Can't configure android-qt"
+        ../qt-src/androidconfigbuild.sh -c 1 -q 1 -n $TEMP_PATH/android-ndk-r5b -a $1 -k 0 -i /data/data/eu.licentia.necessitas.ministro/files/qt || error_msg "Can't configure android-qt"
         echo "all done">all_done
     fi
 
