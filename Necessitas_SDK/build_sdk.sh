@@ -328,7 +328,7 @@ function makeInstallMinGWBits
     pushd libtool-2.4
     ./configure -prefix=/usr/local
     make
-    make install 
+    make install
     popd
 
     downloadIfNotExists libiconv-1.13.tar.gz http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.tar.gz
@@ -777,6 +777,7 @@ function packSource
     if [ $1 = "qt-src" ]
     then
         mv $1/src/3rdparty/webkit .
+        mv $1/tests .
     fi
     mv $1 $TEMP_PATH/source_temp_path/Android/Qt/$NECESSITAS_QT_VERSION/
     pushd $TEMP_PATH/source_temp_path
@@ -789,6 +790,7 @@ function packSource
     if [ $1 = "qt-src" ]
     then
         mv webkit $1/src/3rdparty/
+        mv tests $1/
     fi
     rm -fr $TEMP_PATH/source_temp_path
 }
