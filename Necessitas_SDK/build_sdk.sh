@@ -23,7 +23,7 @@
 REPO_SRC_PATH=$PWD
 TEMP_PATH_PREFIX=/tmp
 
-if [ "$OSTYPE" = "msys" ]; then
+if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
     TEMP_PATH_PREFIX=/usr
 fi
 
