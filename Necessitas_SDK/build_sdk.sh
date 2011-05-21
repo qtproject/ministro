@@ -189,6 +189,10 @@ function prepareHostQt
         rm -fr *
         ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -developer-build -static -no-webkit -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -release -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         doMake "Can't compile static $HOST_QT_VERSION" "all done"
+        if [ "$OSTYPE" = "msys" ]; then
+            # Horrible; need to fix this properly.
+            doSed $"s/qt warn_on release /qt static warn_on release /" mkspecs/win32-g++/qmake.conf
+        fi
     fi
     popd
 
@@ -362,17 +366,6 @@ function makeInstallMinGWBits
     make && make DESTDIR=$install_dir install
     popd
 
-    rm -rf android-various
-    git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various
-    mkdir -p android-various/make-3.82-build
-    pushd android-various/make-3.82-build
-    ../make-3.82/build-mingw.sh
-    cp make.exe $REPO_SRC_PATH/
-    popd
-    pushd android-various/android-sdk
-    gcc -Wl,-subsystem,windows -Wno-write-strings android.cpp -static-libgcc -s -O3 -o android.exe
-    cp android.exe $REPO_SRC_PATH/
-    popd
     popd
 }
 
@@ -700,6 +693,27 @@ function perpareSDKs
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data
         mv android-sdk_r10-windows.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-windows.7z
         rm -fr android-sdk-windows
+    fi
+
+    if [ "$OSTYPE" = "msys" ]
+    then
+        if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.platform_tools/data/android-sdk-windows-tools-mingw-android.7z ]
+        then
+            git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various
+            mkdir -p android-various/make-3.82-build
+            pushd android-various/make-3.82-build
+            ../make-3.82/build-mingw.sh
+            popd
+            pushd android-various/android-sdk
+            gcc -Wl,-subsystem,windows -Wno-write-strings android.cpp -static-libgcc -s -O2 -o android.exe
+            popd
+            mkdir -p android-sdk-windows/tools/
+            cp android-various/make-3.82-build/make.exe android-sdk-windows/tools/
+            cp android-various/android-sdk/android.exe android-sdk-windows/tools/
+            $SDK_TOOLS_PATH/archivegen android-sdk-windows android-sdk-windows-tools-mingw-android.7z
+            mv android-sdk-windows-tools-mingw-android.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.platform_tools/data/android-sdk-windows-tools-mingw-android.7z
+            rm -rf android-various
+        fi
     fi
 
     # repack platform-tools
@@ -1067,7 +1081,8 @@ function revertPatchPackages
 
 function prepareSDKBinary
 {
-    $SDK_TOOLS_PATH/binarycreator -v -t $SDK_TOOLS_PATH/installerbase -c $REPO_SRC_PATH/config -p $REPO_SRC_PATH/packages -n $REPO_SRC_PATH/necessitas-sdk-installer org.kde.necessitas
+    echo $SDK_TOOLS_PATH/binarycreator -v -t $SDK_TOOLS_PATH/installerbase$EXE_EXT -c $REPO_SRC_PATH/config -p $REPO_SRC_PATH/packages -n $REPO_SRC_PATH/necessitas-sdk-installer$EXE_EXT org.kde.necessitas
+    $SDK_TOOLS_PATH/binarycreator -v -t $SDK_TOOLS_PATH/installerbase$EXE_EXT -c $REPO_SRC_PATH/config -p $REPO_SRC_PATH/packages -n $REPO_SRC_PATH/necessitas-sdk-installer$EXE_EXT org.kde.necessitas
 }
 
 function prepareSDKRepository
