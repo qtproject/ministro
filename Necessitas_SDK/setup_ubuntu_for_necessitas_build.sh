@@ -12,6 +12,8 @@ sudo apt-get -q -y install ia32-libs
 
 sudo apt-get -q -y install gcc-multilib
 
+sudo apt-get -q -y install g++-multilib
+
 sudo apt-get -q -y install aptitude
 
 sudo apt-get -q -y  install p7zip-full
@@ -37,8 +39,8 @@ sudo apt-get -q -y  install python2.7-dev xorg-dev
 
 # Libraries needed for compiling 32bit gcc.
 sudo apt-get -q -y  install lib32gmp3-dev lib32mpfr-dev lib32ncurses5-dev
-# There's no 32bit versoin of this? libmpc-dev 
+# There's no 32bit versoin of this? libmpc-dev
 
 # Libraries needed for compiling 64bit gcc.
-# sudo apt-get install libgmp3-dev libmpfr-dev libncurses5-dev 
+# sudo apt-get install libgmp3-dev libmpfr-dev libncurses5-dev
 
