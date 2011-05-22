@@ -32,8 +32,14 @@ if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
     # On Mac OS X, user accounts don't have write perms for /var, same is true for Ubuntu.
     sudo mkdir -p $TEMP_PATH
     sudo chmod 777 $TEMP_PATH
+    sudo mkdir -p $TEMP_PATH_PREFIX/www
+    sudo chmod 777 $TEMP_PATH_PREFIX/www
+    STRIP="strip -S"
+    CPRL="cp -RL"
 else
     mkdir -p $TEMP_PATH
+    STRIP="strip -s"
+    CPRL="cp -rL"
 fi
 
 pushd $TEMP_PATH
@@ -233,7 +239,7 @@ function perpareSdkInstallerTools
     fi
     popd
     pushd $SDK_TOOLS_PATH
-    strip -s *
+    $STRIP *
     popd
 }
 
@@ -462,14 +468,16 @@ function prepareGDB
         popd
     fi
 
+    OLDCC=$CC
+    OLDCXX=$CXX
     if [ ! -d Python-$pyfullversion ]
     then
-        if [ $OSTYPE = "linux-gnu" ]; then
+        if [ "$OSTYPE" = "linux-gnu" ]; then
             downloadIfNotExists Python-$pyfullversion.tar.bz2 http://www.python.org/ftp/python/$pyfullversion/Python-$pyfullversion.tar.bz2 || error_msg "Can't download python library"
             tar xjvf Python-$pyfullversion.tar.bz2
             USINGMAPYTHON=0
         else
-            if [ $OSTYPE = "msys" ]; then
+            if [ "$OSTYPE" = "msys" ]; then
                 makeInstallMinGWBits $install_dir
             fi
             rm -rf Python-$pyfullversion
@@ -479,22 +487,31 @@ function prepareGDB
 
         pushd Python-$pyfullversion
         unset PYTHONHOME
-        OLDCC=$CC
-        OLDCXX=$CXX
         OLDPATH=$PATH
 
         if [ "$OSTYPE" = "linux-gnu" ] ; then
             HOST=i386-linux-gnu
-            export CC="gcc -m32"
-            export CXX="g++ -m32"
+            CC32="gcc -m32"
+            CXX32="g++ -m32"
             PYCFGDIR=$install_dir/lib/python$pyversion/config
         else
-            HOST_EXE=.exe
-            HOST=i686-pc-mingw32
-            export CC=gcc.exe
-            export CXX=g++.exe
-            PYCFGDIR=$install_dir/$PREFIX/bin/Lib/config
-            export PATH=.:$PATH
+            if [ "$OSTYPE" = "msys" ] ; then
+                HOST_EXE=.exe
+                HOST=i686-pc-mingw32
+                export CC=gcc.exe
+                export CXX=g++.exe
+                PYCFGDIR=$install_dir/$PREFIX/bin/Lib/config
+                export PATH=.:$PATH
+                CC32="gcc"
+                CXX32="g++"
+            else
+                # On some OS X installs (case insensitive filesystem), the dir "Python" clashes with the executable "python"
+                # --with-suffix can be used to get around this.
+                SUFFIX=Mac
+                export PATH=.:$PATH
+                CC32="gcc -m32"
+                CXX32="g++ -m32"
+            fi
         fi
 
         if [ "$USINGMAPYTHON" = "1" ] ; then
@@ -503,7 +520,7 @@ function prepareGDB
             touch Include/Python-ast.c
         fi
 
-        ./configure --host=$HOST --prefix=$install_dir && make -j$JOBS && make install || error_msg "Can't compile python library"
+        CC=$CC32 CXX=$CXX32 ./configure --host=$HOST --prefix=$install_dir --with-suffix=$SUFFIX && make -j$JOBS && make install || error_msg "Can't compile python library"
         if [ "$OSTYPE" = "msys" ] ; then
             cd pywin32-216
             ../python$EXE_EXT setup.py build
@@ -530,17 +547,27 @@ function prepareGDB
             cp libpython$pyversion.dll $target_dir/
         fi
 
+        if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+            doSed $"s/python2\.7Mac/python2\.7/g" $install_dir/bin/2to3
+            doSed $"s/python2\.7Mac/python2\.7/g" $install_dir/bin/idle
+            doSed $"s/python2\.7Mac/python2\.7/g" $install_dir/bin/pydoc
+            doSed $"s/python2\.7Mac/python2\.7/g" $install_dir/bin/python-config
+            doSed $"s/python2\.7Mac/python2\.7/g" $install_dir/bin/python2.7-config
+            doSed $"s/python2\.7Mac/python2\.7/g" $install_dir/bin/smtpd.py
+        fi
+
         cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
         mkdir -p $target_dir/python/include/python$pyversion
         cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
-        cp -a $install_dir/bin/python$pyversion$EXE_EXT $target_dir/
+        # Remove the $SUFFIX if present (OS X)
+        mv $install_dir/bin/python$pyversion$SUFFIX$EXE_EXT $install_dir/bin/python$pyversion$EXE_EXT
+        mv $install_dir/bin/python$SUFFIX$EXE_EXT $install_dir/bin/python$EXE_EXT
+        cp -a $install_dir/bin/python$pyversion$EXE_EXT $target_dir/python$pyversion$EXE_EXT
         if [ "$OSTYPE" = "msys" ] ; then
             cp -fr $install_dir/bin/Lib $target_dir/
         fi
-        strip -s $target_dir/python$pyversion$EXE_EXT
+        $STRIP $target_dir/python$pyversion$EXE_EXT
         popd
-        export CC=$OLDCC
-        export CXX=$OLDCXX
         export PATH=$OLDPATH
     fi
 
@@ -556,20 +583,23 @@ function prepareGDB
         export PYTHONHOME=$install_dir
         OLDPATH=$PATH
         export PATH=$install_dir/bin/:$PATH
-        ../gdb-7.2.50.20110211/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=no --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
+        CC=$CC32 CXX=$CXX32 ../gdb-7.2.50.20110211/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
         doMake "Can't compile android gdb 7.2" "all done"
         cp -a gdb/gdb$EXE_EXT $target_dir/
         # Fix building gdb-tui, it used to work and was handy to have.
         # cp -a gdb/gdb-tui$EXE_EXT $target_dir/
-        strip -s $target_dir/gdb$EXE_EXT
+        $STRIP $target_dir/gdb$EXE_EXT
         export PATH=$OLDPATH
         popd
     fi
 
+    CC=$OLDCC
+    CXX=$OLDCXX
+
     pushd $target_dir
-    find -name *.py[co] | xargs rm -f
-    find -name test | xargs rm -fr
-    find -name tests | xargs rm -fr
+    find . -name *.py[co] | xargs rm -f
+    find . -name test | xargs rm -fr
+    find . -name tests | xargs rm -fr
     popd
 
     $SDK_TOOLS_PATH/archivegen gdb-7.2 gdb-7.2-${HOST_TAG}.7z
@@ -600,7 +630,7 @@ function prepareGDBServer
     pushd gdb-src/build-gdbserver
 
     mkdir android-sysroot
-    cp -rL $TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm/* android-sysroot/ || error_msg "Can't copy android sysroot"
+    $CPRL $TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm/* android-sysroot/ || error_msg "Can't copy android sysroot"
 
     rm -f android-sysroot/usr/lib/libthread_db*
     rm -f android-sysroot/usr/include/thread_db.h
@@ -1107,7 +1137,7 @@ function prepareMinistroRepository
         mkdir -p $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION
         pushd $TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$architecture
         rm -fr Android
-        for lib in `find -name *.so`
+        for lib in `find . -name *.so`
         do
             libDirname=`dirname $lib`
             mkdir -p $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/$libDirname
@@ -1115,7 +1145,7 @@ function prepareMinistroRepository
             $ANDROID_STRIP_BINARY --strip-unneeded $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/$lib
         done
 
-        for qmldirfile in `find -name qmldir`
+        for qmldirfile in `find . -name qmldir`
         do
             qmldirfileDirname=`dirname $qmldirfile`
             cp $qmldirfile $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/$qmldirfileDirname/
