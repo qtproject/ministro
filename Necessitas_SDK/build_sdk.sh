@@ -1139,7 +1139,10 @@ prepareGDBServer
 perpareSDKs
 perpareNecessitasQtCreator
 perpareNecessitasQt
-perpareNecessitasQtWebkit
+# TODO :: Fix webkit build in Windows (-no-video fails) and Mac OS X (debug-and-release config incorrectly uesd and fails)
+if [ "$OSTYPE" = "linux-gnu" ] ; then
+    perpareNecessitasQtWebkit
+fi
 perpareNecessitasQtMobility
 patchPackages
 prepareSDKBinary
