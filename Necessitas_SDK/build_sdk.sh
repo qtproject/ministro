@@ -56,6 +56,7 @@ if [ "$OSTYPE" = "msys" ] ; then
     HOST_TAG=windows-x86
     HOST_TAG_NDK=windows
     EXE_EXT=.exe
+    SCRIPT_EXT=.bat
     JOBS=9
 else
     if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
@@ -273,7 +274,7 @@ function perpareNecessitasQtCreator
         find . $QT_LIB_DEST -name *.la | xargs rm -fr
         find . $QT_LIB_DEST -name *.prl | xargs rm -fr
         cp -a $SHARED_QT_PATH/imports/* ${QT_LIB_DEST}../imports
-        cp -a bin/necessitas$EXE_EXT $PWD/QtCreator/bin/
+        cp -a bin/necessitas$SCRIPT_EXT $PWD/QtCreator/bin/
         mkdir $PWD/QtCreator/images
         cp -a bin/necessitas*.png $PWD/QtCreator/images/
         $SDK_TOOLS_PATH/archivegen QtCreator qtcreator-${HOST_TAG}.7z
