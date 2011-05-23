@@ -49,7 +49,7 @@ NECESSITAS_QT_VERSION_LONG="4.7.62"
 MINISTRO_VERSION="0.2"
 MINISTRO_REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/qt
 REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/sdk
-HOST_QT_VERSION=qt-everywhere-opensource-src-4.7.2
+HOST_QT_VERSION=qt-everywhere-opensource-src-4.7.3
 STATIC_QT_PATH=""
 SHARED_QT_PATH=""
 SDK_TOOLS_PATH=""
@@ -59,7 +59,7 @@ QPATCH_PATH=""
 
 if [ "$OSTYPE" = "msys" ] ; then
     HOST_CFG_OPTIONS=" -platform win32-g++ -reduce-exports "
-    HOST_TAG=windows-x86
+    HOST_TAG=windows
     HOST_TAG_NDK=windows
     EXE_EXT=.exe
     SCRIPT_EXT=.bat
@@ -265,6 +265,7 @@ function perpareNecessitasQtCreator
         export INSTALL_ROOT=$PWD/QtCreator
         make install
         mkdir -p $PWD/QtCreator/Qt/imports
+        mkdir -p $PWD/QtCreator/Qt/plugins
         if [ "$OSTYPE" = "msys" ]; then
             mkdir -p $PWD/QtCreator/bin
             cp -rf lib/qtcreator/* $PWD/QtCreator/bin/
@@ -281,6 +282,7 @@ function perpareNecessitasQtCreator
                 find . $QT_LIB_DEST -name *.la | xargs rm -fr
                 find . $QT_LIB_DEST -name *.prl | xargs rm -fr
                 cp -a $SHARED_QT_PATH/imports/* ${QT_LIB_DEST}../imports
+                cp -a $SHARED_QT_PATH/plugins/* ${QT_LIB_DEST}../plugins
                 cp -a bin/necessitas $PWD/QtCreator/bin/
             else
                 # Mac OS X. The libraries need to be placed inside the app bundle to make it relocatable.
@@ -323,6 +325,9 @@ function perpareNecessitasQtCreator
         fi
         mkdir $PWD/QtCreator/images
         cp -a bin/necessitas*.png $PWD/QtCreator/images/
+        pushd QtCreator
+        find -name *.so |xargs strip -s
+        popd
         $SDK_TOOLS_PATH/archivegen QtCreator qtcreator-${HOST_TAG}.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data
         mv qtcreator-${HOST_TAG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-${HOST_TAG}.7z
@@ -567,7 +572,7 @@ function prepareGDB
 
         if [ "$OSTYPE" = "msys" ] ; then
             cd pywin32-216
-			# TODO :: Fix this, builds ok but then tries to copy pywintypes27.lib instead of libpywintypes27.a and pywintypes27.dll.
+            # TODO :: Fix this, builds ok but then tries to copy pywintypes27.lib instead of libpywintypes27.a and pywintypes27.dll.
             ../python$EXE_EXT setup.py build
             cd ..
         fi
@@ -603,7 +608,7 @@ function prepareGDB
 
         cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
         mkdir -p $target_dir/python/include/python$pyversion
-		mkdir -p $target_dir/python/bin
+        mkdir -p $target_dir/python/bin
         cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
         # Remove the $SUFFIX if present (OS X)
         mv $install_dir/bin/python$pyversion$SUFFIX$EXE_EXT $install_dir/bin/python$pyversion$EXE_EXT
@@ -909,7 +914,7 @@ function compileNecessitasQt
     make install
     mkdir -p $2/$1
     mv data/data/eu.licentia.necessitas.ministro/files/qt/bin $2/$1
-	if [ "$OSTYPE" = "msys" ]; then
+    if [ "$OSTYPE" = "msys" ]; then
         cp -a /usr/bin/libgcc_s_dw2-1.dll $2/$1/bin/
         cp -a /usr/bin/libstdc++-6.dll $2/$1/bin/
     fi
@@ -918,8 +923,8 @@ function compileNecessitasQt
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data
     mv qt-tools-${HOST_TAG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-tools-${HOST_TAG}.7z
     mv data/data/eu.licentia.necessitas.ministro/files/qt/* $2/$1
-    $SDK_TOOLS_PATH/archivegen Android qt-farmework.7z
-    mv qt-farmework.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-farmework.7z
+    $SDK_TOOLS_PATH/archivegen Android qt-framework.7z
+    mv qt-framework.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-framework.7z
     patchQtFiles
 }
 
@@ -1031,8 +1036,7 @@ function compileNecessitasQtWebkit
 {
     export ANDROID_TARGET_ARCH=$1
     export SQLITE3SRCDIR=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/qt-src/src/3rdparty/sqlite
-#    if [ ! -f all_done ]
-    if [ "1" = "1" ]
+    if [ ! -f all_done ]
     then
         if [ "$OSTYPE" = "msys" ] ; then
             if [ ! -f `which gprof` ] ; then
@@ -1056,7 +1060,7 @@ function compileNecessitasQtWebkit
             fi
         fi
         export WEBKITOUTPUTDIR=$PWD
-		echo "doing perl"
+        echo "doing perl"
         ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION/build-$1/bin/qmake$EXE_EXT --no-video --no-xslt || error_msg "Can't configure android-qtwebkit"
         echo "all done">all_done
     fi
@@ -1216,7 +1220,7 @@ prepareGDBServer
 perpareSDKs
 perpareNecessitasQtCreator
 perpareNecessitasQt
-# TODO :: Fix webkit build in Windows (-no-video fails) and Mac OS X (debug-and-release config incorrectly uesd and fails)
+# TODO :: Fix webkit build in Windows (-no-video fails) and Mac OS X (debug-and-release config incorrectly used and fails)
 if [ "$OSTYPE" = "linux-gnu" ] ; then
     perpareNecessitasQtWebkit
 fi

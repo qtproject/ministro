@@ -145,7 +145,7 @@ Component.prototype.installationFinished = function()
     {
         if (installer.value("os") == "win")
         {
-            installer.setValue("RunProgram", installer.value("TargetDir") + "\\QtCreator\\bin\\necessitas.bat");
+            installer.setValue("RunProgram", installer.value("TargetDir") + "\\QtCreator\\bin\\qtcreator.exe");
             print("installer.value(RunProgram)" + installer.value("RunProgram"));
             installer.setValue("RunProgramDescription", "Launch Qt Creator");
         }

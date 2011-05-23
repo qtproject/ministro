@@ -20,7 +20,7 @@ function Component()
 {
     if( component.fromOnlineRepository )
     {
-        component.addDownloadableArchive( "qt-farmework.7z" );
+        component.addDownloadableArchive( "qt-framework.7z" );
 
         if (installer.value("os") == "x11")
         {
