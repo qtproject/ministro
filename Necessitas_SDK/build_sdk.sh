@@ -496,6 +496,7 @@ function prepareGDB
             PYCFGDIR=$install_dir/lib/python$pyversion/config
         else
             if [ "$OSTYPE" = "msys" ] ; then
+                SUFFIX=.exe
                 HOST_EXE=.exe
                 HOST=i686-pc-mingw32
                 export CC=gcc.exe
