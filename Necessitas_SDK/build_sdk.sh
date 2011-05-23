@@ -312,6 +312,7 @@ function perpareNecessitasQtCreator
 
 function makeInstallMinGWBits
 {
+    install_dir=$1
     mkdir mingw-bits
     pushd mingw-bits
     # Tools. Maybe move these bits to setup_mingw_for_necessitas_build.sh?
@@ -342,14 +343,6 @@ function makeInstallMinGWBits
     make install
     popd
 
-    downloadIfNotExists libiconv-1.13.tar.gz http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.tar.gz
-    rm -rf libiconv-1.13
-    tar -xvzf libiconv-1.13.tar.gz
-    pushd libiconv-1.13
-    CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses --enable-multibyte --prefix=  CFLAGS=-O2
-    make && make DESTDIR=$install_dir install
-    popd
-
     downloadIfNotExists PDCurses-3.4.tar.gz http://downloads.sourceforge.net/pdcurses/pdcurses/3.4/PDCurses-3.4.tar.gz
     rm -rf PDCurses-3.4
     tar -xvzf PDCurses-3.4.tar.gz
@@ -361,15 +354,24 @@ function makeInstallMinGWBits
     cp pdcurses.a $install_dir/lib/libcurses.a
     cp pdcurses.a $install_dir/lib/libncurses.a
     cp pdcurses.a $install_dir/lib/libpdcurses.a
+    cp panel.a $install_dir/lib/libpanel.a
     cp ../curses.h $install_dir/include
     cp ../panel.h $install_dir/include
+    popd
+
+    downloadIfNotExists libiconv-1.13.tar.gz http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.tar.gz
+    rm -rf libiconv-1.13
+    tar -xvzf libiconv-1.13.tar.gz
+    pushd libiconv-1.13
+    CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses=$install_dir --enable-multibyte --prefix=  CFLAGS=-O2
+    make && make DESTDIR=$install_dir install
     popd
 
     downloadIfNotExists readline-6.2.tar.gz http://ftp.gnu.org/pub/gnu/readline/readline-6.2.tar.gz
     rm -rf readline-6.2
     tar -xvzf readline-6.2.tar.gz
     pushd readline-6.2
-    CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses --enable-multibyte --prefix=  CFLAGS=-O2
+    CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses=$install_dir --enable-multibyte --prefix=  CFLAGS=-O2
     make && make DESTDIR=$install_dir install
     popd
 
@@ -470,7 +472,7 @@ function prepareGDB
 
     OLDCC=$CC
     OLDCXX=$CXX
-    if [ ! -d Python-$pyfullversion ]
+    if [ ! -f Python-$pyfullversion/all_done ]
     then
         if [ "$OSTYPE" = "linux-gnu" ]; then
             downloadIfNotExists Python-$pyfullversion.tar.bz2 http://www.python.org/ftp/python/$pyfullversion/Python-$pyfullversion.tar.bz2 || error_msg "Can't download python library"
@@ -499,12 +501,10 @@ function prepareGDB
                 SUFFIX=.exe
                 HOST_EXE=.exe
                 HOST=i686-pc-mingw32
-                export CC=gcc.exe
-                export CXX=g++.exe
-                PYCFGDIR=$install_dir/$PREFIX/bin/Lib/config
+                PYCFGDIR=$install_dir/bin/Lib/config
                 export PATH=.:$PATH
-                CC32="gcc"
-                CXX32="g++"
+                CC32=gcc.exe
+                CXX32=g++.exe
             else
                 # On some OS X installs (case insensitive filesystem), the dir "Python" clashes with the executable "python"
                 # --with-suffix can be used to get around this.
@@ -521,9 +521,13 @@ function prepareGDB
             touch Include/Python-ast.c
         fi
 
-        CC=$CC32 CXX=$CXX32 ./configure --host=$HOST --prefix=$install_dir --with-suffix=$SUFFIX && make -j$JOBS && make install || error_msg "Can't compile python library"
+        CC=$CC32 CXX=$CXX32 ./configure --host=$HOST --prefix=$install_dir --with-suffix=$SUFFIX || error_msg "Can't configure Python"
+        doMake "Can't compile Python" "all done"
+        make install || error_msg "Can't install Python"
+
         if [ "$OSTYPE" = "msys" ] ; then
             cd pywin32-216
+			# TODO :: Fix this, builds ok but then tries to copy pywintypes27.lib instead of libpywintypes27.a and pywintypes27.dll.
             ../python$EXE_EXT setup.py build
             cd ..
         fi
@@ -559,15 +563,16 @@ function prepareGDB
 
         cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
         mkdir -p $target_dir/python/include/python$pyversion
+		mkdir -p $target_dir/python/bin
         cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
         # Remove the $SUFFIX if present (OS X)
         mv $install_dir/bin/python$pyversion$SUFFIX$EXE_EXT $install_dir/bin/python$pyversion$EXE_EXT
         mv $install_dir/bin/python$SUFFIX$EXE_EXT $install_dir/bin/python$EXE_EXT
-        cp -a $install_dir/bin/python$pyversion$EXE_EXT $target_dir/python$pyversion$EXE_EXT
+        cp -a $install_dir/bin/python* $target_dir/python/bin/
         if [ "$OSTYPE" = "msys" ] ; then
             cp -fr $install_dir/bin/Lib $target_dir/
         fi
-        $STRIP $target_dir/python$pyversion$EXE_EXT
+        $STRIP $target_dir/python/bin/python$pyversion$EXE_EXT
         popd
         export PATH=$OLDPATH
     fi
