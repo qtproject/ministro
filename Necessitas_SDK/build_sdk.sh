@@ -271,16 +271,56 @@ function perpareNecessitasQtCreator
             cp -a /usr/bin/libgcc_s_dw2-1.dll $PWD/QtCreator/bin/
             cp -a /usr/bin/libstdc++-6.dll $PWD/QtCreator/bin/
             QT_LIB_DEST=$PWD/QtCreator/bin/
+            cp -a bin/necessitas.bat $PWD/QtCreator/bin/
         else
-            mkdir -p $PWD/QtCreator/Qt/lib
-            QT_LIB_DEST=$PWD/QtCreator/Qt/lib/
-		fi
-        cp -a $SHARED_QT_PATH/lib/* $QT_LIB_DEST
-        rm -fr $QT_LIB_DEST/pkgconfig
-        find . $QT_LIB_DEST -name *.la | xargs rm -fr
-        find . $QT_LIB_DEST -name *.prl | xargs rm -fr
-        cp -a $SHARED_QT_PATH/imports/* ${QT_LIB_DEST}../imports
-        cp -a bin/necessitas$SCRIPT_EXT $PWD/QtCreator/bin/
+            if [ "$OSTYPE" = "linux-gnu" ]; then
+                mkdir -p $PWD/QtCreator/Qt/lib
+                QT_LIB_DEST=$PWD/QtCreator/Qt/lib/
+                cp -a $SHARED_QT_PATH/lib/* $QT_LIB_DEST
+                rm -fr $QT_LIB_DEST/pkgconfig
+                find . $QT_LIB_DEST -name *.la | xargs rm -fr
+                find . $QT_LIB_DEST -name *.prl | xargs rm -fr
+                cp -a $SHARED_QT_PATH/imports/* ${QT_LIB_DEST}../imports
+                cp -a bin/necessitas $PWD/QtCreator/bin/
+            else
+                # Mac OS X. The libraries need to be placed inside the app bundle to make it relocatable.
+                # See: http://doc.trolltech.com/4.7/deployment-mac.html
+                # This isn't good enough. Recursive dependencies are being handled ad-hoc,
+                #  Plugin dependencies aren't being handled at all... Really, need to have a recursive library
+                #  call to do all of this.
+                mkdir bin/NecessitasQtCreator.app/Contents/Frameworks
+                rm -rf bin/NecessitasQtCreator.app/Contents/Frameworks/*
+                cp -R $SHARED_QT_PATH/lib/QtCore.framework bin/NecessitasQtCreator.app/Contents/Frameworks/
+                cp -R $SHARED_QT_PATH/lib/QtGui.framework bin/NecessitasQtCreator.app/Contents/Frameworks/
+                cp -R $SHARED_QT_PATH/lib/QtNetwork.framework bin/NecessitasQtCreator.app/Contents/Frameworks/
+                rm -rf $PWD/QtCreator/bin/NecessitasQtCreator.app
+                cp -Rf bin/NecessitasQtCreator.app $PWD/QtCreator/bin/
+                FINALAPP=$PWD/QtCreator/bin/NecessitasQtCreator.app
+                install_name_tool -id @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore \
+                    $FINALAPP/Contents/Frameworks/QtCore.framework/Versions/4/QtCore
+                install_name_tool -id @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui \
+                    $FINALAPP/Contents/Frameworks/QtGui.framework/Versions/4/QtGui
+                install_name_tool -id @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork \
+                    $FINALAPP/Contents/Frameworks/QtNetwork.framework/Versions/4/QtNetwork
+                install_name_tool -change $SHARED_QT_PATH/lib/QtCore.framework/Versions/4/QtCore \
+                    @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore \
+                    $FINALAPP/Contents/MacOS/NecessitasQtCreator
+                install_name_tool -change $SHARED_QT_PATH/lib/QtGui.framework/Versions/4/QtGui \
+                    @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui \
+                    $FINALAPP/Contents/MacOS/NecessitasQtCreator
+                install_name_tool -change $SHARED_QT_PATH/lib/QtNetwork.framework/Versions/4/QtNetwork \
+                    @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork \
+                    $FINALAPP/Contents/MacOS/NecessitasQtCreator
+                # QtGui depends on QtCore, there are likely dependencies for QtNetwork that I've not copied or rebased.
+                install_name_tool -change $SHARED_QT_PATH/lib/QtCore.framework/Versions/4/QtCore \
+                    @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore \
+                    $FINALAPP/Contents/Frameworks/QtGui.framework/Versions/4/QtGui
+                    # QtNetwork depends on QtCore.
+                install_name_tool -change $SHARED_QT_PATH/lib/QtCore.framework/Versions/4/QtCore \
+                    @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore \
+                    $FINALAPP/Contents/Frameworks/QtNetwork.framework/Versions/4/QtNetwork
+            fi
+        fi
         mkdir $PWD/QtCreator/images
         cp -a bin/necessitas*.png $PWD/QtCreator/images/
         $SDK_TOOLS_PATH/archivegen QtCreator qtcreator-${HOST_TAG}.7z
