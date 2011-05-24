@@ -56,6 +56,7 @@ SDK_TOOLS_PATH=""
 ANDROID_STRIP_BINARY=""
 ANDROID_READELF_BINARY=""
 QPATCH_PATH=""
+EXE_EXT=""
 
 if [ "$OSTYPE" = "msys" ] ; then
     HOST_CFG_OPTIONS=" -platform win32-g++ -reduce-exports "
@@ -613,7 +614,7 @@ function prepareGDB
         # Remove the $SUFFIX if present (OS X)
         mv $install_dir/bin/python$pyversion$SUFFIX$EXE_EXT $install_dir/bin/python$pyversion$EXE_EXT
         mv $install_dir/bin/python$SUFFIX$EXE_EXT $install_dir/bin/python$EXE_EXT
-        cp -a $install_dir/bin/python* $target_dir/python/bin/
+        cp -a $install_dir/bin/python$pyversion* $target_dir/python/bin/
         if [ "$OSTYPE" = "msys" ] ; then
             cp -fr $install_dir/bin/Lib $target_dir/
         fi

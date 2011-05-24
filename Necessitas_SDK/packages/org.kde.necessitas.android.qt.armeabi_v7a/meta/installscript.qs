@@ -20,18 +20,19 @@ function Component()
 {
     if( component.fromOnlineRepository )
     {
-        component.addDownloadableArchive( "qt-framework.7z" );
-
         if (installer.value("os") == "x11")
         {
+            component.addDownloadableArchive( "qt-framework.7z" );
             component.addDownloadableArchive( "qt-tools-linux-x86.7z" );
         }
         else if (installer.value("os") == "win")
         {
+            component.addDownloadableArchive( "qt-framework-windows.7z" );
             component.addDownloadableArchive( "qt-tools-windows.7z" );
         }
         else if (installer.value("os") == "mac")
         {
+            component.addDownloadableArchive( "qt-framework.7z" );
             component.addDownloadableArchive( "qt-tools-darwin-x86.7z" );
         }
     }

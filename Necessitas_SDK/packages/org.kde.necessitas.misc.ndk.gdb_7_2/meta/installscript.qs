@@ -43,7 +43,7 @@ Component.prototype.createOperations = function()
 
     var gdbPath = "@TargetDir@/gdb-7.2/gdb";
     var gdbserverPath = "@TargetDir@/gdbserver-7.2/gdbserver";
-    var pythonPath="@TargetDir@/gdb-7.2/python2.7"
+    var pythonPath="@TargetDir@/gdb-7.2/python/bin/python2.7"
     if (installer.value("os") == "win")
     {
         gdbPath+=".exe";
