@@ -20,7 +20,14 @@ function Component()
 {
     if( component.fromOnlineRepository )
     {
-        component.addDownloadableArchive( "qtwebkit-src.7z" );
+        if (installer.value("os") == "win")
+        {
+            component.addDownloadableArchive( "qtwebkit-src-windows.7z" );
+        }
+        else
+        {
+            component.addDownloadableArchive( "qtwebkit-src.7z" );
+        }
     }
 }
 

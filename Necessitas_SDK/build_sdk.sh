@@ -222,7 +222,7 @@ function prepareHostQt
 
 }
 
-function perpareSdkInstallerTools
+function prepareSdkInstallerTools
 {
     # get installer source code
     if [ ! -d necessitas-installer-framework ]
@@ -234,7 +234,6 @@ function perpareSdkInstallerTools
 
     if [ ! -f all_done ]
     then
-        git checkout master
         $STATIC_QT_PATH/bin/qmake -r || error_msg "Can't configure necessitas-installer-framework"
         doMake "Can't compile necessitas-installer-framework" "all done"
     fi
@@ -245,7 +244,7 @@ function perpareSdkInstallerTools
 }
 
 
-function perpareNecessitasQtCreator
+function prepareNecessitasQtCreator
 {
     if [ ! -d android-qt-creator ]
     then
@@ -258,7 +257,6 @@ function perpareNecessitasQtCreator
 
         if [ ! -f all_done ]
         then
-            git checkout testing
             $SHARED_QT_PATH/bin/qmake -r || error_msg "Can't configure android-qt-creator"
             doMake "Can't compile android-qt-creator" "all done"
         fi
@@ -424,7 +422,7 @@ function makeInstallMinGWBits
     popd
 }
 
-function perpareNDKs
+function prepareNDKs
 {
     # repack windows NDK
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-windows.7z ]
@@ -494,7 +492,7 @@ function perpareNDKs
 
 function prepareGDB
 {
-    #This function depends on perpareNDKs
+    #This function depends on prepareNDKs
     if [ -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/gdb-7.2-${HOST_TAG}.7z ]
     then
         return
@@ -736,7 +734,7 @@ function repackSDK
 }
 
 
-function perpareSDKs
+function prepareSDKs
 {
     echo "prepare SDKs"
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-linux_x86.7z ]
@@ -930,7 +928,7 @@ function compileNecessitasQt
 }
 
 
-function perpareNecessitasQt
+function prepareNecessitasQt
 {
     mkdir -p Android/Qt/$NECESSITAS_QT_VERSION
     pushd Android/Qt/$NECESSITAS_QT_VERSION
@@ -997,7 +995,7 @@ function compileNecessitasQtMobility
 }
 
 
-function perpareNecessitasQtMobility
+function prepareNecessitasQtMobility
 {
     mkdir -p Android/Qt/$NECESSITAS_QT_VERSION
     pushd Android/Qt/$NECESSITAS_QT_VERSION
@@ -1095,7 +1093,7 @@ function compileNecessitasQtWebkit
     popd
 }
 
-function perpareNecessitasQtWebkit
+function prepareNecessitasQtWebkit
 {
     mkdir -p Android/Qt/$NECESSITAS_QT_VERSION
     pushd Android/Qt/$NECESSITAS_QT_VERSION
@@ -1210,22 +1208,96 @@ function prepareMinistroRepository
     done
 }
 
+function packforWindows
+{
+    rm -fr $TEMP_PATH/packforWindows
+    mkdir -p $TEMP_PATH/packforWindows
+    pushd $TEMP_PATH/packforWindows
+        7z x $1/$2.7z
+        mv Android Android_old
+        $CPRL Android_old Android
+        rm -fr Android_old
+        find -name *.so.4* | xargs rm -fr
+        find -name *.so.1* | xargs rm -fr
+        $SDK_TOOLS_PATH/archivegen Android $1/$2-windows.7z
+    popd
+    rm -fr $TEMP_PATH/packforWindows
+}
+
+function prepareWindowsPackages
+{
+    #  Qt framework
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.armeabi/data/qt-framework-windows.7z ]
+    then
+        packforWindows $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.armeabi/data/ qt-framework
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.armeabi_v7a/data/qt-framework-windows.7z ]
+    then
+        packforWindows $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.armeabi_v7a/data/ qt-framework
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.src/data/qt-src-windows.7z ]
+    then
+        packforWindows $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.src/data/ qt-src
+    fi
+
+
+    #  Qt Mobility
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.armeabi/data/qtmobility-windows.7z ]
+    then
+        packforWindows $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.armeabi/data/ qtmobility
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.armeabi_v7a/data/qtmobility-windows.7z ]
+    then
+        packforWindows $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.armeabi_v7a/data/ qtmobility
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.src/data/qtmobility-src-windows.7z ]
+    then
+        packforWindows $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.src/data/ qtmobility-src
+    fi
+
+
+    #  Qt WebKit
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.armeabi/data/qtwebkit-windows.7z ]
+    then
+        packforWindows $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.armeabi/data/ qtwebkit
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.armeabi_v7a/data/qtwebkit-windows.7z ]
+    then
+        packforWindows $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.armeabi_v7a/data/ qtwebkit
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.src/data/qtwebkit-src-windows.7z ]
+    then
+        packforWindows $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.src/data/ qtwebkit-src
+    fi
+
+}
 # This is needed early.
 SDK_TOOLS_PATH=$PWD/necessitas-installer-framework/installerbuilder/bin
 
 prepareHostQt
-perpareSdkInstallerTools
-perpareNDKs
+prepareSdkInstallerTools
+prepareNDKs
 prepareGDB
 prepareGDBServer
-perpareSDKs
-perpareNecessitasQtCreator
-perpareNecessitasQt
+prepareSDKs
+prepareNecessitasQtCreator
+prepareNecessitasQt
 # TODO :: Fix webkit build in Windows (-no-video fails) and Mac OS X (debug-and-release config incorrectly used and fails)
 if [ "$OSTYPE" = "linux-gnu" ] ; then
-    perpareNecessitasQtWebkit
+    prepareNecessitasQtWebkit
 fi
-perpareNecessitasQtMobility
+prepareNecessitasQtMobility
+
+if [ "$OSTYPE" = "linux-gnu" ] ; then
+    prepareWindowsPackages
+fi
+
 patchPackages
 prepareSDKBinary
 prepareSDKRepository

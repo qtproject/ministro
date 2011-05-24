@@ -20,7 +20,14 @@ function Component()
 {
     if( component.fromOnlineRepository )
     {
-        component.addDownloadableArchive( "qtmobility-src.7z" );
+        if (installer.value("os") == "win")
+        {
+            component.addDownloadableArchive( "qtmobility-src-windows.7z" );
+        }
+        else
+        {
+            component.addDownloadableArchive( "qtmobility-src.7z" );
+        }
     }
 }
 
