@@ -25,30 +25,29 @@ function Component()
         installer.currentPageChanged.connect( this, updateComponentSelectionPageNeedState );
     }
 
-    if (installer.value("os") == "x11") {
+    if (installer.value("os") == "x11" || installer.value("os") == "mac")
+    {
         compiler = installer.execute( "/usr/bin/which", new Array( "g++" ) )[0];
         if (!compiler) {
             QMessageBox["warning"]( "compilerError", "No compiler!", "You need a C++ compiler. Please install it using the System Package Management tools." );
         }
-    }
-
-    if (installer.value("os") == "mac") {
-        compiler = installer.execute( "/usr/bin/which", new Array( "g++" ) )[0];
+        compiler = installer.execute( "/usr/bin/which", new Array( "make" ) )[0];
         if (!compiler) {
-            QMessageBox["warning"]( "compilerError", "No compiler!", "You need a C++ compiler to be able install the Qt SDK. Please install the latest Xcode first before invoking this installer!" );
+            QMessageBox["warning"]( "Error", "No *make* tool!", "You need *make* tool. Please install it using the System Package Management tools." );
+        }
+        compiler = installer.execute( "/usr/bin/which", new Array( "ant" ) )[0];
+        if (!compiler) {
+            QMessageBox["warning"]( "Error", "No *ant* tool!", "You need *ant* tool. Please install it using the System Package Management tools." );
+        }
+        compiler = installer.execute( "/usr/bin/which", new Array( "java" ) )[0];
+        if (!compiler) {
+            QMessageBox["warning"]( "Error", "No java compiler!", "You need a java compiler. Please install it using the System Package Management tools." );
+        }
+        compiler = installer.execute( "/usr/bin/which", new Array( "javac" ) )[0];
+        if (!compiler) {
+            QMessageBox["warning"]( "Error", "No java compiler!", "You need a java compiler. Please install it using the System Package Management tools." );
         }
     }
-
-    if (installer.value("os") == "win") {
-        refreshInstalledWindowsCompilerValues();
-    }
-
-    if( component.fromOnlineRepository )
-    {
-        component.addDownloadableArchive( "readme.7z" );
-    }
-    installer.installationFinished.connect( this, Component.prototype.installationFinishedPageIsShown );
-    installer.finishButtonClicked.connect( this, Component.prototype.installationFinished );
 }
 
 // called as soon as the component was loaded
@@ -73,52 +72,6 @@ Component.prototype.loaded = function()
         installer.setValue("GlobalExamplesDir", "Examples");
         installer.setValue("GlobalDemosDir", "Demos");
         installer.setValue("QtVersionLabel", "Qt SDK");
-
-    }
-    catch( e )
-    {
-        print( e );
-    }
-}
-
-refreshMinGWInstallerValue = function()
-{
-    if( typeof installer.componentByName("com.nokia.ndk.misc.mingw") == 'undefined' ) {
-        print("Warning: no MinGW package is available");
-        installer.setSharedFlag("compilerMinGW", false);
-    } else {
-        installer.setSharedFlag("compilerMinGW", installer.componentByName("com.nokia.ndk.misc.mingw").selected);
-    }
-}
-
-refreshInstalledWindowsCompilerValues = function()
-{
-    try
-    {
-        //Visual Studio 2008 check
-        if(installer.environmentVariable("VS90COMNTOOLS")) {
-            //print("Visual Studio 2008 environment is found")
-            installer.setSharedFlag("compilerVS90", true);
-        } else {
-            installer.setSharedFlag("compilerVS90", false);
-        }
-
-        //Visual Studio 2005 check
-        if(installer.environmentVariable("VS80COMNTOOLS")) {
-            //print("Visual Studio 2005 environment is found")
-            installer.setSharedFlag("compilerVS80", true);
-        } else {
-            installer.setSharedFlag("compilerVS80", false);
-        }
-
-        //MinGW check
-        refreshMinGWInstallerValue();
-        if (typeof installer.componentByName("com.nokia.ndk.misc.mingw") != 'undefined')
-        {
-            installer.componentByName("com.nokia.ndk.misc.mingw").selectedChanged.connect( this, refreshMinGWInstallerValue );
-        }
-
-        installer.setSharedFlag("compilersInitialized", true);
     }
     catch( e )
     {
@@ -146,118 +99,42 @@ changeInstallationKind = function()
 
 adjustToDefaultSelection = function()
 {
-    //unselect all experimental things
-    if (installer.componentByName("com.nokia.ndk.experimental") != null
-        && installer.componentByName("com.nokia.ndk.experimental").selected)
-    {
-        installer.componentByName("com.nokia.ndk.experimental").selected = false;
-    }
-
     //remove sources
-    if (installer.componentByName("com.nokia.ndk.misc.qtsources") != null &&
-        installer.componentByName("com.nokia.ndk.misc.qtsources").selected)
+    if (installer.componentByName("org.kde.necessitas.android.qt.src") != null
+        && installer.componentByName("org.kde.necessitas.android.qt.src").selected)
     {
-        installer.componentByName("com.nokia.ndk.misc.qtsources").selected = false;
+        installer.componentByName("org.kde.necessitas.android.qt.src").selected = false;
     }
-    // deselect Desktop Qt 4.7.1 by default
-    if (installer.componentByName("com.nokia.ndk.tools.desktop.471") != null &&
-        installer.componentByName("com.nokia.ndk.tools.desktop.471").selected)
+    if (installer.componentByName("org.kde.necessitas.android.qtmobility.src") != null &&
+        installer.componentByName("org.kde.necessitas.android.qtmobility.src").selected)
     {
-        installer.componentByName("com.nokia.ndk.tools.desktop.471").selected = false;
+        installer.componentByName("org.kde.necessitas.android.qtmobility.src").selected = false;
     }
-    if (installer.componentByName("com.nokia.ndk.tools.desktop.471.2005") != null &&
-        installer.componentByName("com.nokia.ndk.tools.desktop.471.2005").selected)
+    if (installer.componentByName("org.kde.necessitas.android.qtwebkit.src") != null &&
+        installer.componentByName("org.kde.necessitas.android.qtwebkit.src").selected)
     {
-        installer.componentByName("com.nokia.ndk.tools.desktop.471.2005").selected = false;
+        installer.componentByName("org.kde.necessitas.android.qtwebkit.src").selected = false;
     }
-    if (installer.componentByName("com.nokia.ndk.tools.desktop.471.2008") != null &&
-        installer.componentByName("com.nokia.ndk.tools.desktop.471.2008").selected)
+
+    // deselect all deprecated packages by default
+    if (installer.componentByName("org.kde.necessitas.misc.sdk.android_5") != null &&
+        installer.componentByName("org.kde.necessitas.misc.sdk.android_5").selected)
     {
-        installer.componentByName("com.nokia.ndk.tools.desktop.471.2008").selected = false;
+        installer.componentByName("org.kde.necessitas.misc.sdk.android_5").selected = false;
     }
-    if (installer.componentByName("com.nokia.ndk.tools.desktop.471.gcc") != null &&
-        installer.componentByName("com.nokia.ndk.tools.desktop.471.gcc").selected)
+    if (installer.componentByName("org.kde.necessitas.misc.sdk.android_6") != null &&
+        installer.componentByName("org.kde.necessitas.misc.sdk.android_6").selected)
     {
-        installer.componentByName("com.nokia.ndk.tools.desktop.471.gcc").selected = false;
+        installer.componentByName("org.kde.necessitas.misc.sdk.android_6").selected = false;
     }
-    if (installer.componentByName("com.nokia.ndk.tools.desktop.471.mingw") != null &&
-        installer.componentByName("com.nokia.ndk.tools.desktop.471.mingw").selected)
+    if (installer.componentByName("org.kde.necessitas.misc.sdk.android_7") != null &&
+        installer.componentByName("org.kde.necessitas.misc.sdk.android_7").selected)
     {
-        installer.componentByName("com.nokia.ndk.tools.desktop.471.mingw").selected = false;
+        installer.componentByName("org.kde.necessitas.misc.sdk.android_7").selected = false;
     }
-    // deselect Desktop Qt 4.7.2 by default
-    if (installer.componentByName("com.nokia.ndk.tools.desktop.472") != null &&
-        installer.componentByName("com.nokia.ndk.tools.desktop.472").selected)
+    if (installer.componentByName("org.kde.necessitas.misc.sdk.android_9") != null &&
+        installer.componentByName("org.kde.necessitas.misc.sdk.android_9").selected)
     {
-        installer.componentByName("com.nokia.ndk.tools.desktop.472").selected = false;
-    }
-    if (installer.componentByName("com.nokia.ndk.tools.desktop.472.2005") != null &&
-        installer.componentByName("com.nokia.ndk.tools.desktop.472.2005").selected)
-    {
-        installer.componentByName("com.nokia.ndk.tools.desktop.472.2005").selected = false;
-    }
-    if (installer.componentByName("com.nokia.ndk.tools.desktop.472.2008") != null &&
-        installer.componentByName("com.nokia.ndk.tools.desktop.472.2008").selected)
-    {
-        installer.componentByName("com.nokia.ndk.tools.desktop.472.2008").selected = false;
-    }
-    if (installer.componentByName("com.nokia.ndk.tools.desktop.472.gcc") != null &&
-        installer.componentByName("com.nokia.ndk.tools.desktop.472.gcc").selected)
-    {
-        installer.componentByName("com.nokia.ndk.tools.desktop.472.gcc").selected = false;
-    }
-    if (installer.componentByName("com.nokia.ndk.tools.desktop.472.mingw") != null &&
-        installer.componentByName("com.nokia.ndk.tools.desktop.472.mingw").selected)
-    {
-        installer.componentByName("com.nokia.ndk.tools.desktop.472.mingw").selected = false;
+        installer.componentByName("org.kde.necessitas.misc.sdk.android_9").selected = false;
     }
 }
-
-
-Component.prototype.createOperations = function()
-{
-    // Call the base createOperations and afterwards set some registry settings
-    component.createOperations();
-    if (component.userInterface( "CreatorSettingsWidget" ).removeCheckBox.checked ) {
-        component.addOperation( "SimpleMoveFile", "@QtCreatorSettingsFile@", "@QtCreatorSettingsFile@_backup");
-    }
-    if ( installer.value("os") == "win" )
-    {
-        component.addOperation( "CreateShortcut", "@TargetDir@/readme/index.html", "@StartMenuDir@/Getting Started with the Qt SDK.lnk" );
-    }
-}
-
-Component.prototype.installationFinishedPageIsShown = function()
-{
-    try
-    {
-        if (installer.isInstaller() && installer.status == QInstaller.InstallerSucceeded)
-        {
-            installer.addWizardPageItem( component, "ReadMeCheckBoxForm", QInstaller.InstallationFinished );
-        }
-    }
-    catch( e )
-    {
-        print( e );
-    }
-}
-
-Component.prototype.installationFinished = function()
-{
-    try
-    {
-        if (installer.isInstaller() && installer.status == QInstaller.InstallerSucceeded)
-        {
-            var isReadMeCheckBoxChecked = component.userInterface( "ReadMeCheckBoxForm" ).readMeCheckBox.checked;
-            if (isReadMeCheckBoxChecked)
-            {
-                QDesktopServices.openUrl("file:///" + installer.value("TargetDir") + "/readme/index.html");
-            }
-        }
-    }
-    catch( e )
-    {
-        print( e );
-    }
-}
-

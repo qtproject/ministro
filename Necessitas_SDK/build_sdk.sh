@@ -263,6 +263,20 @@ function prepareNecessitasQtCreator
         rm -fr QtCreator
         export INSTALL_ROOT=$PWD/QtCreator
         make install
+
+        #download and install sdk-updater-plugin
+        export QTC_SOURCE=$PWD
+        downloadIfNotExists research-sdk-updater-plugin-master-snapshot-20110524185306.tar.gz http://android-lighthouse.googlecode.com/files/research-sdk-updater-plugin-master-snapshot-20110524185306.tar.gz
+        if [ ! -d research-sdk-updater-plugin-master-snapshot-20110524185306 ]
+        then
+            tar xvfz research-sdk-updater-plugin-master-snapshot-20110524185306.tar.gz
+        fi
+        pushd research-sdk-updater-plugin-master-snapshot-20110524185306
+            $SHARED_QT_PATH/bin/qmake -r || error_msg "Can't configure sdk-updater-plugin"
+            doMake "Can't compile sdk-updater-plugin" "all done"
+            make install
+        popd
+
         mkdir -p $PWD/QtCreator/Qt/imports
         mkdir -p $PWD/QtCreator/Qt/plugins
         if [ "$OSTYPE" = "msys" ]; then

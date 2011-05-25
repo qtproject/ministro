@@ -9,7 +9,7 @@
     <License>license.txt</License>
     <Icon>qticon</Icon>
     <Watermark>watermark.png</Watermark>
-    <UninstallerName>SDKMaintainer</UninstallerName>
+    <UninstallerName>SDKMaintenanceTool</UninstallerName>
     <RemoteRepositories>
         <Repository>
             <Url>http://files.kde.org/necessitas/sdk</Url>
