@@ -63,6 +63,7 @@ if [ "$OSTYPE" = "msys" ] ; then
     HOST_TAG=windows
     HOST_TAG_NDK=windows
     EXE_EXT=.exe
+    SHLIB_EXT=.dll
     SCRIPT_EXT=.bat
     JOBS=9
 else
@@ -73,11 +74,13 @@ else
         HOST_CFG_OPTIONS_STATIC=" -no-reduce-exports "
         HOST_TAG=darwin-x86
         HOST_TAG_NDK=darwin-x86
+        SHLIB_EXT=.dylib
         JOBS=9
     else
         HOST_CFG_OPTIONS=" -platform linux-g++ "
         HOST_TAG=linux-x86
         HOST_TAG_NDK=linux-x86
+        SHLIB_EXT=.so
         JOBS=`cat /proc/cpuinfo | grep processor | wc -l`
         JOBS=`expr $JOBS + 2`
     fi
@@ -340,7 +343,7 @@ function prepareNecessitasQtCreator
         mkdir $PWD/QtCreator/images
         cp -a bin/necessitas*.png $PWD/QtCreator/images/
         pushd QtCreator
-        find -name *.so |xargs strip -s
+        find -name "*$SHLIB_EXT" |xargs strip -s
         popd
         $SDK_TOOLS_PATH/archivegen QtCreator qtcreator-${HOST_TAG}.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data
