@@ -234,6 +234,7 @@ function prepareSdkInstallerTools
 
     if [ ! -f all_done ]
     then
+        git checkout master
         $STATIC_QT_PATH/bin/qmake -r || error_msg "Can't configure necessitas-installer-framework"
         doMake "Can't compile necessitas-installer-framework" "all done"
     fi
@@ -254,7 +255,7 @@ function prepareNecessitasQtCreator
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-${HOST_TAG}.7z ]
     then
         pushd android-qt-creator
-
+        git checkout testing
         if [ ! -f all_done ]
         then
             $SHARED_QT_PATH/bin/qmake -r || error_msg "Can't configure android-qt-creator"

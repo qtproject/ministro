@@ -67,6 +67,38 @@ Component.prototype.createOperations = function()
 {
     // Call the base createOperations and afterwards set some registry settings
     component.createOperations();
+
+    if (installer.value("os") == "win") {
+        var win_application = installer.value("TargetDir") + "/SDKMaintenanceTool.exe";
+        component.addOperation( "SetQtCreatorValue",
+                                "@TargetDir@",
+                                "Updater",
+                                "Application",
+                                win_application );
+    } else if (installer.value("os") == "x11") {
+        component.addOperation( "SetQtCreatorValue",
+                                "@TargetDir@",
+                                "Updater",
+                                "Application",
+                                "@TargetDir@/SDKMaintenanceTool" );
+    } else if (installer.value("os") == "mac") {
+        component.addOperation( "SetQtCreatorValue",
+                                "@TargetDir@",
+                                "Updater",
+                                "Application",
+                                "@TargetDir@/SDKMaintenanceTool.app/Contents/MacOS/SDKMaintenanceTool" );
+    }
+    component.addOperation( "SetQtCreatorValue",
+                            "@TargetDir@",
+                            "Updater",
+                            "CheckOnlyArgument",
+                            "--checkupdates" );
+    component.addOperation( "SetQtCreatorValue",
+                            "@TargetDir@",
+                            "Updater",
+                            "RunUiArgument",
+                            "--updater" );
+
     if ( installer.value("os") == "x11" )
     {
 //        component.addOperation( "SetPluginPathOnQtCore",
@@ -135,6 +167,7 @@ Component.prototype.createOperations = function()
                                 "Qt Project Include file",
                                 "",
                                 "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,6");
+
     }
 }
 
@@ -142,42 +175,9 @@ Component.prototype.installationFinished = function()
 {
     if (installer.isInstaller() && component.selected)
     {
-
-        if (installer.value("os") == "win") {
-            var win_application = installer.value("TargetDir") + "/SDKMaintenanceTool.exe";
-            component.addOperation( "SetQtCreatorValue",
-                                    "@TargetDir@",
-                                    "Updater",
-                                    "Application",
-                                    win_application );
-        } else if (installer.value("os") == "x11") {
-            component.addOperation( "SetQtCreatorValue",
-                                    "@TargetDir@",
-                                    "Updater",
-                                    "Application",
-                                    "@TargetDir@/SDKMaintenanceTool" );
-        } else if (installer.value("os") == "mac") {
-            component.addOperation( "SetQtCreatorValue",
-                                    "@TargetDir@",
-                                    "Updater",
-                                    "Application",
-                                    "@TargetDir@/SDKMaintenanceTool.app/Contents/MacOS/SDKMaintenanceTool" );
-        }
-        component.addOperation( "SetQtCreatorValue",
-                                "@TargetDir@",
-                                "Updater",
-                                "CheckOnlyArgument",
-                                "--checkupdates" );
-        component.addOperation( "SetQtCreatorValue",
-                                "@TargetDir@",
-                                "Updater",
-                                "RunUiArgument",
-                                "--updater" );
-
         if (installer.value("os") == "win")
         {
             installer.setValue("RunProgram", installer.value("TargetDir") + "\\QtCreator\\bin\\qtcreator.exe");
-            print("installer.value(RunProgram)" + installer.value("RunProgram"));
             installer.setValue("RunProgramDescription", "Launch Qt Creator");
         }
         else if (installer.value("os") == "x11")
