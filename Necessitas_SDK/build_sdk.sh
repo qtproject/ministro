@@ -289,6 +289,7 @@ function prepareNecessitasQtCreator
             cp -a /usr/bin/libgcc_s_dw2-1.dll $PWD/QtCreator/bin/
             cp -a /usr/bin/libstdc++-6.dll $PWD/QtCreator/bin/
             QT_LIB_DEST=$PWD/QtCreator/bin/
+            cp -a $SHARED_QT_PATH/lib/* $QT_LIB_DEST
             cp -a bin/necessitas.bat $PWD/QtCreator/bin/
         else
             if [ "$OSTYPE" = "linux-gnu" ]; then
