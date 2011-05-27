@@ -438,6 +438,15 @@ function makeInstallMinGWBits
     make && make DESTDIR=$install_dir install
     popd
 
+    downloadIfNotExists texinfo-4.13a.tar.gz http://ftp.gnu.org/gnu/texinfo/texinfo-4.13a.tar.gz
+    rm -rf texinfo-4.13
+    tar -xvzf texinfo-4.13a.tar.gz
+    pushd texinfo-4.13
+    CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses=$install_dir --enable-multibyte --prefix=/usr/local  CFLAGS=-O2
+    make
+    make install
+    popd
+
     popd
 }
 
@@ -649,7 +658,6 @@ function prepareGDB
     then
         mkdir -p gdb-src/build-gdb
         pushd gdb-src/build-gdb
-        export PYTHONHOME=$install_dir
         OLDPATH=$PATH
         export PATH=$install_dir/bin/:$PATH
         CC=$CC32 CXX=$CXX32 ../gdb-7.2.50.20110211/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
