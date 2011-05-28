@@ -187,7 +187,7 @@ Component.prototype.installationFinished = function()
         }
         else if (installer.value("os") == "mac")
         {
-            installer.setValue("RunProgram", "\"" + installer.value("TargetDir") + "/NecessitasQtCreator.app/Contents/MacOS/NecessitasQtCreator\"");
+            installer.setValue("RunProgram", "\"" + installer.value("TargetDir") + "/QtCreator/bin/NecessitasQtCreator.app/Contents/MacOS/NecessitasQtCreator\"");
             installer.setValue("RunProgramDescription", "Launch Qt Creator");
         }
     }
