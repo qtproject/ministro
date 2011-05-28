@@ -59,7 +59,7 @@ QPATCH_PATH=""
 EXE_EXT=""
 
 if [ "$OSTYPE" = "msys" ] ; then
-    HOST_CFG_OPTIONS=" -platform win32-g++ -reduce-exports "
+    HOST_CFG_OPTIONS=" -platform win32-g++ -reduce-exports -release -prefix . "
     HOST_TAG=windows
     HOST_TAG_NDK=windows
     EXE_EXT=.exe
@@ -68,7 +68,8 @@ if [ "$OSTYPE" = "msys" ] ; then
     JOBS=9
 else
     if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
-        HOST_CFG_OPTIONS=" -platform macx-g++42 -sdk /Developer/SDKs/MacOSX10.5.sdk -arch i386 -arch x86_64 -cocoa "
+        HOST_CFG_OPTIONS=" -platform macx-g++42 -sdk /Developer/SDKs/MacOSX10.5.sdk -arch i386 -arch x86_64 -cocoa -release -prefix . "
+        HOST_QM_CFG_OPTIONS="CONFIG+=x86 CONFIG+=x86_64"
         # -reduce-exports doesn't work for static Mac OS X i386 build.
         # (ld: bad codegen, pointer diff in fulltextsearch::clucene::QHelpSearchIndexReaderClucene::run()     to global weak symbol vtable for QtSharedPointer::ExternalRefCountDatafor architecture i386)
         HOST_CFG_OPTIONS_STATIC=" -no-reduce-exports "
@@ -77,7 +78,7 @@ else
         SHLIB_EXT=.dylib
         JOBS=9
     else
-        HOST_CFG_OPTIONS=" -platform linux-g++ "
+        HOST_CFG_OPTIONS=" -platform linux-g++ -developer-build "
         HOST_TAG=linux-x86
         HOST_TAG_NDK=linux-x86
         SHLIB_EXT=.so
@@ -198,7 +199,7 @@ function prepareHostQt
     if [ ! -f all_done ]
     then
         rm -fr *
-        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -developer-build -static -no-webkit -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -release -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -static -no-webkit -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         doMake "Can't compile static $HOST_QT_VERSION" "all done"
         if [ "$OSTYPE" = "msys" ]; then
             # Horrible; need to fix this properly.
@@ -214,7 +215,7 @@ function prepareHostQt
     if [ ! -f all_done ]
     then
         rm -fr *
-        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -developer-build -shared -webkit -no-phonon -release -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -shared -webkit -no-phonon -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         doMake "Can't compile shared $HOST_QT_VERSION" "all done"
         if [ "$OSTYPE" = "msys" ]; then
             # Horrible; need to fix this properly.
@@ -238,7 +239,7 @@ function prepareSdkInstallerTools
     if [ ! -f all_done ]
     then
         git checkout master
-        $STATIC_QT_PATH/bin/qmake -r || error_msg "Can't configure necessitas-installer-framework"
+        $STATIC_QT_PATH/bin/qmake $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure necessitas-installer-framework"
         doMake "Can't compile necessitas-installer-framework" "all done"
     fi
     popd
@@ -261,7 +262,7 @@ function prepareNecessitasQtCreator
         git checkout testing
         if [ ! -f all_done ]
         then
-            $SHARED_QT_PATH/bin/qmake -r || error_msg "Can't configure android-qt-creator"
+            $SHARED_QT_PATH/bin/qmake "CONFIG+=release" $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure android-qt-creator"
             doMake "Can't compile android-qt-creator" "all done"
         fi
         rm -fr QtCreator
@@ -276,7 +277,7 @@ function prepareNecessitasQtCreator
             tar xvfz research-sdk-updater-plugin-master-snapshot-20110524185306.tar.gz
         fi
         pushd research-sdk-updater-plugin-master-snapshot-20110524185306
-            $SHARED_QT_PATH/bin/qmake -r || error_msg "Can't configure sdk-updater-plugin"
+            $SHARED_QT_PATH/bin/qmake "CONFIG+=release" $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure sdk-updater-plugin"
             doMake "Can't compile sdk-updater-plugin" "all done"
             make install
         popd
@@ -303,48 +304,23 @@ function prepareNecessitasQtCreator
                 cp -a $SHARED_QT_PATH/plugins/* ${QT_LIB_DEST}../plugins
                 cp -a bin/necessitas $PWD/QtCreator/bin/
             else
-                # Mac OS X. The libraries need to be placed inside the app bundle to make it relocatable.
-                # See: http://doc.trolltech.com/4.7/deployment-mac.html
-                # This isn't good enough. Recursive dependencies are being handled ad-hoc,
-                #  Plugin dependencies aren't being handled at all... Really, need to have a recursive library
-                #  call to do all of this.
-                mkdir bin/NecessitasQtCreator.app/Contents/Frameworks
-                rm -rf bin/NecessitasQtCreator.app/Contents/Frameworks/*
-                cp -R $SHARED_QT_PATH/lib/QtCore.framework bin/NecessitasQtCreator.app/Contents/Frameworks/
-                cp -R $SHARED_QT_PATH/lib/QtGui.framework bin/NecessitasQtCreator.app/Contents/Frameworks/
-                cp -R $SHARED_QT_PATH/lib/QtNetwork.framework bin/NecessitasQtCreator.app/Contents/Frameworks/
-                rm -rf $PWD/QtCreator/bin/NecessitasQtCreator.app
-                cp -Rf bin/NecessitasQtCreator.app $PWD/QtCreator/bin/
-                FINALAPP=$PWD/QtCreator/bin/NecessitasQtCreator.app
-                install_name_tool -id @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore \
-                    $FINALAPP/Contents/Frameworks/QtCore.framework/Versions/4/QtCore
-                install_name_tool -id @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui \
-                    $FINALAPP/Contents/Frameworks/QtGui.framework/Versions/4/QtGui
-                install_name_tool -id @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork \
-                    $FINALAPP/Contents/Frameworks/QtNetwork.framework/Versions/4/QtNetwork
-                install_name_tool -change $SHARED_QT_PATH/lib/QtCore.framework/Versions/4/QtCore \
-                    @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore \
-                    $FINALAPP/Contents/MacOS/NecessitasQtCreator
-                install_name_tool -change $SHARED_QT_PATH/lib/QtGui.framework/Versions/4/QtGui \
-                    @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui \
-                    $FINALAPP/Contents/MacOS/NecessitasQtCreator
-                install_name_tool -change $SHARED_QT_PATH/lib/QtNetwork.framework/Versions/4/QtNetwork \
-                    @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork \
-                    $FINALAPP/Contents/MacOS/NecessitasQtCreator
-                # QtGui depends on QtCore, there are likely dependencies for QtNetwork that I've not copied or rebased.
-                install_name_tool -change $SHARED_QT_PATH/lib/QtCore.framework/Versions/4/QtCore \
-                    @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore \
-                    $FINALAPP/Contents/Frameworks/QtGui.framework/Versions/4/QtGui
-                    # QtNetwork depends on QtCore.
-                install_name_tool -change $SHARED_QT_PATH/lib/QtCore.framework/Versions/4/QtCore \
-                    @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore \
-                    $FINALAPP/Contents/Frameworks/QtNetwork.framework/Versions/4/QtNetwork
+                pushd macdeployqt
+                $SHARED_QT_PATH/bin/qmake $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure macdeployqt"
+                doMake "Can't compile macdeployqt" "all done"
+                popd
+                pushd bin
+                rm -rf NecessitasQtCreatorBackup.app
+                cp -rf NecessitasQtCreator.app NecessitasQtCreatorBackup.app
+                ../macdeployqt/macdeployqt/macdeployqt NecessitasQtCreator.app
+                popd
+                mv bin/NecessitasQtCreator.app $PWD/QtCreator/bin/NecessitasQtCreator.app
+                mv bin/NecessitasQtCreatorBackup.app bin/NecessitasQtCreator.app
             fi
         fi
         mkdir $PWD/QtCreator/images
         cp -a bin/necessitas*.png $PWD/QtCreator/images/
         pushd QtCreator
-        find -name "*$SHLIB_EXT" |xargs strip -s
+        find . -name "*$SHLIB_EXT" | xargs $STRIP
         popd
         $SDK_TOOLS_PATH/archivegen QtCreator qtcreator-${HOST_TAG}.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data
@@ -356,7 +332,7 @@ function prepareNecessitasQtCreator
     pushd qpatch-build
     if [ ! -f all_done ]
     then
-        $STATIC_QT_PATH/bin/qmake "QT_CONFIG=release" -r ../android-qt-creator/src/tools/qpatch/qpatch.pro
+        $STATIC_QT_PATH/bin/qmake "CONFIG+=release" $HOST_QM_CFG_OPTIONS -r ../android-qt-creator/src/tools/qpatch/qpatch.pro
         if [ "$OSTYPE" = "msys" ]; then
             make -f Makefile.Release || error_msg "Can't compile qpatch"
         else
