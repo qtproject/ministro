@@ -461,6 +461,7 @@ function prepareNDKs
         rm -fr android-ndk-${ANDROID_NDK_VERSION}
     fi
 
+<<<<<<< HEAD
     if [ BUILD_ANDROID_GIT_NDK = 1 ]
     then
         export ANDROID_NDK_ROOT=$PWD/android-ndk-${ANDROID_NDK_VERSION}-git
@@ -470,6 +471,13 @@ function prepareNDKs
         export ANDROID_NDK_FOLDER_NAME=android-ndk-${ANDROID_NDK_VERSION}
     fi
     if [ ! -d $ANDROID_NDK_FOLDER_NAME ]; then
+=======
+    export ANDROID_NDK_ROOT=$PWD/android-ndk-r5b
+    export ANDROID_NDK_HOST=$HOST_TAG_NDK
+
+    if [ ! -d android-ndk-r5b ]; then
+
+>>>>>>> Set ANDROID_NDK_HOST to HOST_TAG_NDK
         if [ "$OSTYPE" = "msys" ]; then
             downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-windows.zip http://dl.google.com/android/ndk/android-ndk-${ANDROID_NDK_VERSION}-windows.zip
             unzip android-ndk-${ANDROID_NDK_VERSION}-windows.zip
