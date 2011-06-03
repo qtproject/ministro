@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+. sdk_vars.sh
 
 REPO_SRC_PATH=$PWD
 TEMP_PATH_PREFIX=/tmp
@@ -44,12 +45,8 @@ fi
 
 pushd $TEMP_PATH
 
-NECESSITAS_QT_VERSION=4762
-NECESSITAS_QT_VERSION_LONG="4.7.62"
-MINISTRO_VERSION="0.2"
 MINISTRO_REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/qt
 REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/sdk
-HOST_QT_VERSION=qt-everywhere-opensource-src-4.7.3
 STATIC_QT_PATH=""
 SHARED_QT_PATH=""
 SDK_TOOLS_PATH=""
@@ -428,70 +425,81 @@ function makeInstallMinGWBits
 
 function prepareNDKs
 {
-    # repack windows NDK
-    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-windows.7z ]
+    # repack official windows NDK
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-windows.7z ]
     then
-        downloadIfNotExists android-ndk-r5b-windows.zip http://dl.google.com/android/ndk/android-ndk-r5b-windows.zip
-        if [ ! -d android-ndk-r5b ]
-        then
-            unzip android-ndk-r5b-windows.zip
-        fi
-        $SDK_TOOLS_PATH/archivegen android-ndk-r5b android-ndk-r5b-windows.7z
-        mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data
-        mv android-ndk-r5b-windows.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-windows.7z
-        rm -fr android-ndk-r5b
+        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-windows.zip http://dl.google.com/android/ndk/android-ndk-${ANDROID_NDK_VERSION}-windows.zip
+        rm -fr android-ndk-${ANDROID_NDK_VERSION}
+        unzip android-ndk-${ANDROID_NDK_VERSION}-windows.zip
+        $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-windows.7z
+        mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_VERSION}/data
+        mv android-ndk-${ANDROID_NDK_VERSION}-windows.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-windows.7z
+        rm -fr android-ndk-${ANDROID_NDK_VERSION}
     fi
 
-    # repack mac NDK
-    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-darwin-x86.7z ]
+    # repack official mac NDK
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-darwin-x86.7z ]
     then
-        downloadIfNotExists android-ndk-r5b-darwin-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-darwin-x86.tar.bz2
-        if [ ! -d android-ndk-r5b ]
-        then
-            tar xjvf android-ndk-r5b-darwin-x86.tar.bz2
-        fi
-        $SDK_TOOLS_PATH/archivegen android-ndk-r5b android-ndk-r5b-darwin-x86.7z
-        mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data
-        mv android-ndk-r5b-darwin-x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-darwin-x86.7z
-        rm -fr android-ndk-r5b
+        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-darwin-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-${ANDROID_NDK_VERSION}-darwin-x86.tar.bz2
+        rm -fr android-ndk-${ANDROID_NDK_VERSION}
+        tar xjvf android-ndk-${ANDROID_NDK_VERSION}-darwin-x86.tar.bz2
+        $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-darwin-x86.7z
+        mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_VERSION}/data
+        mv android-ndk-${ANDROID_NDK_VERSION}-darwin-x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-darwin-x86.7z
+        rm -fr android-ndk-${ANDROID_NDK_VERSION}
     fi
 
-    # repack linux-x86 NDK, it must be the last one because we need it to build qt
-    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-linux-x86.7z ]
+    # repack official linux-x86 NDK
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-linux-x86.7z ]
     then
-        downloadIfNotExists android-ndk-r5b-linux-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-linux-x86.tar.bz2
-        if [ ! -d android-ndk-r5b ]
-        then
-            tar xjvf android-ndk-r5b-linux-x86.tar.bz2
-        fi
-        $SDK_TOOLS_PATH/archivegen android-ndk-r5b android-ndk-r5b-linux-x86.7z
-        mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data
-        mv android-ndk-r5b-linux-x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.r5b/data/android-ndk-r5b-linux-x86.7z
-        rm -fr android-ndk-r5b
+        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-linux-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-${ANDROID_NDK_VERSION}-linux-x86.tar.bz2
+        rm -fr android-ndk-${ANDROID_NDK_VERSION}
+        tar xjvf android-ndk-${ANDROID_NDK_VERSION}-linux-x86.tar.bz2
+        $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-linux-x86.7z
+        mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_VERSION}/data
+        mv android-ndk-${ANDROID_NDK_VERSION}-linux-x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-linux-x86.7z
+        rm -fr android-ndk-${ANDROID_NDK_VERSION}
     fi
 
-    export ANDROID_NDK_ROOT=$PWD/android-ndk-r5b
-    if [ ! -d android-ndk-r5b ]; then
-
+    if [ BUILD_ANDROID_GIT_NDK = 1 ]
+    then
+        export ANDROID_NDK_ROOT=$PWD/android-ndk-${ANDROID_NDK_VERSION}-git
+        export ANDROID_NDK_FOLDER_NAME=android-ndk-${ANDROID_NDK_VERSION}-git
+    else
+        export ANDROID_NDK_ROOT=$PWD/android-ndk-${ANDROID_NDK_VERSION}
+        export ANDROID_NDK_FOLDER_NAME=android-ndk-${ANDROID_NDK_VERSION}
+    fi
+    if [ ! -d $ANDROID_NDK_FOLDER_NAME ]; then
         if [ "$OSTYPE" = "msys" ]; then
-            downloadIfNotExists android-ndk-r5b-windows.zip http://dl.google.com/android/ndk/android-ndk-r5b-windows.zip
-            unzip android-ndk-r5b-windows.zip
+            downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-windows.zip http://dl.google.com/android/ndk/android-ndk-${ANDROID_NDK_VERSION}-windows.zip
+            unzip android-ndk-${ANDROID_NDK_VERSION}-windows.zip
         fi
 
         if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
-            downloadIfNotExists android-ndk-r5b-darwin-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-darwin-x86.tar.bz2
-            tar xjvf android-ndk-r5b-darwin-x86.tar.bz2
+            downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-darwin-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-${ANDROID_NDK_VERSION}-darwin-x86.tar.bz2
+            tar xjvf android-ndk-${ANDROID_NDK_VERSION}-darwin-x86.tar.bz2
         fi
 
         if [ "$OSTYPE" = "linux-gnu" ]; then
-            downloadIfNotExists android-ndk-r5b-linux-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-r5b-linux-x86.tar.bz2
-            tar xjvf android-ndk-r5b-linux-x86.tar.bz2
+            downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-linux-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-${ANDROID_NDK_VERSION}-linux-x86.tar.bz2
+            tar xjvf android-ndk-${ANDROID_NDK_VERSION}-linux-x86.tar.bz2
+        fi
+
+        if [ BUILD_ANDROID_GIT_NDK = 1 ]
+        then
+            mv android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-git
+            git clone http://android.git.kernel.org/platform/ndk.git android_git_ndk
+            pushd android_git_ndk
+                ./build/tools/rebuild-all-prebuilt.sh --ndk-dir=$ANDROID_NDK_ROOT --git-http --gdb-version=7.1 --sysroot=$ANDROID_NDK_ROOT/platforms/android-9 --verbose --package-dir=
+            popd
+            rm -fr android_git_ndk
+            mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_VERSION}_git/data
+            $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION}-git $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_VERSION}_git/data/android-ndk-${ANDROID_NDK_VERSION}-git-${HOST_TAG_NDK}.7z
         fi
     fi
 
     ANDROID_STRIP_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi-strip$EXE_EXT
     ANDROID_READELF_BINARY=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi-readelf$EXE_EXT
-
 }
 
 function prepareGDB
@@ -742,40 +750,40 @@ function prepareSDKs
     echo "prepare SDKs"
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-linux_x86.7z ]
     then
-        downloadIfNotExists android-sdk_r10-linux_x86.tgz http://dl.google.com/android/android-sdk_r10-linux_x86.tgz
+        downloadIfNotExists android-sdk_${ANDROID_SDK_VERSION}-linux_x86.tgz http://dl.google.com/android/android-sdk_${ANDROID_SDK_VERSION}-linux_x86.tgz
         if [ ! -d android-sdk-linux_x86 ]
         then
-            tar -xzvf android-sdk_r10-linux_x86.tgz
+            tar -xzvf android-sdk_${ANDROID_SDK_VERSION}-linux_x86.tgz
         fi
-        $SDK_TOOLS_PATH/archivegen android-sdk-linux_x86 android-sdk_r10-linux_x86.7z
+        $SDK_TOOLS_PATH/archivegen android-sdk-linux_x86 android-sdk_${ANDROID_SDK_VERSION}-linux_x86.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data
-        mv android-sdk_r10-linux_x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-linux_x86.7z
+        mv android-sdk_${ANDROID_SDK_VERSION}-linux_x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-linux_x86.7z
         rm -fr android-sdk-linux_x86
     fi
 
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-mac_x86.7z ]
     then
-        downloadIfNotExists android-sdk_r10-mac_x86.zip http://dl.google.com/android/android-sdk_r10-mac_x86.zip
+        downloadIfNotExists android-sdk_${ANDROID_SDK_VERSION}-mac_x86.zip http://dl.google.com/android/android-sdk_${ANDROID_SDK_VERSION}-mac_x86.zip
         if [ ! -d android-sdk-mac_x86 ]
         then
-            unzip android-sdk_r10-mac_x86.zip
+            unzip android-sdk_${ANDROID_SDK_VERSION}-mac_x86.zip
         fi
-        $SDK_TOOLS_PATH/archivegen android-sdk-mac_x86 android-sdk_r10-mac_x86.7z
+        $SDK_TOOLS_PATH/archivegen android-sdk-mac_x86 android-sdk_${ANDROID_SDK_VERSION}-mac_x86.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data
-        mv android-sdk_r10-mac_x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-mac_x86.7z
+        mv android-sdk_${ANDROID_SDK_VERSION}-mac_x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-mac_x86.7z
         rm -fr android-sdk-mac_x86
     fi
 
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-windows.7z ]
     then
-        downloadIfNotExists android-sdk_r10-windows.zip http://dl.google.com/android/android-sdk_r10-windows.zip
+        downloadIfNotExists android-sdk_${ANDROID_SDK_VERSION}-windows.zip http://dl.google.com/android/android-sdk_${ANDROID_SDK_VERSION}-windows.zip
         if [ ! -d android-sdk-windows ]
         then
-            unzip android-sdk_r10-windows.zip
+            unzip android-sdk_${ANDROID_SDK_VERSION}-windows.zip
         fi
-        $SDK_TOOLS_PATH/archivegen android-sdk-windows android-sdk_r10-windows.7z
+        $SDK_TOOLS_PATH/archivegen android-sdk-windows android-sdk_${ANDROID_SDK_VERSION}-windows.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data
-        mv android-sdk_r10-windows.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-windows.7z
+        mv android-sdk_${ANDROID_SDK_VERSION}-windows.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.base/data/android-sdk-windows.7z
         rm -fr android-sdk-windows
     fi
 
@@ -801,50 +809,50 @@ function prepareSDKs
     fi
 
     # repack platform-tools
-    repackSDK platform-tools_r03-linux platform-tools_r03-linux android-sdk-linux_x86 platform-tools
-    repackSDK platform-tools_r03-macosx platform-tools_r03-macosx android-sdk-mac_x86 platform-tools
+    repackSDK platform-tools_${ANDROID_PLATFORM_TOOLS_VERSION}-linux platform-tools_${ANDROID_PLATFORM_TOOLS_VERSION}-linux android-sdk-linux_x86 platform-tools
+    repackSDK platform-tools_${ANDROID_PLATFORM_TOOLS_VERSION}-macosx platform-tools_${ANDROID_PLATFORM_TOOLS_VERSION}-macosx android-sdk-mac_x86 platform-tools
     # should we also include ant binary for windows ?
-    repackSDK platform-tools_r03-windows platform-tools_r03-windows android-sdk-windows platform-tools
+    repackSDK platform-tools_${ANDROID_PLATFORM_TOOLS_VERSION}-windows platform-tools_${ANDROID_PLATFORM_TOOLS_VERSION}-windows android-sdk-windows platform-tools
 
     # repack api-4
-    repackSDK android-1.6_r03-linux android-1.6_r03-linux android-sdk-linux_x86/platforms android-4
-    repackSDK android-1.6_r03-macosx android-1.6_r03-macosx android-sdk-mac_x86/platforms android-4
-    repackSDK android-1.6_r03-windows android-1.6_r03-windows android-sdk-windows/platforms android-4
+    repackSDK android-${ANDROID_API_4_VERSION}-linux android-${ANDROID_API_4_VERSION}-linux android-sdk-linux_x86/platforms android-4
+    repackSDK android-${ANDROID_API_4_VERSION}-macosx android-${ANDROID_API_4_VERSION}-macosx android-sdk-mac_x86/platforms android-4
+    repackSDK android-${ANDROID_API_4_VERSION}-windows android-${ANDROID_API_4_VERSION}-windows android-sdk-windows/platforms android-4
 
     # repack api-5
-    repackSDK android-2.0_r01-linux android-2.0_r01-linux android-sdk-linux_x86/platforms android-5
-    repackSDK android-2.0_r01-macosx android-2.0_r01-macosx android-sdk-mac_x86/platforms android-5
-    repackSDK android-2.0_r01-windows android-2.0_r01-windows android-sdk-windows/platforms android-5
+    repackSDK android-${ANDROID_API_5_VERSION}-linux android-${ANDROID_API_5_VERSION}-linux android-sdk-linux_x86/platforms android-5
+    repackSDK android-${ANDROID_API_5_VERSION}-macosx android-${ANDROID_API_5_VERSION}-macosx android-sdk-mac_x86/platforms android-5
+    repackSDK android-${ANDROID_API_5_VERSION}-windows android-${ANDROID_API_5_VERSION}-windows android-sdk-windows/platforms android-5
 
     # repack api-6
-    repackSDK android-2.0.1_r01-linux  android-2.0.1_r01-linux  android-sdk-linux_x86/platforms android-6
-    repackSDK android-2.0.1_r01-macosx android-2.0.1_r01-macosx android-sdk-mac_x86/platforms android-6
-    repackSDK android-2.0.1_r01-windows android-2.0.1_r01-windows android-sdk-windows/platforms android-6
+    repackSDK android-${ANDROID_API_6_VERSION}-linux  android-${ANDROID_API_6_VERSION}-linux  android-sdk-linux_x86/platforms android-6
+    repackSDK android-${ANDROID_API_6_VERSION}-macosx android-${ANDROID_API_6_VERSION}-macosx android-sdk-mac_x86/platforms android-6
+    repackSDK android-${ANDROID_API_6_VERSION}-windows android-${ANDROID_API_6_VERSION}-windows android-sdk-windows/platforms android-6
 
     # repack api-7
-    repackSDK android-2.1_r02-linux android-2.1_r02-linux android-sdk-linux_x86/platforms android-7
-    repackSDK android-2.1_r02-macosx android-2.1_r02-macosx android-sdk-mac_x86/platforms android-7
-    repackSDK android-2.1_r02-windows android-2.1_r02-windows android-sdk-windows/platforms android-7
+    repackSDK android-${ANDROID_API_7_VERSION}-linux android-${ANDROID_API_7_VERSION}-linux android-sdk-linux_x86/platforms android-7
+    repackSDK android-${ANDROID_API_7_VERSION}-macosx android-${ANDROID_API_7_VERSION}-macosx android-sdk-mac_x86/platforms android-7
+    repackSDK android-${ANDROID_API_7_VERSION}-windows android-${ANDROID_API_7_VERSION}-windows android-sdk-windows/platforms android-7
 
     # repack api-8
-    repackSDK android-2.2_r02-linux android-2.2_r02-linux android-sdk-linux_x86/platforms android-8
-    repackSDK android-2.2_r02-macosx android-2.2_r02-macosx android-sdk-mac_x86/platforms android-8
-    repackSDK android-2.2_r02-windows android-2.2_r02-windows android-sdk-windows/platforms android-8
+    repackSDK android-${ANDROID_API_8_VERSION}-linux android-${ANDROID_API_8_VERSION}-linux android-sdk-linux_x86/platforms android-8
+    repackSDK android-${ANDROID_API_8_VERSION}-macosx android-${ANDROID_API_8_VERSION}-macosx android-sdk-mac_x86/platforms android-8
+    repackSDK android-${ANDROID_API_8_VERSION}-windows android-${ANDROID_API_8_VERSION}-windows android-sdk-windows/platforms android-8
 
     # repack api-9
-    repackSDK android-2.3.1_r02-linux android-2.3.1_r02-linux android-sdk-linux_x86/platforms android-9
-    repackSDK android-2.3.1_r02-linux android-2.3.1_r02-macosx android-sdk-mac_x86/platforms android-9
-    repackSDK android-2.3.1_r02-linux android-2.3.1_r02-windows android-sdk-windows/platforms android-9
+    repackSDK android-${ANDROID_API_9_VERSION}-linux android-${ANDROID_API_9_VERSION}-linux android-sdk-linux_x86/platforms android-9
+    repackSDK android-${ANDROID_API_9_VERSION}-linux android-${ANDROID_API_9_VERSION}-macosx android-sdk-mac_x86/platforms android-9
+    repackSDK android-${ANDROID_API_9_VERSION}-linux android-${ANDROID_API_9_VERSION}-windows android-sdk-windows/platforms android-9
 
     # repack api-10
-    repackSDK android-2.3.3_r01-linux android-2.3.3_r01-linux android-sdk-linux_x86/platforms android-10
-    repackSDK android-2.3.3_r01-linux android-2.3.3_r01-macosx android-sdk-mac_x86/platforms android-10
-    repackSDK android-2.3.3_r01-linux android-2.3.3_r01-windows android-sdk-windows/platforms android-10
+    repackSDK android-${ANDROID_API_10_VERSION}-linux android-${ANDROID_API_10_VERSION}-linux android-sdk-linux_x86/platforms android-10
+    repackSDK android-${ANDROID_API_10_VERSION}-linux android-${ANDROID_API_10_VERSION}-macosx android-sdk-mac_x86/platforms android-10
+    repackSDK android-${ANDROID_API_10_VERSION}-linux android-${ANDROID_API_10_VERSION}-windows android-sdk-windows/platforms android-10
 
     # repack api-11
-    repackSDK android-3.0_r01-linux android-3.0_r01-linux android-sdk-linux_x86/platforms android-11
-    repackSDK android-3.0_r01-linux android-3.0_r01-macosx android-sdk-mac_x86/platforms android-11
-    repackSDK android-3.0_r01-linux android-3.0_r01-windows android-sdk-windows/platforms android-11
+    repackSDK android-${ANDROID_API_11_VERSION}-linux android-${ANDROID_API_11_VERSION}-linux android-sdk-linux_x86/platforms android-11
+    repackSDK android-${ANDROID_API_11_VERSION}-linux android-${ANDROID_API_11_VERSION}-macosx android-sdk-mac_x86/platforms android-11
+    repackSDK android-${ANDROID_API_11_VERSION}-linux android-${ANDROID_API_11_VERSION}-windows android-sdk-windows/platforms android-11
 }
 
 function patchQtFiles
