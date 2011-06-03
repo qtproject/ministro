@@ -24,7 +24,7 @@
 REPO_SRC_PATH=$PWD
 TEMP_PATH_PREFIX=/tmp
 
-if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
+if [ "$OSTYPE" = "msys" ]; then
     TEMP_PATH_PREFIX=/usr
 fi
 
@@ -915,8 +915,10 @@ function compileNecessitasQt
     if [ $package_name = "armeabi_v7a" ]
     then
         doSed $"s/= armeabi/= armeabi-v7a/g" mkspecs/android-g++/qmake.conf
+        doSed $"s/= android-4/= android-5/g" mkspecs/android-g++/qmake.conf
     else
         doSed $"s/= armeabi-v7a/= armeabi/g" mkspecs/android-g++/qmake.conf
+        doSed $"s/= android-5/= android-4/g" mkspecs/android-g++/qmake.conf
     fi
 
     rm -fr data
@@ -1214,7 +1216,7 @@ function prepareMinistroRepository
         if [ "$OSTYPE" = "msys" ] ; then
             cp $REPO_SRC_PATH/ministrorepogen/release/ministrorepogen$EXE_EXT $REPO_SRC_PATH/ministrorepogen/ministrorepogen$EXE_EXT
         fi
-        $REPO_SRC_PATH/ministrorepogen/ministrorepogen$EXE_EXT $ANDROID_READELF_BINARY $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/ $MINISTRO_VERSION $architecture $REPO_SRC_PATH/ministrorepogen/rules.xml $MINISTRO_REPO_PATH
+        $REPO_SRC_PATH/ministrorepogen/ministrorepogen$EXE_EXT $ANDROID_READELF_BINARY $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION $MINISTRO_VERSION $architecture $REPO_SRC_PATH/ministrorepogen/rules.xml $MINISTRO_REPO_PATH
         popd
     done
 }
