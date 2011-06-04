@@ -461,7 +461,6 @@ function prepareNDKs
         rm -fr android-ndk-${ANDROID_NDK_VERSION}
     fi
 
-<<<<<<< HEAD
     if [ BUILD_ANDROID_GIT_NDK = 1 ]
     then
         export ANDROID_NDK_ROOT=$PWD/android-ndk-${ANDROID_NDK_VERSION}-git
@@ -470,14 +469,10 @@ function prepareNDKs
         export ANDROID_NDK_ROOT=$PWD/android-ndk-${ANDROID_NDK_VERSION}
         export ANDROID_NDK_FOLDER_NAME=android-ndk-${ANDROID_NDK_VERSION}
     fi
-    if [ ! -d $ANDROID_NDK_FOLDER_NAME ]; then
-=======
-    export ANDROID_NDK_ROOT=$PWD/android-ndk-r5b
+
     export ANDROID_NDK_HOST=$HOST_TAG_NDK
 
-    if [ ! -d android-ndk-r5b ]; then
-
->>>>>>> Set ANDROID_NDK_HOST to HOST_TAG_NDK
+    if [ ! -d $ANDROID_NDK_FOLDER_NAME ]; then
         if [ "$OSTYPE" = "msys" ]; then
             downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-windows.zip http://dl.google.com/android/ndk/android-ndk-${ANDROID_NDK_VERSION}-windows.zip
             unzip android-ndk-${ANDROID_NDK_VERSION}-windows.zip
@@ -923,10 +918,12 @@ function compileNecessitasQt
     if [ $package_name = "armeabi_v7a" ]
     then
         doSed $"s/= armeabi/= armeabi-v7a/g" mkspecs/android-g++/qmake.conf
-        doSed $"s/= android-4/= android-5/g" mkspecs/android-g++/qmake.conf
+# On next release
+#        doSed $"s/= android-4/= android-5/g" mkspecs/android-g++/qmake.conf
     else
         doSed $"s/= armeabi-v7a/= armeabi/g" mkspecs/android-g++/qmake.conf
-        doSed $"s/= android-5/= android-4/g" mkspecs/android-g++/qmake.conf
+# On next release
+#        doSed $"s/= android-5/= android-4/g" mkspecs/android-g++/qmake.conf
     fi
 
     rm -fr data
