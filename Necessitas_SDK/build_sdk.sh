@@ -47,14 +47,6 @@ fi
 #GDB_VER=7.3
 GDB_VER=7.2
 
-if [ "$GDB_VER" = "7.3" ]; then
-    GDB_ROOT_PATH=..
-    GDB_BRANCH=integration_7_3
-else
-    GDB_ROOT_PATH=../gdb
-    GDB_BRANCH=master
-fi
-
 pushd $TEMP_PATH
 
 MINISTRO_REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/qt
@@ -535,11 +527,39 @@ function prepareGDB
 {
     package_name_ver=${GDB_VER//./_} # replace . with _
     package_path=$REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_$package_name_ver/data
+    echo "package_path=$REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_$package_name_ver/data"
     #This function depends on prepareNDKs
     if [ -f $package_path/gdb-${GDB_VER}-${HOST_TAG}.7z ]
     then
         return
     fi
+
+    OLDPATH=$PATH
+    if [ "$OSTYPE" = "linux-gnu" ] ; then
+        HOST=i386-linux-gnu
+        CC32="gcc -m32"
+        CXX32="g++ -m32"
+        PYCFGDIR=$install_dir/lib/python$pyversion/config
+    else
+        if [ "$OSTYPE" = "msys" ] ; then
+            SUFFIX=.exe
+            HOST_EXE=.exe
+            HOST=i686-pc-mingw32
+            PYCFGDIR=$install_dir/bin/Lib/config
+            export PATH=.:$PATH
+            CC32=gcc.exe
+            CXX32=g++.exe
+            PYCCFG="--enable-shared --disable-static"
+         else
+            # On some OS X installs (case insensitive filesystem), the dir "Python" clashes with the executable "python"
+            # --with-suffix can be used to get around this.
+            SUFFIX=Mac
+            export PATH=.:$PATH
+            CC32="gcc -m32"
+            CXX32="g++ -m32"
+        fi
+    fi
+
 
     mkdir gdb-build
     pushd gdb-build
@@ -577,32 +597,6 @@ function prepareGDB
 
         pushd Python-$pyfullversion
         unset PYTHONHOME
-        OLDPATH=$PATH
-
-        if [ "$OSTYPE" = "linux-gnu" ] ; then
-            HOST=i386-linux-gnu
-            CC32="gcc -m32"
-            CXX32="g++ -m32"
-            PYCFGDIR=$install_dir/lib/python$pyversion/config
-        else
-            if [ "$OSTYPE" = "msys" ] ; then
-                SUFFIX=.exe
-                HOST_EXE=.exe
-                HOST=i686-pc-mingw32
-                PYCFGDIR=$install_dir/bin/Lib/config
-                export PATH=.:$PATH
-                CC32=gcc.exe
-                CXX32=g++.exe
-                PYCCFG="--enable-shared --disable-static"
-            else
-                # On some OS X installs (case insensitive filesystem), the dir "Python" clashes with the executable "python"
-                # --with-suffix can be used to get around this.
-                SUFFIX=Mac
-                export PATH=.:$PATH
-                CC32="gcc -m32"
-                CXX32="g++ -m32"
-            fi
-        fi
 
         if [ "$USINGMAPYTHON" = "1" ] ; then
             autoconf
@@ -612,7 +606,6 @@ function prepareGDB
 
         CC=$CC32 CXX=$CXX32 ./configure $PYCCFG --host=$HOST --prefix=$install_dir --with-suffix=$SUFFIX || error_msg "Can't configure Python"
         doMake "Can't compile Python" "all done"
-        make install || error_msg "Can't install Python"
 
         if [ "$OSTYPE" = "msys" ] ; then
             cd pywin32-216
@@ -650,22 +643,13 @@ function prepareGDB
             doSed $"s/python2\.7Mac/python2\.7/g" $install_dir/bin/smtpd.py
         fi
 
-#        cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
-#        mkdir -p $target_dir/python/include/python$pyversion
-#        mkdir -p $target_dir/python/bin
-#        cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
-#        # Remove the $SUFFIX if present (OS X)
-#        mv $install_dir/bin/python$pyversion$SUFFIX$EXE_EXT $install_dir/bin/python$pyversion$EXE_EXT
-#        mv $install_dir/bin/python$SUFFIX$EXE_EXT $install_dir/bin/python$EXE_EXT
-#        cp -a $install_dir/bin/python$pyversion* $target_dir/python/bin/
-#        if [ "$OSTYPE" = "msys" ] ; then
-#            cp -fr $install_dir/bin/Lib $target_dir/
-#        fi
-#        $STRIP $target_dir/python/bin/python$pyversion$EXE_EXT
-#        popd
-#        export PATH=$OLDPATH
+        popd
     fi
 
+    pushd Python-$pyfullversion
+    make install
+    popd
+    export PATH=$OLDPATH
     cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
     mkdir -p $target_dir/python/include/python$pyversion
     mkdir -p $target_dir/python/bin
@@ -689,6 +673,7 @@ function prepareGDB
     fi
     pushd gdb-src
     git checkout $GDB_BRANCH
+    git reset --hard
     popd
 
     if [ ! -d gdb-src/build-gdb-$GDB_VER ]
@@ -697,6 +682,7 @@ function prepareGDB
         pushd gdb-src/build-gdb-$GDB_VER
         OLDPATH=$PATH
         export PATH=$install_dir/bin/:$PATH
+        echo "HELLO HELLO HELLO about to configure gdb, GDB_ROOT_PATH = $GDB_ROOT_PATH, pwd = $PWD"
         CC=$CC32 CXX=$CXX32 $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
         doMake "Can't compile android gdb $GDB_VER" "all done"
         cp -a gdb/gdb$EXE_EXT $target_dir/
@@ -742,10 +728,9 @@ function prepareGDBServer
     if [ ! -d gdb-src ]
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src
-        GDB_ROOT_PATH=..
         pushd gdb-src
-		git checkout $GDB_BRANCH
-		popd
+        git checkout $GDB_BRANCH
+        popd
     fi
 
     mkdir -p gdb-src/build-gdbserver-$GDB_VER
@@ -812,6 +797,20 @@ function repackSDK
     fi
 }
 
+function prepareGDBVersion
+{
+    GDB_VER=$1
+    echo "GDB_VER is $GDB_VER"
+    if [ "$GDB_VER" = "7.3" ]; then
+        GDB_ROOT_PATH=..
+        GDB_BRANCH=integration_7_3
+    else
+        GDB_ROOT_PATH=../gdb
+        GDB_BRANCH=master
+    fi
+    prepareGDB
+    prepareGDBServer
+}
 
 function prepareSDKs
 {
@@ -1366,8 +1365,10 @@ SDK_TOOLS_PATH=$PWD/necessitas-installer-framework/installerbuilder/bin
 prepareHostQt
 prepareSdkInstallerTools
 prepareNDKs
-prepareGDB
-prepareGDBServer
+prepareGDBVersion 7.3
+prepareGDBVersion 7.2
+#prepareGDB
+#prepareGDBServer
 prepareSDKs
 prepareNecessitasQtCreator
 prepareNecessitasQt
