@@ -43,6 +43,13 @@ else
     CPRL="cp -rL"
 fi
 
+# These are global
+# For google gdb (master):
+#GDB_ROOT_PATH=../gdb-7.2.50.20110211
+# For integration_7_3
+GDB_ROOT_PATH=..
+GDB_VER=7.3
+
 pushd $TEMP_PATH
 
 MINISTRO_REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/qt
@@ -54,6 +61,7 @@ ANDROID_STRIP_BINARY=""
 ANDROID_READELF_BINARY=""
 QPATCH_PATH=""
 EXE_EXT=""
+export PYTHONHOME=""
 
 if [ "$OSTYPE" = "msys" ] ; then
     HOST_CFG_OPTIONS=" -platform win32-g++ -reduce-exports -release -prefix . "
@@ -99,7 +107,7 @@ function downloadIfNotExists
 {
     if [ ! -f $1 ]
     then
-        wget -c $2 || removeAndExit $1
+        wget --no-check-certificate -c $2 || removeAndExit $1
     fi
 }
 
@@ -108,12 +116,14 @@ function doMake
     if [ "$OSTYPE" = "msys" -o  "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
         if [ "$OSTYPE" = "msys" ] ; then
             MAKEDIR=`pwd -W`
+            MAKEFOREVER=1
         else
             MAKEDIR=`pwd`
+            MAKEFOREVER=0
         fi
         MAKEFILE=$MAKEDIR/Makefile
         make -f $MAKEFILE -j$JOBS
-        while [ "$?" != "0" ]
+        while [ "$?" != "0" -a "$MAKEFOREVER" = "1" ]
         do
             if [ -f /usr/break-make ]; then
                 echo "Detected break-make"
@@ -410,12 +420,23 @@ function makeInstallMinGWBits
     CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses=$install_dir --enable-multibyte --prefix=  CFLAGS=-O2
     make && make DESTDIR=$install_dir install
     popd
+    
+    # awk command fails during configure (I think).
+    downloadIfNotExists regex-2.7-src.zip http://downloads.sourceforge.net/sourceforge/gnuwin32/regex/2.7/regex-2.7-src.zip
+    unzip regex-2.7-src.zip
+    pushd src/regex/2.7/regex-2.7-src
+#   aclocal
+#   autoconf
+    CFLAGS=-O2 && ./configure --enable-static --disable-shared --prefix= CFLAGS=-O2
+    make && make DESTDIR=$install_dir install
+    popd
 
+    # texinfo fails because regex.h not found (part of libc)
     downloadIfNotExists texinfo-4.13a.tar.gz http://ftp.gnu.org/gnu/texinfo/texinfo-4.13a.tar.gz
     rm -rf texinfo-4.13
     tar -xvzf texinfo-4.13a.tar.gz
     pushd texinfo-4.13
-    CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses=$install_dir --enable-multibyte --prefix=/usr/local  CFLAGS=-O2
+    CFLAGS=-O2 && ./configure --prefix= CFLAGS=-O2
     make
     make install
     popd
@@ -471,6 +492,7 @@ function prepareNDKs
     fi
 
     export ANDROID_NDK_HOST=$HOST_TAG_NDK
+    export ANDROID_NDK_ROOT=$ANDROID_NDK_FOLDER_NAME
 
     if [ ! -d $ANDROID_NDK_FOLDER_NAME ]; then
         if [ "$OSTYPE" = "msys" ]; then
@@ -507,8 +529,10 @@ function prepareNDKs
 
 function prepareGDB
 {
+    package_name_ver=${GDB_VER//./_} # replace . with _
+    package_path=$REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_$package_name_ver/data
     #This function depends on prepareNDKs
-    if [ -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/gdb-7.2-${HOST_TAG}.7z ]
+    if [ -f $package_path/gdb-${GDB_VER}-${HOST_TAG}.7z ]
     then
         return
     fi
@@ -518,7 +542,8 @@ function prepareGDB
     pyversion=2.7
     pyfullversion=2.7.1
     install_dir=$PWD/install
-    target_dir=$PWD/gdb-7.2
+    target_dir=$PWD/gdb-$GDB_VER
+    mkdir -p $target_dir
 
     downloadIfNotExists expat-2.0.1.tar.gz http://downloads.sourceforge.net/sourceforge/expat/expat-2.0.1.tar.gz || error_msg "Can't download expat library"
     if [ ! -d expat-2.0.1 ]
@@ -538,9 +563,9 @@ function prepareGDB
             tar xjvf Python-$pyfullversion.tar.bz2
             USINGMAPYTHON=0
         else
-            if [ "$OSTYPE" = "msys" ]; then
-                makeInstallMinGWBits $install_dir
-            fi
+#            if [ "$OSTYPE" = "msys" ]; then
+#                makeInstallMinGWBits $install_dir
+#            fi
             rm -rf Python-$pyfullversion
             git clone git://gitorious.org/mingw-python/mingw-python.git Python-$pyfullversion
             USINGMAPYTHON=1
@@ -564,6 +589,7 @@ function prepareGDB
                 export PATH=.:$PATH
                 CC32=gcc.exe
                 CXX32=g++.exe
+                PYCCFG="--enable-shared --disable-static"
             else
                 # On some OS X installs (case insensitive filesystem), the dir "Python" clashes with the executable "python"
                 # --with-suffix can be used to get around this.
@@ -580,7 +606,7 @@ function prepareGDB
             touch Include/Python-ast.c
         fi
 
-        CC=$CC32 CXX=$CXX32 ./configure --host=$HOST --prefix=$install_dir --with-suffix=$SUFFIX || error_msg "Can't configure Python"
+        CC=$CC32 CXX=$CXX32 ./configure $PYCCFG --host=$HOST --prefix=$install_dir --with-suffix=$SUFFIX || error_msg "Can't configure Python"
         doMake "Can't compile Python" "all done"
         make install || error_msg "Can't install Python"
 
@@ -636,9 +662,16 @@ function prepareGDB
         export PATH=$OLDPATH
     fi
 
+	# Something is setting PYTHONHOME as an Env. Var for Windows and I'm not sure what... installer? NQTC?
+    unset PYTHONHOME
+    unset PYTHONPATH
+
     if [ ! -d gdb-src ]
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src
+        pushd gdb-src
+        git checkout integration_7_3
+        popd
     fi
 
     if [ ! -d gdb-src/build-gdb ]
@@ -647,8 +680,8 @@ function prepareGDB
         pushd gdb-src/build-gdb
         OLDPATH=$PATH
         export PATH=$install_dir/bin/:$PATH
-        CC=$CC32 CXX=$CXX32 ../gdb-7.2.50.20110211/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
-        doMake "Can't compile android gdb 7.2" "all done"
+        CC=$CC32 CXX=$CXX32 $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
+        doMake "Can't compile android gdb $GDB_VER" "all done"
         cp -a gdb/gdb$EXE_EXT $target_dir/
         # Fix building gdb-tui, it used to work and was handy to have.
         # cp -a gdb/gdb-tui$EXE_EXT $target_dir/
@@ -666,16 +699,20 @@ function prepareGDB
     find . -name tests | xargs rm -fr
     popd
 
-    $SDK_TOOLS_PATH/archivegen gdb-7.2 gdb-7.2-${HOST_TAG}.7z
-    mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/
-    mv gdb-7.2-${HOST_TAG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/
+    $SDK_TOOLS_PATH/archivegen gdb-$GDB_VER gdb-$GDB_VER-${HOST_TAG}.7z
+    mkdir -p $package_path
+ 
+    mv gdb-${GDB_VER}-${HOST_TAG}.7z $package_path/
 
     popd #gdb-build
 }
 
 function prepareGDBServer
 {
-    if [ -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/gdbserver-7.2.7z ]
+    package_name_ver=${GDB_VER//./_} # replace - with _
+    package_path=$REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_$package_name_ver/data
+
+    if [ -f $package_path/gdbserver-$GDB_VER.7z ]
     then
         return
     fi
@@ -688,6 +725,10 @@ function prepareGDBServer
     if [ ! -d gdb-src ]
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src
+        GDB_ROOT_PATH=..
+        pushd gdb-src
+		git checkout integration_7_3
+		popd
     fi
 
     mkdir -p gdb-src/build-gdbserver
@@ -695,7 +736,14 @@ function prepareGDBServer
 
     mkdir android-sysroot
     $CPRL $TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm/* android-sysroot/ || error_msg "Can't copy android sysroot"
-
+	# Fix gdbserver bug by using a Gingerbread version of libc.a
+	# 'The remote end hung up.'
+    # git archive --remote=git://android.git.kernel.org/platform/development.git HEAD:ndk/platforms/android-3/arch-arm/lib libc.a | tar -x
+	downloadIfNotExists libc.a https://review.source.android.com//cat/23118%2C1%2Cndk/platforms/android-3/arch-arm/lib/libc.a%5E0
+	cp libc.a%5E0 libc.zip
+	rm libc_new-*.a
+	unzip libc.zip
+	mv libc_new-*.a android-sysroot/usr/lib/libc.a
     rm -f android-sysroot/usr/lib/libthread_db*
     rm -f android-sysroot/usr/include/thread_db.h
 
@@ -712,19 +760,19 @@ function prepareGDBServer
     LIBTHREAD_DB_DIR=$TEMP_PATH/android-ndk-r5b/sources/android/libthread_db/gdb-7.1.x/
     cp $LIBTHREAD_DB_DIR/thread_db.h android-sysroot/usr/include/
     $TOOLCHAIN_PREFIX-gcc$EXE_EXT --sysroot=$PWD/android-sysroot -o $PWD/android-sysroot/usr/lib/libthread_db.a -c $LIBTHREAD_DB_DIR/libthread_db.c || error_msg "Can't compile android threaddb"
-    ../gdb-7.2.50.20110211/gdb/gdbserver/configure --host=arm-eabi-linux --with-libthread-db=$PWD/android-sysroot/usr/lib/libthread_db.a || error_msg "Can't configure gdbserver"
-    make -j$JBBS || error_msg "Can't compile gdbserver"
+    $GDB_ROOT_PATH/gdb/gdbserver/configure --host=arm-eabi-linux --with-libthread-db=$PWD/android-sysroot/usr/lib/libthread_db.a || error_msg "Can't configure gdbserver"
+    doMake "Can't compile gdbserver" "all done"
 
     export CC="$OLD_CC"
     export CFLAGS="$OLD_CFLAGS"
     export LDFLAGS="$OLD_LDFLAGS"
 
-    mkdir gdbserver-7.2
-    $TOOLCHAIN_PREFIX-objcopy --strip-unneeded gdbserver $PWD/gdbserver-7.2/gdbserver
+    mkdir gdbserver-$GDB_VER
+    $TOOLCHAIN_PREFIX-objcopy --strip-unneeded gdbserver $PWD/gdbserver-$GDB_VER/gdbserver
 
-    $SDK_TOOLS_PATH/archivegen gdbserver-7.2 gdbserver-7.2.7z
-    mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/
-    mv gdbserver-7.2.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_7_2/data/
+    $SDK_TOOLS_PATH/archivegen gdbserver-$GDB_VER gdbserver-$GDB_VER.7z
+    mkdir -p $package_path
+    mv gdbserver-$GDB_VER.7z $package_path/
 
     popd #gdb-src/build-gdbserver
 
