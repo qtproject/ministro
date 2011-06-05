@@ -43,12 +43,17 @@ else
     CPRL="cp -rL"
 fi
 
-# These are global
-# For google gdb (master):
-#GDB_ROOT_PATH=../gdb-7.2.50.20110211
-# For integration_7_3
-GDB_ROOT_PATH=..
-GDB_VER=7.3
+# Global just because 2 functions use them, only acceptable values for GDB_VER are 7.2 and 7.3
+#GDB_VER=7.3
+GDB_VER=7.2
+
+if [ "$GDB_VER" = "7.3" ]; then
+    GDB_ROOT_PATH=..
+    GDB_BRANCH=integration_7_3
+else
+    GDB_ROOT_PATH=../gdb
+    GDB_BRANCH=master
+fi
 
 pushd $TEMP_PATH
 
@@ -492,7 +497,6 @@ function prepareNDKs
     fi
 
     export ANDROID_NDK_HOST=$HOST_TAG_NDK
-    export ANDROID_NDK_ROOT=$ANDROID_NDK_FOLDER_NAME
 
     if [ ! -d $ANDROID_NDK_FOLDER_NAME ]; then
         if [ "$OSTYPE" = "msys" ]; then
@@ -669,15 +673,15 @@ function prepareGDB
     if [ ! -d gdb-src ]
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src
-        pushd gdb-src
-        git checkout integration_7_3
-        popd
     fi
+    pushd gdb-src
+    git checkout $GDB_BRANCH
+    popd
 
-    if [ ! -d gdb-src/build-gdb ]
+    if [ ! -d gdb-src/build-gdb-$GDB_VER ]
     then
-        mkdir -p gdb-src/build-gdb
-        pushd gdb-src/build-gdb
+        mkdir -p gdb-src/build-gdb-$GDB_VER
+        pushd gdb-src/build-gdb-$GDB_VER
         OLDPATH=$PATH
         export PATH=$install_dir/bin/:$PATH
         CC=$CC32 CXX=$CXX32 $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
@@ -727,12 +731,12 @@ function prepareGDBServer
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src
         GDB_ROOT_PATH=..
         pushd gdb-src
-		git checkout integration_7_3
+		git checkout $GDB_BRANCH
 		popd
     fi
 
-    mkdir -p gdb-src/build-gdbserver
-    pushd gdb-src/build-gdbserver
+    mkdir -p gdb-src/build-gdbserver-$GDB_VER
+    pushd gdb-src/build-gdbserver-$GDB_VER
 
     mkdir android-sysroot
     $CPRL $TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm/* android-sysroot/ || error_msg "Can't copy android sysroot"
@@ -774,7 +778,7 @@ function prepareGDBServer
     mkdir -p $package_path
     mv gdbserver-$GDB_VER.7z $package_path/
 
-    popd #gdb-src/build-gdbserver
+    popd #gdb-src/build-gdbserver-$GDB_VER
 
     popd #gdb-build
 }
