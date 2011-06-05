@@ -650,21 +650,34 @@ function prepareGDB
             doSed $"s/python2\.7Mac/python2\.7/g" $install_dir/bin/smtpd.py
         fi
 
-        cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
-        mkdir -p $target_dir/python/include/python$pyversion
-        mkdir -p $target_dir/python/bin
-        cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
-        # Remove the $SUFFIX if present (OS X)
-        mv $install_dir/bin/python$pyversion$SUFFIX$EXE_EXT $install_dir/bin/python$pyversion$EXE_EXT
-        mv $install_dir/bin/python$SUFFIX$EXE_EXT $install_dir/bin/python$EXE_EXT
-        cp -a $install_dir/bin/python$pyversion* $target_dir/python/bin/
-        if [ "$OSTYPE" = "msys" ] ; then
-            cp -fr $install_dir/bin/Lib $target_dir/
-        fi
-        $STRIP $target_dir/python/bin/python$pyversion$EXE_EXT
-        popd
-        export PATH=$OLDPATH
+#        cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
+#        mkdir -p $target_dir/python/include/python$pyversion
+#        mkdir -p $target_dir/python/bin
+#        cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
+#        # Remove the $SUFFIX if present (OS X)
+#        mv $install_dir/bin/python$pyversion$SUFFIX$EXE_EXT $install_dir/bin/python$pyversion$EXE_EXT
+#        mv $install_dir/bin/python$SUFFIX$EXE_EXT $install_dir/bin/python$EXE_EXT
+#        cp -a $install_dir/bin/python$pyversion* $target_dir/python/bin/
+#        if [ "$OSTYPE" = "msys" ] ; then
+#            cp -fr $install_dir/bin/Lib $target_dir/
+#        fi
+#        $STRIP $target_dir/python/bin/python$pyversion$EXE_EXT
+#        popd
+#        export PATH=$OLDPATH
     fi
+
+    cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
+    mkdir -p $target_dir/python/include/python$pyversion
+    mkdir -p $target_dir/python/bin
+    cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
+    # Remove the $SUFFIX if present (OS X)
+    mv $install_dir/bin/python$pyversion$SUFFIX$EXE_EXT $install_dir/bin/python$pyversion$EXE_EXT
+    mv $install_dir/bin/python$SUFFIX$EXE_EXT $install_dir/bin/python$EXE_EXT
+    cp -a $install_dir/bin/python$pyversion* $target_dir/python/bin/
+    if [ "$OSTYPE" = "msys" ] ; then
+        cp -fr $install_dir/bin/Lib $target_dir/
+    fi
+    $STRIP $target_dir/python/bin/python$pyversion$EXE_EXT
 
 	# Something is setting PYTHONHOME as an Env. Var for Windows and I'm not sure what... installer? NQTC?
     unset PYTHONHOME
