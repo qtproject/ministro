@@ -534,6 +534,14 @@ function prepareGDB
         return
     fi
 
+    mkdir gdb-build
+    pushd gdb-build
+    pyversion=2.7
+    pyfullversion=2.7.1
+    install_dir=$PWD/install
+    target_dir=$PWD/gdb-$GDB_VER
+    mkdir -p $target_dir
+
     OLDPATH=$PATH
     if [ "$OSTYPE" = "linux-gnu" ] ; then
         HOST=i386-linux-gnu
@@ -558,15 +566,6 @@ function prepareGDB
             CXX32="g++ -m32"
         fi
     fi
-
-
-    mkdir gdb-build
-    pushd gdb-build
-    pyversion=2.7
-    pyfullversion=2.7.1
-    install_dir=$PWD/install
-    target_dir=$PWD/gdb-$GDB_VER
-    mkdir -p $target_dir
 
     downloadIfNotExists expat-2.0.1.tar.gz http://downloads.sourceforge.net/sourceforge/expat/expat-2.0.1.tar.gz || error_msg "Can't download expat library"
     if [ ! -d expat-2.0.1 ]
@@ -606,13 +605,13 @@ function prepareGDB
 
         CC=$CC32 CXX=$CXX32 ./configure $PYCCFG --host=$HOST --prefix=$install_dir --with-suffix=$SUFFIX || error_msg "Can't configure Python"
         doMake "Can't compile Python" "all done"
-
         if [ "$OSTYPE" = "msys" ] ; then
-            cd pywin32-216
+            pushd pywin32-216
             # TODO :: Fix this, builds ok but then tries to copy pywintypes27.lib instead of libpywintypes27.a and pywintypes27.dll.
             ../python$EXE_EXT setup.py build
-            cd ..
+            popd
         fi
+        make install
 
         if [ "$OSTYPE" = "msys" ] ; then
             mkdir -p $PYCFGDIR
@@ -626,6 +625,7 @@ function prepareGDB
             cp install-sh  $PYCFGDIR
             cp Modules/Setup $PYCFGDIR
             cp Modules/Setup.config $PYCFGDIR
+            mkdir $install_dir/lib/python$pyversion
             cp libpython$pyversion.a $install_dir/lib/python$pyversion/
             cp libpython$pyversion.dll $install_dir/lib/python$pyversion/
         fi
@@ -639,7 +639,6 @@ function prepareGDB
             doSed $"s/python2\.7Mac/python2\.7/g" $install_dir/bin/smtpd.py
         fi
 
-        make install
         popd
     fi
 
@@ -1367,7 +1366,7 @@ prepareHostQt
 prepareSdkInstallerTools
 prepareNDKs
 # expat issue at the moment.
-#prepareGDBVersion 7.3
+prepareGDBVersion 7.3
 prepareGDBVersion 7.2
 prepareSDKs
 prepareNecessitasQtCreator
