@@ -542,7 +542,7 @@ function prepareGDB
         PYCFGDIR=$install_dir/lib/python$pyversion/config
     else
         if [ "$OSTYPE" = "msys" ] ; then
-            SUFFIX=.exe
+            SUFFIX=
             HOST_EXE=.exe
             HOST=i686-pc-mingw32
             PYCFGDIR=$install_dir/bin/Lib/config
@@ -627,8 +627,8 @@ function prepareGDB
             cp install-sh  $PYCFGDIR
             cp Modules/Setup $PYCFGDIR
             cp Modules/Setup.config $PYCFGDIR
-            cp libpython$pyversion.a $install_dir/lib/python$pyversion
-            cp libpython$pyversion.dll $install_dir/lib/python$pyversion
+            cp libpython$pyversion.a $install_dir/lib/python$pyversion/
+            cp libpython$pyversion.dll $install_dir/lib/python$pyversion/
         fi
 
         if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
@@ -655,13 +655,13 @@ function prepareGDB
     mkdir -p $target_dir/python/bin
     cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
     # Remove the $SUFFIX if present (OS X)
-    mv $install_dir/bin/python$pyversion$SUFFIX $install_dir/bin/python$pyversion
-    mv $install_dir/bin/python$SUFFIX $install_dir/bin/python$EXE_EXT
+    mv $install_dir/bin/python$pyversion$SUFFIX$HOST_EXE $install_dir/bin/python$pyversion$HOST_EXE
+    mv $install_dir/bin/python$SUFFIX$HOST_EXE $install_dir/bin/python$HOST_EXE
     cp -a $install_dir/bin/python$pyversion* $target_dir/python/bin/
     if [ "$OSTYPE" = "msys" ] ; then
         cp -fr $install_dir/bin/Lib $target_dir/
     fi
-    $STRIP $target_dir/python/bin/python$pyversion$EXE_EXT
+    $STRIP $target_dir/python/bin/python$pyversion$HOST_EXE
 
 	# Something is setting PYTHONHOME as an Env. Var for Windows and I'm not sure what... installer? NQTC? Python build process?
     # TODOMA :: Fix the real problem.
@@ -1367,8 +1367,6 @@ prepareNDKs
 # expat issue at the moment.
 #prepareGDBVersion 7.3
 prepareGDBVersion 7.2
-#prepareGDB
-#prepareGDBServer
 prepareSDKs
 prepareNecessitasQtCreator
 prepareNecessitasQt
