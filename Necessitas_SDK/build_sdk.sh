@@ -800,7 +800,6 @@ function repackSDK
 function prepareGDBVersion
 {
     GDB_VER=$1
-    echo "GDB_VER is $GDB_VER"
     if [ "$GDB_VER" = "7.3" ]; then
         GDB_ROOT_PATH=..
         GDB_BRANCH=integration_7_3
