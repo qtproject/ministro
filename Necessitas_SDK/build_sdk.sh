@@ -640,11 +640,11 @@ function prepareGDB
             doSed $"s/python2\.7Mac/python2\.7/g" $install_dir/bin/smtpd.py
         fi
 
+        make install
         popd
     fi
 
     pushd Python-$pyfullversion
-    make install
     mkdir -p $target_dir/python/lib
     cp LICENSE $target_dir/PYTHON-LICENSE
     cp libpython$pyversion.dll $target_dir/
@@ -683,7 +683,6 @@ function prepareGDB
         pushd gdb-src/build-gdb-$GDB_VER
         OLDPATH=$PATH
         export PATH=$install_dir/bin/:$PATH
-        echo "HELLO HELLO HELLO about to configure gdb, GDB_ROOT_PATH = $GDB_ROOT_PATH, pwd = $PWD"
         CC=$CC32 CXX=$CXX32 $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
         doMake "Can't compile android gdb $GDB_VER" "all done"
         cp -a gdb/gdb$EXE_EXT $target_dir/
