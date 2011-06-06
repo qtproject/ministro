@@ -580,6 +580,8 @@ function prepareGDB
 
     OLDCC=$CC
     OLDCXX=$CXX
+    # Again, what a terrible failure.
+    unset PYTHONHOME
     if [ ! -f Python-$pyfullversion/all_done ]
     then
         if [ "$OSTYPE" = "linux-gnu" ]; then
@@ -596,7 +598,6 @@ function prepareGDB
         fi
 
         pushd Python-$pyfullversion
-        unset PYTHONHOME
 
         if [ "$USINGMAPYTHON" = "1" ] ; then
             autoconf
@@ -614,9 +615,6 @@ function prepareGDB
             cd ..
         fi
 
-        mkdir -p $target_dir/python/lib
-        cp LICENSE $target_dir/PYTHON-LICENSE
-
         if [ "$OSTYPE" = "msys" ] ; then
             mkdir -p $PYCFGDIR
             cp Modules/makesetup $PYCFGDIR
@@ -631,7 +629,6 @@ function prepareGDB
             cp Modules/Setup.config $PYCFGDIR
             cp libpython$pyversion.a $install_dir/lib/python$pyversion
             cp libpython$pyversion.dll $install_dir/lib/python$pyversion
-            cp libpython$pyversion.dll $target_dir/
         fi
 
         if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
@@ -648,6 +645,9 @@ function prepareGDB
 
     pushd Python-$pyfullversion
     make install
+    mkdir -p $target_dir/python/lib
+    cp LICENSE $target_dir/PYTHON-LICENSE
+    cp libpython$pyversion.dll $target_dir/
     popd
     export PATH=$OLDPATH
     cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
@@ -655,15 +655,16 @@ function prepareGDB
     mkdir -p $target_dir/python/bin
     cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
     # Remove the $SUFFIX if present (OS X)
-    mv $install_dir/bin/python$pyversion$SUFFIX$EXE_EXT $install_dir/bin/python$pyversion$EXE_EXT
-    mv $install_dir/bin/python$SUFFIX$EXE_EXT $install_dir/bin/python$EXE_EXT
+    mv $install_dir/bin/python$pyversion$SUFFIX $install_dir/bin/python$pyversion
+    mv $install_dir/bin/python$SUFFIX $install_dir/bin/python$EXE_EXT
     cp -a $install_dir/bin/python$pyversion* $target_dir/python/bin/
     if [ "$OSTYPE" = "msys" ] ; then
         cp -fr $install_dir/bin/Lib $target_dir/
     fi
     $STRIP $target_dir/python/bin/python$pyversion$EXE_EXT
 
-	# Something is setting PYTHONHOME as an Env. Var for Windows and I'm not sure what... installer? NQTC?
+	# Something is setting PYTHONHOME as an Env. Var for Windows and I'm not sure what... installer? NQTC? Python build process?
+    # TODOMA :: Fix the real problem.
     unset PYTHONHOME
     unset PYTHONPATH
 
