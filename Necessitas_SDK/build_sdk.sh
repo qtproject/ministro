@@ -542,8 +542,7 @@ function prepareGDB
         PYCFGDIR=$install_dir/lib/python$pyversion/config
     else
         if [ "$OSTYPE" = "msys" ] ; then
-            SUFFIX=
-            HOST_EXE=.exe
+            SUFFIX=.exe
             HOST=i686-pc-mingw32
             PYCFGDIR=$install_dir/bin/Lib/config
             export PATH=.:$PATH
@@ -655,13 +654,16 @@ function prepareGDB
     mkdir -p $target_dir/python/bin
     cp $install_dir/include/python$pyversion/pyconfig.h $target_dir/python/include/python$pyversion/
     # Remove the $SUFFIX if present (OS X)
-    mv $install_dir/bin/python$pyversion$SUFFIX$HOST_EXE $install_dir/bin/python$pyversion$HOST_EXE
-    mv $install_dir/bin/python$SUFFIX$HOST_EXE $install_dir/bin/python$HOST_EXE
+    if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
+        mv $install_dir/bin/python$pyversion$SUFFIX $install_dir/bin/python$pyversion
+        mv $install_dir/bin/python$SUFFIX $install_dir/bin/python
+    fi
+    mv $install_dir/bin/python$EXE_EXT $install_dir/bin/python$EXE_EXT
     cp -a $install_dir/bin/python$pyversion* $target_dir/python/bin/
     if [ "$OSTYPE" = "msys" ] ; then
         cp -fr $install_dir/bin/Lib $target_dir/
     fi
-    $STRIP $target_dir/python/bin/python$pyversion$HOST_EXE
+    $STRIP $target_dir/python/bin/python$pyversion$EXE_EXT
 
 	# Something is setting PYTHONHOME as an Env. Var for Windows and I'm not sure what... installer? NQTC? Python build process?
     # TODOMA :: Fix the real problem.
