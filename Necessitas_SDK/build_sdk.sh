@@ -567,17 +567,18 @@ function prepareGDB
         fi
     fi
 
+    OLDCC=$CC
+    OLDCXX=$CXX
+
     downloadIfNotExists expat-2.0.1.tar.gz http://downloads.sourceforge.net/sourceforge/expat/expat-2.0.1.tar.gz || error_msg "Can't download expat library"
     if [ ! -d expat-2.0.1 ]
     then
         tar xzvf expat-2.0.1.tar.gz
         pushd expat-2.0.1
-            ./configure --disable-shared --enable-static -prefix=/ && make -j$JOBS && make DESTDIR=$install_dir install || error_msg "Can't compile expat library"
+            CC=$CC32 CXX=$CXX32 ./configure --disable-shared --enable-static -prefix=/ && make -j$JOBS && make DESTDIR=$install_dir install || error_msg "Can't compile expat library"
         popd
     fi
 
-    OLDCC=$CC
-    OLDCXX=$CXX
     # Again, what a terrible failure.
     unset PYTHONHOME
     if [ ! -f Python-$pyfullversion/all_done ]
