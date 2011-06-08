@@ -418,7 +418,7 @@ function makeInstallMinGWBits
     CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses=$install_dir --enable-multibyte --prefix=  CFLAGS=-O2
     make && make DESTDIR=$install_dir install
     popd
-    
+
     # awk command fails during configure (I think).
     downloadIfNotExists regex-2.7-src.zip http://downloads.sourceforge.net/sourceforge/gnuwin32/regex/2.7/regex-2.7-src.zip
     unzip regex-2.7-src.zip
@@ -666,7 +666,7 @@ function prepareGDB
     fi
     $STRIP $target_dir/python/bin/python$pyversion$EXE_EXT
 
-	# Something is setting PYTHONHOME as an Env. Var for Windows and I'm not sure what... installer? NQTC? Python build process?
+    # Something is setting PYTHONHOME as an Env. Var for Windows and I'm not sure what... installer? NQTC? Python build process?
     # TODOMA :: Fix the real problem.
     unset PYTHONHOME
     unset PYTHONPATH
@@ -707,7 +707,7 @@ function prepareGDB
 
     $SDK_TOOLS_PATH/archivegen gdb-$GDB_VER gdb-$GDB_VER-${HOST_TAG}.7z
     mkdir -p $package_path
- 
+
     mv gdb-${GDB_VER}-${HOST_TAG}.7z $package_path/
 
     popd #gdb-build
@@ -741,14 +741,14 @@ function prepareGDBServer
 
     mkdir android-sysroot
     $CPRL $TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm/* android-sysroot/ || error_msg "Can't copy android sysroot"
-	# Fix gdbserver bug by using a Gingerbread version of libc.a
-	# 'The remote end hung up.'
+    # Fix gdbserver bug by using a Gingerbread version of libc.a
+    # 'The remote end hung up.'
     # git archive --remote=git://android.git.kernel.org/platform/development.git HEAD:ndk/platforms/android-3/arch-arm/lib libc.a | tar -x
-	downloadIfNotExists libc.a https://review.source.android.com//cat/23118%2C1%2Cndk/platforms/android-3/arch-arm/lib/libc.a%5E0
-	cp libc.a%5E0 libc.zip
-	rm libc_new-*.a
-	unzip libc.zip
-	mv libc_new-*.a android-sysroot/usr/lib/libc.a
+    downloadIfNotExists libc.a https://review.source.android.com//cat/23118%2C1%2Cndk/platforms/android-3/arch-arm/lib/libc.a%5E0
+    cp libc.a%5E0 libc.zip
+    rm libc_new-*.a
+    unzip libc.zip
+    mv libc_new-*.a android-sysroot/usr/lib/libc.a
     rm -f android-sysroot/usr/lib/libthread_db*
     rm -f android-sysroot/usr/include/thread_db.h
 
