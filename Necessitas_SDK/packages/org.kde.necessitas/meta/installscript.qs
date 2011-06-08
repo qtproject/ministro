@@ -105,16 +105,19 @@ adjustToDefaultSelection = function()
     {
         installer.componentByName("org.kde.necessitas.android.qt.src").selected = false;
     }
+
     if (installer.componentByName("org.kde.necessitas.android.qtmobility.src") != null &&
         installer.componentByName("org.kde.necessitas.android.qtmobility.src").selected)
     {
         installer.componentByName("org.kde.necessitas.android.qtmobility.src").selected = false;
     }
+
     if (installer.componentByName("org.kde.necessitas.android.qtwebkit.src") != null &&
         installer.componentByName("org.kde.necessitas.android.qtwebkit.src").selected)
     {
         installer.componentByName("org.kde.necessitas.android.qtwebkit.src").selected = false;
     }
+
 
     // deselect all deprecated packages by default
     if (installer.componentByName("org.kde.necessitas.misc.sdk.android_5") != null &&
@@ -122,16 +125,13 @@ adjustToDefaultSelection = function()
     {
         installer.componentByName("org.kde.necessitas.misc.sdk.android_5").selected = false;
     }
+
     if (installer.componentByName("org.kde.necessitas.misc.sdk.android_6") != null &&
         installer.componentByName("org.kde.necessitas.misc.sdk.android_6").selected)
     {
         installer.componentByName("org.kde.necessitas.misc.sdk.android_6").selected = false;
     }
-    if (installer.componentByName("org.kde.necessitas.misc.sdk.android_7") != null &&
-        installer.componentByName("org.kde.necessitas.misc.sdk.android_7").selected)
-    {
-        installer.componentByName("org.kde.necessitas.misc.sdk.android_7").selected = false;
-    }
+
     if (installer.componentByName("org.kde.necessitas.misc.sdk.android_9") != null &&
         installer.componentByName("org.kde.necessitas.misc.sdk.android_9").selected)
     {

@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>API 7 (deprecated)</DisplayName>
-    <Description>Android SDK API 7 (2.1-r02) Deprecated !</Description>
-    <Version>2.1.2</Version>
-    <ReleaseDate>2011-04-09</ReleaseDate>
+    <DisplayName>API 7</DisplayName>
+    <Description>Android SDK API 7 (@@ANDROID_API_7_VERSION@@)</Description>
+    <Version>@@ANDROID_API_7_VERSION@@</Version>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.misc.sdk.android_7</Name>
     <Dependencies>org.kde.necessitas.misc.sdk.base</Dependencies>
     <Dependencies>org.kde.necessitas.misc.sdk.platform_tools</Dependencies>

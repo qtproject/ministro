@@ -22,16 +22,16 @@ function Component()
     {
         if (installer.value("os") == "x11")
         {
-            component.addDownloadableArchive( "platform-tools_r03-linux.7z" );
+            component.addDownloadableArchive( "platform-tools_@@ANDROID_PLATFORM_TOOLS_VERSION@@-linux.7z" );
         }
         else if (installer.value("os") == "win")
         {
-            component.addDownloadableArchive( "platform-tools_r03-windows.7z" );
+            component.addDownloadableArchive( "platform-tools_@@ANDROID_PLATFORM_TOOLS_VERSION@@-windows.7z" );
             component.addDownloadableArchive( "android-sdk-windows-tools-mingw-android.7z" );
         }
         else if (installer.value("os") == "mac")
         {
-            component.addDownloadableArchive( "platform-tools_r03-macosx.7z" );
+            component.addDownloadableArchive( "platform-tools_@@ANDROID_PLATFORM_TOOLS_VERSION@@-macosx.7z" );
         }
     }
 }

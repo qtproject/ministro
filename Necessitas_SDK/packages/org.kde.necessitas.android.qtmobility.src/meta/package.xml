@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>QtMobility 1.2.0-src</DisplayName>
+    <DisplayName>QtMobility @@NECESSITAS_QTMOBILITY_VERSION@@-src</DisplayName>
     <Description>Development libraries for development applications on Android devices, source package.</Description>
-    <Version>1.2.0</Version>
-    <ReleaseDate>2011-04-09</ReleaseDate>
+    <Version>@@NECESSITAS_QTMOBILITY_VERSION@@</Version>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.android.qtmobility.src</Name>
     <Script>installscript.qs</Script>
     <InstallPriority>2</InstallPriority>

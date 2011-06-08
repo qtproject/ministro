@@ -22,15 +22,15 @@ function Component()
     {
         if (installer.value("os") == "x11")
         {
-            component.addDownloadableArchive( "android-3.0_r01-linux.7z" );
+            component.addDownloadableArchive( "android-@@ANDROID_API_11_VERSION@@-linux.7z" );
         }
         else if (installer.value("os") == "win")
         {
-            component.addDownloadableArchive( "android-3.0_r01-windows.7z" );
+            component.addDownloadableArchive( "android-@@ANDROID_API_11_VERSION@@-windows.7z" );
         }
         else if (installer.value("os") == "mac")
         {
-            component.addDownloadableArchive( "android-3.0_r01-macosx.7z" );
+            component.addDownloadableArchive( "android-@@ANDROID_API_11_VERSION@@-macosx.7z" );
         }
     }
 }

@@ -133,33 +133,33 @@ function makeNDK
     fi
 
     if [ ! -d "mpfr" ]
-	then
+    then
         git clone git://android.git.kernel.org/toolchain/mpfr.git mpfr
         cd mpfr
         downloadIfNotExists mpfr-2.4.2.tar.bz2 http://www.mpfr.org/mpfr-2.4.2/mpfr-2.4.2.tar.bz2
         cd ..
     fi
     if [ ! -d "binutils" ]
-	then
+    then
         git clone git://android.git.kernel.org/toolchain/binutils.git binutils
     fi
     if [ ! -d "gmp" ]
-	then
+    then
         git clone git://android.git.kernel.org/toolchain/gmp.git gmp
     fi
-	if [ ! -d "gold" ]
-	then
+    if [ ! -d "gold" ]
+    then
         git clone git://android.git.kernel.org/toolchain/gold.git gold
     fi
-	if [ ! -d "build" ]
-	then
+    if [ ! -d "build" ]
+    then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-build.git build
     fi
-	if [ ! -d "gcc" ]
+    if [ ! -d "gcc" ]
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gcc.git gcc
     fi
-	if [ ! -d "gdb" ]
+    if [ ! -d "gdb" ]
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb
     fi

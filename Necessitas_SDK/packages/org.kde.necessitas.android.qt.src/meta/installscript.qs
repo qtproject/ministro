@@ -37,7 +37,7 @@ Component.prototype.createOperations = function()
     {
         component.createOperations();
         var qtPath = "";
-        component.addOperation( "RegisterQtCreatorSourceMapping", "@TargetDir@", "/tmp/necessitas/Android/Qt/@@COMPACT_VERSION@@/qt-src", "@TargetDir@/Android/Qt/@@COMPACT_VERSION@@/qt-src" );
+        component.addOperation( "RegisterQtCreatorSourceMapping", "@TargetDir@", "/tmp/necessitas/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/qt-src", "@TargetDir@/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/qt-src" );
     }
     catch( e )
     {

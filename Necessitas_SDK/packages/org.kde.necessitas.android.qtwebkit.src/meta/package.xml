@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>QtWebKit 2.1.0-src</DisplayName>
+    <DisplayName>QtWebKit @@NECESSITAS_QTWEBKIT_VERSION@@-src</DisplayName>
     <Description>Development libraries for development applications on Android devices, source package.</Description>
-    <Version>2.1.0</Version>
-    <ReleaseDate>2011-04-09</ReleaseDate>
+    <Version>@@NECESSITAS_QTWEBKIT_VERSION@@</Version>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.android.qtwebkit.src</Name>
     <Script>installscript.qs</Script>
     <InstallPriority>1</InstallPriority>

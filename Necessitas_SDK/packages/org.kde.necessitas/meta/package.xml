@@ -3,7 +3,7 @@
     <DisplayName>Necessitas Qt SDK</DisplayName>
     <Description>Meta package needed to install the SDK</Description>
     <Version>1.0.0</Version>
-    <ReleaseDate>2011-04-09</ReleaseDate>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas</Name>
     <Script>installscript.qs</Script>
     <InstallPriority>1</InstallPriority>
