@@ -1432,7 +1432,7 @@ SDK_TOOLS_PATH=$PWD/necessitas-installer-framework/installerbuilder/bin
 prepareHostQt
 prepareSdkInstallerTools
 prepareNDKs
-# prepareGDBVersion 7.3
+prepareGDBVersion 7.3
 prepareGDBVersion 7.2
 prepareSDKs
 prepareNecessitasQtCreator
