@@ -686,7 +686,7 @@ function prepareGDB
         pushd gdb-src/build-gdb-$GDB_VER
         OLDPATH=$PATH
         export PATH=$install_dir/bin/:$PATH
-        CC=$CC32 CXX=$CXX32 $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
+        CC=$CC32 CXX=$CXX32 $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/platforms/android-9/arch-arm --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
         doMake "Can't compile android gdb $GDB_VER" "all done"
         cp -a gdb/gdb$EXE_EXT $target_dir/
         cp -a gdb/gdbtui$EXE_EXT $target_dir/
@@ -723,7 +723,7 @@ function prepareGDBServer
         return
     fi
 
-    export NDK_DIR=$TEMP_PATH/android-ndk-r5b
+    export NDK_DIR=$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}
 
     mkdir gdb-build
     pushd gdb-build
@@ -740,7 +740,7 @@ function prepareGDBServer
     pushd gdb-src/build-gdbserver-$GDB_VER
 
     mkdir android-sysroot
-    $CPRL $TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm/* android-sysroot/ || error_msg "Can't copy android sysroot"
+    $CPRL $TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/platforms/android-9/arch-arm/* android-sysroot/ || error_msg "Can't copy android sysroot"
     # Fix gdbserver bug by using a Gingerbread version of libc.a
     # 'The remote end hung up.'
     # git archive --remote=git://android.git.kernel.org/platform/development.git HEAD:ndk/platforms/android-3/arch-arm/lib libc.a | tar -x
@@ -752,17 +752,17 @@ function prepareGDBServer
     rm -f android-sysroot/usr/lib/libthread_db*
     rm -f android-sysroot/usr/include/thread_db.h
 
-    TOOLCHAIN_PREFIX=$TEMP_PATH/android-ndk-r5b/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi
+    TOOLCHAIN_PREFIX=$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi
 
     OLD_CC="$CC"
     OLD_CFLAGS="$CFLAGS"
     OLD_LDFLAGS="$LDFLAGS"
 
     export CC="$TOOLCHAIN_PREFIX-gcc --sysroot=$PWD/android-sysroot"
-    export CFLAGS="-O2 -nostdlib -D__ANDROID__ -DANDROID -DSTDC_HEADERS -I$TEMP_PATH/android-ndk-r5b/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/lib/gcc/arm-linux-androideabi/4.4.3/include -I$PWD/android-sysroot/usr/include -fno-short-enums"
+    export CFLAGS="-O2 -nostdlib -D__ANDROID__ -DANDROID -DSTDC_HEADERS -I$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/lib/gcc/arm-linux-androideabi/4.4.3/include -I$PWD/android-sysroot/usr/include -fno-short-enums"
     export LDFLAGS="-static -Wl,-z,nocopyreloc -Wl,--no-undefined $PWD/android-sysroot/usr/lib/crtbegin_static.o -lc -lm -lgcc -lc $PWD/android-sysroot/usr/lib/crtend_android.o"
 
-    LIBTHREAD_DB_DIR=$TEMP_PATH/android-ndk-r5b/sources/android/libthread_db/gdb-7.1.x/
+    LIBTHREAD_DB_DIR=$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/sources/android/libthread_db/gdb-7.1.x/
     cp $LIBTHREAD_DB_DIR/thread_db.h android-sysroot/usr/include/
     $TOOLCHAIN_PREFIX-gcc$EXE_EXT --sysroot=$PWD/android-sysroot -o $PWD/android-sysroot/usr/lib/libthread_db.a -c $LIBTHREAD_DB_DIR/libthread_db.c || error_msg "Can't compile android threaddb"
     $GDB_ROOT_PATH/gdb/gdbserver/configure --host=arm-eabi-linux --with-libthread-db=$PWD/android-sysroot/usr/lib/libthread_db.a || error_msg "Can't configure gdbserver"
@@ -990,7 +990,7 @@ function compileNecessitasQt
     if [ ! -f all_done ]
     then
         git checkout testing
-        ../qt-src/androidconfigbuild.sh -c 1 -q 1 -n $TEMP_PATH/android-ndk-r5b -a $1 -k 0 -i /data/data/eu.licentia.necessitas.ministro/files/qt || error_msg "Can't configure android-qt"
+        ../qt-src/androidconfigbuild.sh -c 1 -q 1 -n $TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION} -a $1 -k 0 -i /data/data/eu.licentia.necessitas.ministro/files/qt || error_msg "Can't configure android-qt"
         echo "all done">all_done
     fi
 
