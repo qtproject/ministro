@@ -647,7 +647,7 @@ function prepareGDB
     pushd Python-$pyfullversion
     mkdir -p $target_dir/python/lib
     cp LICENSE $target_dir/PYTHON-LICENSE
-    cp libpython$pyversion.dll $target_dir/
+    cp libpython$pyversion$SHLIB_EXT $target_dir/
     popd
     export PATH=$OLDPATH
     cp -a $install_dir/lib/python$pyversion $target_dir/python/lib/
@@ -689,8 +689,8 @@ function prepareGDB
         CC=$CC32 CXX=$CXX32 $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-r5b/platforms/android-9/arch-arm --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
         doMake "Can't compile android gdb $GDB_VER" "all done"
         cp -a gdb/gdb$EXE_EXT $target_dir/
+        cp -a gdb/gdbtui$EXE_EXT $target_dir/
         # Fix building gdb-tui, it used to work and was handy to have.
-        # cp -a gdb/gdb-tui$EXE_EXT $target_dir/
         $STRIP $target_dir/gdb$EXE_EXT
         export PATH=$OLDPATH
         popd
@@ -1432,8 +1432,8 @@ SDK_TOOLS_PATH=$PWD/necessitas-installer-framework/installerbuilder/bin
 prepareHostQt
 prepareSdkInstallerTools
 prepareNDKs
-prepareGDBVersion 7.3
 prepareGDBVersion 7.2
+prepareGDBVersion 7.3
 prepareSDKs
 prepareNecessitasQtCreator
 prepareNecessitasQt
