@@ -869,7 +869,8 @@ function prepareSDKs
             gcc -Wl,-subsystem,windows -Wno-write-strings android.cpp -static-libgcc -s -O2 -o android.exe
             popd
             mkdir -p android-sdk-windows/tools/
-            cp android-various/make-3.82-build/make.exe android-sdk-windows/tools/
+            mkdir -p QtCreator/bin/
+            cp android-various/make-3.82-build/make.exe QtCreator/bin/
             cp android-various/android-sdk/android.exe android-sdk-windows/tools/
             $SDK_TOOLS_PATH/archivegen android-sdk-windows android-sdk-windows-tools-mingw-android.7z
             mv android-sdk-windows-tools-mingw-android.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.platform_tools/data/android-sdk-windows-tools-mingw-android.7z
