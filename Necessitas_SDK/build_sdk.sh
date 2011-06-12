@@ -101,11 +101,16 @@ function removeAndExit
     rm -fr $1 && error_msg "Can't download $1"
 }
 
+
 function downloadIfNotExists
 {
     if [ ! -f $1 ]
     then
-        wget --no-check-certificate -c $2 || removeAndExit $1
+	    if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+            curl --insecure -S -L -C - -O $2 || removeAndExit $1   
+        else
+            wget --no-check-certificate -c $2 || removeAndExit $1
+        fi
     fi
 }
 
@@ -744,8 +749,8 @@ function prepareGDBServer
     # Fix gdbserver bug by using a Gingerbread version of libc.a
     # 'The remote end hung up.'
     # git archive --remote=git://android.git.kernel.org/platform/development.git HEAD:ndk/platforms/android-3/arch-arm/lib libc.a | tar -x
-    downloadIfNotExists libc.a https://review.source.android.com//cat/23118%2C1%2Cndk/platforms/android-3/arch-arm/lib/libc.a%5E0
-    cp libc.a%5E0 libc.zip
+    downloadIfNotExists libc.a https://review.source.android.com//cat/23118%2C1%2Cndk/platforms/android-3/arch-arm/lib/libc.a^0
+    cp libc.a^0 libc.zip
     rm libc_new-*.a
     unzip libc.zip
     mv libc_new-*.a android-sysroot/usr/lib/libc.a
@@ -1074,7 +1079,7 @@ function compileNecessitasQtMobility
         pushd ../qtmobility-src
         git checkout master
         popd
-        ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -staticconfig android -qmake-exec ../build-$1/bin/qmake -modules "bearer location contacts multimedia versit messaging systeminfo serviceframework sensors gallery organizer feedback connectivity" || error_msg "Can't configure android-qtmobility"
+        ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -staticconfig android -qmake-exec ../build-$1/bin/qmake$EXE_EXT -modules "bearer location contacts multimedia versit messaging systeminfo serviceframework sensors gallery organizer feedback connectivity" || error_msg "Can't configure android-qtmobility"
         doMake "Can't compile android-qtmobility" "all done"
     fi
     package_name=${1//-/_} # replace - with _
