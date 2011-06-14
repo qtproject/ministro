@@ -106,7 +106,7 @@ function downloadIfNotExists
 {
     if [ ! -f $1 ]
     then
-	    if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+	    if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" -o "$OSTYPE" = "msys" ] ; then
             curl --insecure -S -L -C - -O $2 || removeAndExit $1   
         else
             wget --no-check-certificate -c $2 || removeAndExit $1
@@ -156,37 +156,6 @@ function doSed
 function prepareHostQt
 {
     # download, compile & install qt, it is used to compile the installer
-    if [ "$OSTYPE" = "msys" ]
-    then
-        downloadIfNotExists 7za920.zip http://downloads.sourceforge.net/sevenzip/7za920.zip
-        SEVEN7LOC=$PWD
-        pushd /usr/local/bin
-        unzip -o $SEVEN7LOC/7za920.zip
-        popd
-
-        # Get a more recent sed, one that can do -i.
-        downloadIfNotExists sed-4.2.1-2-msys-1.0.13-bin.tar.lzma http://downloads.sourceforge.net/project/mingw/MSYS/BaseSystem/sed/sed-4.2.1-2/sed-4.2.1-2-msys-1.0.13-bin.tar.lzma
-        rm -rf sed-4.2.1-2-msys-1.0.13-bin.tar
-        rm /usr/bin/sed.exe
-        7za x sed-4.2.1-2-msys-1.0.13-bin.tar.lzma
-        tar -xvf sed-4.2.1-2-msys-1.0.13-bin.tar
-        mv bin/sed.exe /usr/bin
-
-        # download, compile & install zlib to /usr
-        downloadIfNotExists zlib-1.2.5.tar.gz http://downloads.sourceforge.net/libpng/zlib/1.2.5/zlib-1.2.5.tar.gz
-        if [ ! -f /usr/lib/libz.a ] ; then
-            tar -xvzf zlib-1.2.5.tar.gz
-            cd zlib-1.2.5
-            doSed $"s/usr\/local/usr/" win32/Makefile.gcc
-            make -f win32/Makefile.gcc
-            export INCLUDE_PATH=/usr/include
-            export LIBRARY_PATH=/usr/lib
-            make -f win32/Makefile.gcc install
-            rm -rf zlib-1.2.5
-            cd ..
-        fi
-    fi
-
     if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
     then
         if [ ! -d $HOST_QT_VERSION ]
@@ -359,38 +328,124 @@ function prepareNecessitasQtCreator
     popd
 }
 
-function makeInstallMinGWBits
+# A few things are downloaded as binaries.
+function makeInstallMinGWTools
 {
-    install_dir=$1
+    if [ -d mingw-bits ] ; then
+        return
+    fi
+
+    mkdir -p /usr/local/bin
     mkdir mingw-bits
     pushd mingw-bits
+
     # Tools. Maybe move these bits to setup_mingw_for_necessitas_build.sh?
+    MAKETEST=`which mingw32-make.exe`
+	if [ "$MAKETEST" != "" ] ; then
+        cp $MAKETEST /usr/local/bin/mingw-make.exe
+    else
+        error_msg "Can't find mingw-make"
+    fi
+
+    downloadIfNotExists unzip60.tar.gz http://ovh.dl.sourceforge.net/project/infozip/UnZip%206.x%20%28latest%29/UnZip%206.0/unzip60.tar.gz
+    tar -xvzf unzip60.tar.gz
+    pushd unzip60
+    /usr/local/bin/mingw-make.exe -f win32/Makefile.gcc
+	cp unzip.exe /usr/local/bin
+    popd
+
+    downloadIfNotExists 7za920.zip http://downloads.sourceforge.net/sevenzip/7za920.zip
+    SEVEN7LOC=$PWD
+    pushd /usr/local/bin
+    unzip -o $SEVEN7LOC/7za920.zip
+    popd
+
+    downloadIfNotExists make-3.81-3-msys-1.0.13-bin.tar.lzma http://freefr.dl.sourceforge.net/project/mingw/MSYS/make/make-3.81-3/make-3.81-3-msys-1.0.13-bin.tar.lzma
+    rm -rf make-3.81-3-msys-1.0.13-bin.tar
+    7za x make-3.81-3-msys-1.0.13-bin.tar.lzma
+    tar -xvf make-3.81-3-msys-1.0.13-bin.tar
+    mv bin/make.exe /usr/local/bin/make.exe
+
+    # This one needs msys-intl-8.dll, however, it's likely that we *have* to use msys sed,
+	# see http://www.mingw.org/wiki/msys and search for "MinGW build VS MSYS build".
+	
+    downloadIfNotExists libiconv-1.13.1-2-msys-1.0.13-dll-2.tar.lzma http://dfn.dl.sourceforge.net/project/mingw/MSYS/BaseSystem/libiconv/libiconv-1.13.1-2/libiconv-1.13.1-2-msys-1.0.13-dll-2.tar.lzma
+    rm -rf libiconv-1.13.1-2-msys-1.0.13-dll-2.tar
+    7za x libiconv-1.13.1-2-msys-1.0.13-dll-2.tar.lzma
+    tar -xvf libiconv-1.13.1-2-msys-1.0.13-dll-2.tar
+    mv bin/msys-iconv-2.dll /usr/local/bin
+
+#    downloadIfNotExists gettext-0.17-2-msys-1.0.13-bin.tar.lzma http://kent.dl.sourceforge.net/project/mingw/MSYS/BaseSystem/gettext/gettext-0.17-2/gettext-0.17-2-msys-1.0.13-bin.tar.lzma
+#    rm -rf gettext-0.17-2-msys-1.0.13-bin.tar
+#    7za x gettext-0.17-2-msys-1.0.13-bin.tar.lzma
+#    tar -xvf gettext-0.17-2-msys-1.0.13-bin.tar
+#    mv bin/msys-intl-8.dll /usr/local/bin
+    downloadIfNotExists libintl-0.17-2-msys-dll-8.tar.lzma http://sunet.dl.sourceforge.net/project/mingw/MSYS/BaseSystem/gettext/gettext-0.17-2/libintl-0.17-2-msys-dll-8.tar.lzma
+    rm -rf libintl-0.17-2-msys-dll-8.tar
+    7za x libintl-0.17-2-msys-dll-8.tar.lzma
+    tar -xvf libintl-0.17-2-msys-dll-8.tar
+    mv bin/msys-intl-8.dll /usr/local/bin
+
+    downloadIfNotExists sed-4.2.1-2-msys-1.0.13-bin.tar.lzma http://downloads.sourceforge.net/project/mingw/MSYS/BaseSystem/sed/sed-4.2.1-2/sed-4.2.1-2-msys-1.0.13-bin.tar.lzma
+    rm -rf sed-4.2.1-2-msys-1.0.13-bin.tar
+    7za x sed-4.2.1-2-msys-1.0.13-bin.tar.lzma
+    tar -xvf sed-4.2.1-2-msys-1.0.13-bin.tar
+    rm /usr/bin/sed.exe
+    mv bin/sed.exe /usr/local/bin
+
     downloadIfNotExists autoconf-2.68.tar.bz2 http://ftp.gnu.org/gnu/autoconf/autoconf-2.68.tar.bz2
     rm -rf autoconf-2.68
     tar -xvjf autoconf-2.68.tar.bz2
-    pushd autoconf-2.68
-    ./configure -prefix=/usr/local
-    make
-    make install
+	mkdir autoconf-2.68-build
+    pushd autoconf-2.68-build
+    ../autoconf-2.68/configure -prefix=/usr/local
+    msys-make
+    msys-make install
     popd
 
-    downloadIfNotExists automake-1.10.3.tar.bz2 http://ftp.gnu.org/gnu/automake/automake-1.10.3.tar.bz2
-    rm -rf automake-1.10.3
-    tar -xvjf automake-1.10.3.tar.bz2
-    pushd automake-1.10.3
-    ./configure -prefix=/usr/local
-    make
-    make install
-    popd
+	# make install loops forever.
+#    downloadIfNotExists automake-1.10.3.tar.bz2 http://ftp.gnu.org/gnu/automake/automake-1.10.3.tar.bz2
+#    rm -rf automake-1.10.3
+#    tar -xvjf automake-1.10.3.tar.bz2
+#    mkdir automake-1.10.3-build
+#    pushd automake-1.10.3-build
+#    ../automake-1.10.3/configure -prefix=/usr/local
+#    make
+#    make install
+#    popd
 
     downloadIfNotExists libtool-2.4.tar.gz http://ftp.gnu.org/gnu/libtool/libtool-2.4.tar.gz
     rm -rf libtool-2.4
     tar -xvzf libtool-2.4.tar.gz
-    pushd libtool-2.4
-    ./configure -prefix=/usr/local
+    mkdir libtool-2.4-build
+    pushd libtool-2.4-build
+    ../libtool-2.4/configure -prefix=/usr/local
     make
     make install
     popd
+
+	popd
+}
+
+function makeInstallMinGWLibs
+{
+    pushd mingw-bits
+
+    # download, compile & install zlib to /usr
+    downloadIfNotExists zlib-1.2.5.tar.gz http://downloads.sourceforge.net/libpng/zlib/1.2.5/zlib-1.2.5.tar.gz
+    if [ ! -f /usr/lib/libz.a ] ; then
+        tar -xvzf zlib-1.2.5.tar.gz
+        cd zlib-1.2.5
+        doSed $"s/usr\/local/usr/" win32/Makefile.gcc
+        make -f win32/Makefile.gcc
+        export INCLUDE_PATH=/usr/include
+        export LIBRARY_PATH=/usr/lib
+        make -f win32/Makefile.gcc install
+        rm -rf zlib-1.2.5
+        cd ..
+    fi
+
+    install_dir=$1
 
     downloadIfNotExists PDCurses-3.4.tar.gz http://downloads.sourceforge.net/pdcurses/pdcurses/3.4/PDCurses-3.4.tar.gz
     rm -rf PDCurses-3.4
@@ -594,9 +649,9 @@ function prepareGDB
             tar xjvf Python-$pyfullversion.tar.bz2
             USINGMAPYTHON=0
         else
-#            if [ "$OSTYPE" = "msys" ]; then
-#                makeInstallMinGWBits $install_dir
-#            fi
+            if [ "$OSTYPE" = "msys" ]; then
+                makeInstallMinGWLibs $install_dir
+            fi
             rm -rf Python-$pyfullversion
             git clone git://gitorious.org/mingw-python/mingw-python.git Python-$pyfullversion
             USINGMAPYTHON=1
@@ -1435,6 +1490,10 @@ function prepareWindowsPackages
 # This is needed early.
 SDK_TOOLS_PATH=$PWD/necessitas-installer-framework/installerbuilder/bin
 
+if [ "$OSTYPE" = "msys" ]; then
+    makeInstallMinGWTools $install_dir
+fi
+ 
 prepareHostQt
 prepareSdkInstallerTools
 prepareNDKs
