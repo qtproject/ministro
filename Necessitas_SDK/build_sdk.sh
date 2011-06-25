@@ -1019,10 +1019,11 @@ function packSource
 function compileNecessitasQt
 {
     package_name=${1//-/_} # replace - with _
-    NDK_TARGET=5
+    NDK_TARGET=4
     if [ $package_name = "armeabi_v7a" ]
     then
-        NDK_TARGET=5
+        # Change this to 5?
+        NDK_TARGET=4
     fi
 
     if [ ! -f all_done ]
