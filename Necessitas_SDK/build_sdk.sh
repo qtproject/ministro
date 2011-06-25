@@ -62,16 +62,17 @@ EXE_EXT=""
 export PYTHONHOME=""
 
 if [ "$OSTYPE" = "msys" ] ; then
-    HOST_CFG_OPTIONS=" -platform win32-g++ -reduce-exports -release -prefix . "
+    HOST_CFG_OPTIONS=" -platform win32-g++ -reduce-exports -prefix . "
     HOST_TAG=windows
     HOST_TAG_NDK=windows
     EXE_EXT=.exe
     SHLIB_EXT=.dll
     SCRIPT_EXT=.bat
-    JOBS=9
+    SEVENZIP=7za
+    JOBS=`expr $NUMBER_OF_PROCESSORS + 1`
 else
     if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
-        HOST_CFG_OPTIONS=" -platform macx-g++42 -sdk /Developer/SDKs/MacOSX10.5.sdk -arch i386 -arch x86_64 -cocoa -release -prefix . "
+        HOST_CFG_OPTIONS=" -platform macx-g++42 -sdk /Developer/SDKs/MacOSX10.5.sdk -arch i386 -arch x86_64 -cocoa -prefix . "
         HOST_QM_CFG_OPTIONS="CONFIG+=x86 CONFIG+=x86_64"
         # -reduce-exports doesn't work for static Mac OS X i386 build.
         # (ld: bad codegen, pointer diff in fulltextsearch::clucene::QHelpSearchIndexReaderClucene::run()     to global weak symbol vtable for QtSharedPointer::ExternalRefCountDatafor architecture i386)
@@ -79,12 +80,14 @@ else
         HOST_TAG=darwin-x86
         HOST_TAG_NDK=darwin-x86
         SHLIB_EXT=.dylib
+        SEVENZIP=7za
         JOBS=9
     else
-        HOST_CFG_OPTIONS=" -platform linux-g++ -developer-build "
+        HOST_CFG_OPTIONS=" -platform linux-g++ "
         HOST_TAG=linux-x86
         HOST_TAG_NDK=linux-x86
         SHLIB_EXT=.so
+        SEVENZIP=7za
         JOBS=`cat /proc/cpuinfo | grep processor | wc -l`
         JOBS=`expr $JOBS + 2`
     fi
@@ -106,8 +109,8 @@ function downloadIfNotExists
 {
     if [ ! -f $1 ]
     then
-	    if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" -o "$OSTYPE" = "msys" ] ; then
-            curl --insecure -S -L -C - -O $2 || removeAndExit $1   
+	    if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+            curl --insecure -S -L -O $2 || removeAndExit $1
         else
             wget --no-check-certificate -c $2 || removeAndExit $1
         fi
@@ -116,16 +119,20 @@ function downloadIfNotExists
 
 function doMake
 {
+    MAKEPROG=make
     if [ "$OSTYPE" = "msys" -o  "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
         if [ "$OSTYPE" = "msys" ] ; then
             MAKEDIR=`pwd -W`
             MAKEFOREVER=1
+            if [ ! -z $3 ] ; then
+                MAKEPROG=$3
+            fi
         else
             MAKEDIR=`pwd`
             MAKEFOREVER=0
         fi
         MAKEFILE=$MAKEDIR/Makefile
-        make -f $MAKEFILE -j$JOBS
+        $MAKEPROG -f $MAKEFILE -j$JOBS
         while [ "$?" != "0" -a "$MAKEFOREVER" = "1" ]
         do
             if [ -f /usr/break-make ]; then
@@ -133,7 +140,7 @@ function doMake
                 rm -f /usr/break-make
                 error_msg $1
             fi
-            make -f $MAKEFILE -j$JOBS
+            $MAKEPROG -f $MAKEFILE -j$JOBS
         done
         echo $2>all_done
     else
@@ -153,14 +160,16 @@ function doSed
     fi
 }
 
+# $1 is either -d (debug build) or nothing.
 function prepareHostQt
 {
     # download, compile & install qt, it is used to compile the installer
+    HOST_QT_CONFIG=$1
     if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
     then
         if [ ! -d $HOST_QT_VERSION ]
         then
-            git clone git://gitorious.org/~mingwandroid/qt/mingw-android-official-qt.git $HOST_QT_VERSION
+            git clone git://gitorious.org/~mingwandroid/qt/mingw-android-official-qt.git $HOST_QT_VERSION || error_msg "Cant clone mingw qt"
         fi
     else
         downloadIfNotExists $HOST_QT_VERSION.tar.gz http://get.qt.nokia.com/qt/source/$HOST_QT_VERSION.tar.gz
@@ -172,33 +181,47 @@ function prepareHostQt
     fi
 
     #build qt statically, needed by Sdk installer
-    mkdir build-$HOST_QT_VERSION-static
-    pushd build-$HOST_QT_VERSION-static
-    STATIC_QT_PATH=$PWD
+    mkdir b-$HOST_QT_VERSION-st$HOST_QT_CONFIG
+    pushd b-$HOST_QT_VERSION-st$HOST_QT_CONFIG
+    OPTS_CFG=" -developer-build "
+    if [ "$HOST_QT_CONFIG" = "-d" ] ; then
+        STATIC_QT_PATH_DEBUG=$PWD
+        if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+            OPTS_CFG=" -debug "
+            HOST_QT_CFG="CONFIG+=debug"
+        fi
+    else
+        STATIC_QT_PATH=$PWD
+        STATIC_QT_PATH_DEBUG=$PWD
+        if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+            OPTS_CFG=" -release "
+            HOST_QT_CFG="CONFIG+=release"
+        fi
+    fi
     if [ ! -f all_done ]
     then
         rm -fr *
-        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -static -no-webkit -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
-        doMake "Can't compile static $HOST_QT_VERSION" "all done"
+        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -static -no-webkit -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        doMake "Can't compile static $HOST_QT_VERSION" "all done" ma-make
         if [ "$OSTYPE" = "msys" ]; then
             # Horrible; need to fix this properly.
-            doSed $"s/qt warn_on release /qt static warn_on release /" mkspecs/win32-g++/qmake.conf
+            doSed $"s/qt warn_on /qt static warn_on /" mkspecs/win32-g++/qmake.conf
         fi
     fi
     popd
 
     #build qt shared, needed by QtCreator
-    mkdir build-$HOST_QT_VERSION-shared
-    pushd build-$HOST_QT_VERSION-shared
+    mkdir b-$HOST_QT_VERSION-sh$HOST_QT_CONFIG
+    pushd b-$HOST_QT_VERSION-sh$HOST_QT_CONFIG
     SHARED_QT_PATH=$PWD
     if [ ! -f all_done ]
     then
         rm -fr *
-        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -shared -webkit -no-phonon -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
-        doMake "Can't compile shared $HOST_QT_VERSION" "all done"
+        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -shared -webkit -no-phonon -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        doMake "Can't compile shared $HOST_QT_VERSION" "all done" ma-make
         if [ "$OSTYPE" = "msys" ]; then
             # Horrible; need to fix this properly.
-            doSed $"s/qt warn_on release /qt shared warn_on release /" mkspecs/win32-g++/qmake.conf
+            doSed $"s/qt warn_on /qt shared warn_on /" mkspecs/win32-g++/qmake.conf
         fi
     fi
     popd
@@ -208,44 +231,49 @@ function prepareHostQt
 function prepareSdkInstallerTools
 {
     # get installer source code
-    if [ ! -d necessitas-installer-framework ]
+    SDK_TOOLS_PATH=$PWD/necessitas-installer-framework$HOST_QT_CONFIG/installerbuilder/bin
+    if [ ! -d necessitas-installer-framework$HOST_QT_CONFIG ]
     then
-        git clone git://gitorious.org/~taipan/qt-labs/necessitas-installer-framework.git || error_msg "Can't clone necessitas-installer-framework"
+        git clone git://gitorious.org/~taipan/qt-labs/necessitas-installer-framework.git necessitas-installer-framework$HOST_QT_CONFIG || error_msg "Can't clone necessitas-installer-framework"
     fi
 
-    pushd necessitas-installer-framework/installerbuilder
+    pushd necessitas-installer-framework$HOST_QT_CONFIG/installerbuilder
 
     if [ ! -f all_done ]
     then
         git checkout master
-        $STATIC_QT_PATH/bin/qmake $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure necessitas-installer-framework"
-        doMake "Can't compile necessitas-installer-framework" "all done"
+        $STATIC_QT_PATH_DEBUG/bin/qmake $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure necessitas-installer-framework"
+        doMake "Can't compile necessitas-installer-framework" "all done" ma-make
     fi
     popd
     pushd $SDK_TOOLS_PATH
-    $STRIP *
+    if [ -z $HOST_QT_CONFIG ] ; then
+        $STRIP *
+    fi
     popd
 }
 
 
 function prepareNecessitasQtCreator
 {
-    if [ ! -d android-qt-creator ]
+    QTC_PATH=android-qt-creator$HOST_QT_CONFIG
+
+    if [ ! -d $QTC_PATH ]
     then
-        git clone git://anongit.kde.org/android-qt-creator.git android-qt-creator || error_msg "Can't clone android-qt-creator"
+        git clone git://anongit.kde.org/android-qt-creator.git $QTC_PATH || error_msg "Can't clone android-qt-creator"
     fi
 
-    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-${HOST_TAG}.7z ]
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-${HOST_TAG}${HOST_QT_CONFIG}.7z ]
     then
-        pushd android-qt-creator
+        pushd $QTC_PATH
+        QTC_INST_PATH=$PWD/QtCreator$HOST_QT_CONFIG
         git checkout testing
-        if [ ! -f all_done ]
-        then
-            $SHARED_QT_PATH/bin/qmake "CONFIG+=release" $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure android-qt-creator"
-            doMake "Can't compile android-qt-creator" "all done"
+        if [ ! -f all_done ] ; then
+            $SHARED_QT_PATH/bin/qmake $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure android-qt-creator"
+            doMake "Can't compile $QTC_PATH" "all done" ma-make
         fi
-        rm -fr QtCreator
-        export INSTALL_ROOT=$PWD/QtCreator
+        rm -fr $QTC_INST_PATH
+        export INSTALL_ROOT=$QTC_INST_PATH
         make install
 
         #download and install sdk-updater-plugin
@@ -256,54 +284,64 @@ function prepareNecessitasQtCreator
             tar xvfz research-sdk-updater-plugin-master-snapshot-20110524185306.tar.gz
         fi
         pushd research-sdk-updater-plugin-master-snapshot-20110524185306
-            $SHARED_QT_PATH/bin/qmake "CONFIG+=release" $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure sdk-updater-plugin"
-            doMake "Can't compile sdk-updater-plugin" "all done"
+            $SHARED_QT_PATH/bin/qmake $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure sdk-updater-plugin"
+            doMake "Can't compile sdk-updater-plugin" "all done" ma-make
             make install
         popd
 
-        mkdir -p $PWD/QtCreator/Qt/imports
-        mkdir -p $PWD/QtCreator/Qt/plugins
+        mkdir -p $QTC_INST_PATH/Qt/imports
+        mkdir -p $QTC_INST_PATH/Qt/plugins
         if [ "$OSTYPE" = "msys" ]; then
-            mkdir -p $PWD/QtCreator/bin
-            cp -rf lib/qtcreator/* $PWD/QtCreator/bin/
-            cp -a /usr/bin/libgcc_s_dw2-1.dll $PWD/QtCreator/bin/
-            cp -a /usr/bin/libstdc++-6.dll $PWD/QtCreator/bin/
-            QT_LIB_DEST=$PWD/QtCreator/bin/
+            mkdir -p $QTC_INST_PATH/bin
+            cp -rf lib/qtcreator/* $QTC_INST_PATH/bin/
+            cp -a /usr/bin/libgcc_s_dw2-1.dll $QTC_INST_PATH/bin/
+            cp -a /usr/bin/libstdc++-6.dll $QTC_INST_PATH/bin/
+            QT_LIB_DEST=$QTC_INST_PATH/bin/
             cp -a $SHARED_QT_PATH/lib/* $QT_LIB_DEST
-            cp -a bin/necessitas.bat $PWD/QtCreator/bin/
+            cp -a bin/necessitas.bat $QTC_INST_PATH/bin/
+# Want to re-enable this, but libintl-8.dll is getting used.
+#            git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various
+#            mkdir -p android-various/make-3.82-build
+#            pushd android-various/make-3.82-build
+#            ../make-3.82/build-mingw.sh
+#            popd
+#            cp android-various/make-3.82-build/make.exe $QTC_INST_PATH/bin/
+            cp /usr/local/bin/ma-make.exe $QTC_INST_PATH/bin/make.exe
         else
             if [ "$OSTYPE" = "linux-gnu" ]; then
-                mkdir -p $PWD/QtCreator/Qt/lib
-                QT_LIB_DEST=$PWD/QtCreator/Qt/lib/
+                mkdir -p $QTC_INST_PATH/Qt/lib
+                QT_LIB_DEST=$QTC_INST_PATH/Qt/lib/
                 cp -a $SHARED_QT_PATH/lib/* $QT_LIB_DEST
                 rm -fr $QT_LIB_DEST/pkgconfig
                 find . $QT_LIB_DEST -name *.la | xargs rm -fr
                 find . $QT_LIB_DEST -name *.prl | xargs rm -fr
                 cp -a $SHARED_QT_PATH/imports/* ${QT_LIB_DEST}../imports
                 cp -a $SHARED_QT_PATH/plugins/* ${QT_LIB_DEST}../plugins
-                cp -a bin/necessitas $PWD/QtCreator/bin/
+                cp -a bin/necessitas $QTC_INST_PATH/bin/
             else
                 pushd macdeployqt
-                $SHARED_QT_PATH/bin/qmake $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure macdeployqt"
-                doMake "Can't compile macdeployqt" "all done"
+                $SHARED_QT_PATH/bin/qmake $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure macdeployqt"
+                doMake "Can't compile macdeployqt" "all done" ma-make
                 popd
                 pushd bin
                 rm -rf NecessitasQtCreatorBackup.app
                 cp -rf NecessitasQtCreator.app NecessitasQtCreatorBackup.app
                 ../macdeployqt/macdeployqt/macdeployqt NecessitasQtCreator.app
                 popd
-                mv bin/NecessitasQtCreator.app $PWD/QtCreator/bin/NecessitasQtCreator.app
+                mv bin/NecessitasQtCreator.app $QTC_INST_PATH/bin/NecessitasQtCreator.app
                 mv bin/NecessitasQtCreatorBackup.app bin/NecessitasQtCreator.app
             fi
         fi
-        mkdir $PWD/QtCreator/images
-        cp -a bin/necessitas*.png $PWD/QtCreator/images/
-        pushd QtCreator
-        find . -name "*$SHLIB_EXT" | xargs $STRIP
+        mkdir $QTC_INST_PATH/images
+        cp -a bin/necessitas*.png $QTC_INST_PATH/images/
+        pushd $QTC_INST_PATH
+        if [ -z $HOST_QT_CONFIG ] ; then
+            find . -name "*$SHLIB_EXT" | xargs $STRIP
+        fi
         popd
-        $SDK_TOOLS_PATH/archivegen QtCreator qtcreator-${HOST_TAG}.7z
+        $SDK_TOOLS_PATH/archivegen QtCreator$HOST_QT_CONFIG qtcreator-${HOST_TAG}${HOST_QT_CONFIG}.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data
-        mv qtcreator-${HOST_TAG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-${HOST_TAG}.7z
+        mv qtcreator-${HOST_TAG}${HOST_QT_CONFIG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.tools.qtcreator/data/qtcreator-${HOST_TAG}${HOST_QT_CONFIG}.7z
         popd
     fi
 
@@ -311,7 +349,7 @@ function prepareNecessitasQtCreator
     pushd qpatch-build
     if [ ! -f all_done ]
     then
-        $STATIC_QT_PATH/bin/qmake "CONFIG+=release" $HOST_QM_CFG_OPTIONS -r ../android-qt-creator/src/tools/qpatch/qpatch.pro
+        $STATIC_QT_PATH/bin/qmake $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r ../android-qt-creator/src/tools/qpatch/qpatch.pro
         if [ "$OSTYPE" = "msys" ]; then
             make -f Makefile.Release || error_msg "Can't compile qpatch"
         else
@@ -329,28 +367,61 @@ function prepareNecessitasQtCreator
 }
 
 # A few things are downloaded as binaries.
-function makeInstallMinGWTools
+function makeInstallMinGWLibsAndTools
 {
     if [ -d mingw-bits ] ; then
         return
     fi
 
     mkdir -p /usr/local/bin
+    mkdir -p /usr/local/share
+
     mkdir mingw-bits
     pushd mingw-bits
+	
+    mkdir texinfo
+    pushd texinfo
+	downloadIfNotExists texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma http://heanet.dl.sourceforge.net/project/mingw/MSYS/texinfo/texinfo-4.13a-2/texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma
+    rm -rf texinfo-4.13a-2-msys-1.0.13-bin.tar
+    $SEVENZIP x texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma
+    tar -xvf texinfo-4.13a-2-msys-1.0.13-bin.tar
+    mv bin/* /usr/local/bin
+    mv share/* /usr/local/share
+    popd
 
-    # Tools. Maybe move these bits to setup_mingw_for_necessitas_build.sh?
-    MAKETEST=`which mingw32-make.exe`
-	if [ "$MAKETEST" != "" ] ; then
-        cp $MAKETEST /usr/local/bin/mingw-make.exe
-    else
-        error_msg "Can't find mingw-make"
+    # pdcurses must be in /usr for gdb configure to work (though I'd prefer if mingw gcc would look in /usr/local too!)
+    downloadIfNotExists PDCurses-3.4.tar.gz http://downloads.sourceforge.net/pdcurses/pdcurses/3.4/PDCurses-3.4.tar.gz
+    rm -rf PDCurses-3.4
+    tar -xvzf PDCurses-3.4.tar.gz
+    pushd PDCurses-3.4/win32
+    sed '90s/-copy/-cp/' mingwin32.mak > mingwin32-fixed.mak
+    make -f mingwin32-fixed.mak WIDE=Y UTF8=Y DLL=N
+    cp pdcurses.a /usr/lib/libcurses.a
+    cp pdcurses.a /usr/lib/libncurses.a
+    cp pdcurses.a /usr/lib/libpdcurses.a
+    cp panel.a /usr/lib/libpanel.a
+    cp ../curses.h /usr/include
+    cp ../panel.h /usr/include
+    popd
+
+    # download, compile & install zlib to /usr
+    downloadIfNotExists zlib-1.2.5.tar.gz http://downloads.sourceforge.net/libpng/zlib/1.2.5/zlib-1.2.5.tar.gz
+    if [ ! -f /usr/lib/libz.a ] ; then
+        tar -xvzf zlib-1.2.5.tar.gz
+        pushd zlib-1.2.5
+        doSed $"s/usr\/local/usr/" win32/Makefile.gcc
+        make -f win32/Makefile.gcc
+        export INCLUDE_PATH=/usr/include
+        export LIBRARY_PATH=/usr/lib
+        make -f win32/Makefile.gcc install
+        rm -rf zlib-1.2.5
+        popd
     fi
 
     downloadIfNotExists unzip60.tar.gz http://ovh.dl.sourceforge.net/project/infozip/UnZip%206.x%20%28latest%29/UnZip%206.0/unzip60.tar.gz
     tar -xvzf unzip60.tar.gz
     pushd unzip60
-    /usr/local/bin/mingw-make.exe -f win32/Makefile.gcc
+    mingw32-make.exe -f win32/Makefile.gcc
 	cp unzip.exe /usr/local/bin
     popd
 
@@ -360,116 +431,21 @@ function makeInstallMinGWTools
     unzip -o $SEVEN7LOC/7za920.zip
     popd
 
-    downloadIfNotExists make-3.81-3-msys-1.0.13-bin.tar.lzma http://freefr.dl.sourceforge.net/project/mingw/MSYS/make/make-3.81-3/make-3.81-3-msys-1.0.13-bin.tar.lzma
-    rm -rf make-3.81-3-msys-1.0.13-bin.tar
-    7za x make-3.81-3-msys-1.0.13-bin.tar.lzma
-    tar -xvf make-3.81-3-msys-1.0.13-bin.tar
-    mv bin/make.exe /usr/local/bin/make.exe
+    # This make can't build gdb or python (it doesn't re-interpret MSYS mounts), but includes jobserver patch from
+    # Troy Runkel: http://article.gmane.org/gmane.comp.gnu.make.windows/3223/match=
+    # which fixes the longstanding make.exe -jN process hang, allowing un-attended builds of all Qt things.
+    downloadIfNotExists make.exe http://mingw-and-ndk.googlecode.com/files/make.exe
+    mv make.exe /usr/local/bin/ma-make.exe
 
-    # This one needs msys-intl-8.dll, however, it's likely that we *have* to use msys sed,
-	# see http://www.mingw.org/wiki/msys and search for "MinGW build VS MSYS build".
-	
-    downloadIfNotExists libiconv-1.13.1-2-msys-1.0.13-dll-2.tar.lzma http://dfn.dl.sourceforge.net/project/mingw/MSYS/BaseSystem/libiconv/libiconv-1.13.1-2/libiconv-1.13.1-2-msys-1.0.13-dll-2.tar.lzma
-    rm -rf libiconv-1.13.1-2-msys-1.0.13-dll-2.tar
-    7za x libiconv-1.13.1-2-msys-1.0.13-dll-2.tar.lzma
-    tar -xvf libiconv-1.13.1-2-msys-1.0.13-dll-2.tar
-    mv bin/msys-iconv-2.dll /usr/local/bin
-
-#    downloadIfNotExists gettext-0.17-2-msys-1.0.13-bin.tar.lzma http://kent.dl.sourceforge.net/project/mingw/MSYS/BaseSystem/gettext/gettext-0.17-2/gettext-0.17-2-msys-1.0.13-bin.tar.lzma
-#    rm -rf gettext-0.17-2-msys-1.0.13-bin.tar
-#    7za x gettext-0.17-2-msys-1.0.13-bin.tar.lzma
-#    tar -xvf gettext-0.17-2-msys-1.0.13-bin.tar
-#    mv bin/msys-intl-8.dll /usr/local/bin
-    downloadIfNotExists libintl-0.17-2-msys-dll-8.tar.lzma http://sunet.dl.sourceforge.net/project/mingw/MSYS/BaseSystem/gettext/gettext-0.17-2/libintl-0.17-2-msys-dll-8.tar.lzma
-    rm -rf libintl-0.17-2-msys-dll-8.tar
-    7za x libintl-0.17-2-msys-dll-8.tar.lzma
-    tar -xvf libintl-0.17-2-msys-dll-8.tar
-    mv bin/msys-intl-8.dll /usr/local/bin
-
-    downloadIfNotExists sed-4.2.1-2-msys-1.0.13-bin.tar.lzma http://downloads.sourceforge.net/project/mingw/MSYS/BaseSystem/sed/sed-4.2.1-2/sed-4.2.1-2-msys-1.0.13-bin.tar.lzma
-    rm -rf sed-4.2.1-2-msys-1.0.13-bin.tar
-    7za x sed-4.2.1-2-msys-1.0.13-bin.tar.lzma
-    tar -xvf sed-4.2.1-2-msys-1.0.13-bin.tar
-    rm /usr/bin/sed.exe
-    mv bin/sed.exe /usr/local/bin
-
-    downloadIfNotExists autoconf-2.68.tar.bz2 http://ftp.gnu.org/gnu/autoconf/autoconf-2.68.tar.bz2
-    rm -rf autoconf-2.68
-    tar -xvjf autoconf-2.68.tar.bz2
-	mkdir autoconf-2.68-build
-    pushd autoconf-2.68-build
-    ../autoconf-2.68/configure -prefix=/usr/local
-    msys-make
-    msys-make install
     popd
-
-	# make install loops forever.
-#    downloadIfNotExists automake-1.10.3.tar.bz2 http://ftp.gnu.org/gnu/automake/automake-1.10.3.tar.bz2
-#    rm -rf automake-1.10.3
-#    tar -xvjf automake-1.10.3.tar.bz2
-#    mkdir automake-1.10.3-build
-#    pushd automake-1.10.3-build
-#    ../automake-1.10.3/configure -prefix=/usr/local
-#    make
-#    make install
-#    popd
-
-    downloadIfNotExists libtool-2.4.tar.gz http://ftp.gnu.org/gnu/libtool/libtool-2.4.tar.gz
-    rm -rf libtool-2.4
-    tar -xvzf libtool-2.4.tar.gz
-    mkdir libtool-2.4-build
-    pushd libtool-2.4-build
-    ../libtool-2.4/configure -prefix=/usr/local
-    make
-    make install
-    popd
-
-	popd
 }
 
 function makeInstallMinGWLibs
 {
+    mkdir mingw-bits
     pushd mingw-bits
 
-    # download, compile & install zlib to /usr
-    downloadIfNotExists zlib-1.2.5.tar.gz http://downloads.sourceforge.net/libpng/zlib/1.2.5/zlib-1.2.5.tar.gz
-    if [ ! -f /usr/lib/libz.a ] ; then
-        tar -xvzf zlib-1.2.5.tar.gz
-        cd zlib-1.2.5
-        doSed $"s/usr\/local/usr/" win32/Makefile.gcc
-        make -f win32/Makefile.gcc
-        export INCLUDE_PATH=/usr/include
-        export LIBRARY_PATH=/usr/lib
-        make -f win32/Makefile.gcc install
-        rm -rf zlib-1.2.5
-        cd ..
-    fi
-
     install_dir=$1
-
-    downloadIfNotExists PDCurses-3.4.tar.gz http://downloads.sourceforge.net/pdcurses/pdcurses/3.4/PDCurses-3.4.tar.gz
-    rm -rf PDCurses-3.4
-    tar -xvzf PDCurses-3.4.tar.gz
-    pushd PDCurses-3.4/win32
-    sed '90s/-copy/-cp/' mingwin32.mak > mingwin32-fixed.mak
-    make -f mingwin32-fixed.mak WIDE=Y UTF8=Y DLL=N
-    mkdir -p $install_dir/lib
-    mkdir -p $install_dir/include
-    cp pdcurses.a $install_dir/lib/libcurses.a
-    cp pdcurses.a $install_dir/lib/libncurses.a
-    cp pdcurses.a $install_dir/lib/libpdcurses.a
-    cp panel.a $install_dir/lib/libpanel.a
-    cp ../curses.h $install_dir/include
-    cp ../panel.h $install_dir/include
-    popd
-
-    downloadIfNotExists libiconv-1.13.tar.gz http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.tar.gz
-    rm -rf libiconv-1.13
-    tar -xvzf libiconv-1.13.tar.gz
-    pushd libiconv-1.13
-    CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses=$install_dir --enable-multibyte --prefix=  CFLAGS=-O2
-    make && make DESTDIR=$install_dir install
-    popd
 
     downloadIfNotExists readline-6.2.tar.gz http://ftp.gnu.org/pub/gnu/readline/readline-6.2.tar.gz
     rm -rf readline-6.2
@@ -477,26 +453,6 @@ function makeInstallMinGWLibs
     pushd readline-6.2
     CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses=$install_dir --enable-multibyte --prefix=  CFLAGS=-O2
     make && make DESTDIR=$install_dir install
-    popd
-
-    # awk command fails during configure (I think).
-    downloadIfNotExists regex-2.7-src.zip http://downloads.sourceforge.net/sourceforge/gnuwin32/regex/2.7/regex-2.7-src.zip
-    unzip regex-2.7-src.zip
-    pushd src/regex/2.7/regex-2.7-src
-#   aclocal
-#   autoconf
-    CFLAGS=-O2 && ./configure --enable-static --disable-shared --prefix= CFLAGS=-O2
-    make && make DESTDIR=$install_dir install
-    popd
-
-    # texinfo fails because regex.h not found (part of libc)
-    downloadIfNotExists texinfo-4.13a.tar.gz http://ftp.gnu.org/gnu/texinfo/texinfo-4.13a.tar.gz
-    rm -rf texinfo-4.13
-    tar -xvzf texinfo-4.13a.tar.gz
-    pushd texinfo-4.13
-    CFLAGS=-O2 && ./configure --prefix= CFLAGS=-O2
-    make
-    make install
     popd
 
     popd
@@ -570,7 +526,7 @@ function prepareNDKs
         if [ $BUILD_ANDROID_GIT_NDK = 1 ]
         then
             mv android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-git
-            git clone http://android.git.kernel.org/platform/ndk.git android_git_ndk
+            git clone http://android.git.kernel.org/platform/ndk.git android_git_ndk || error_msg "Can't clone ndk"
             pushd android_git_ndk
                 ./build/tools/rebuild-all-prebuilt.sh --ndk-dir=$ANDROID_NDK_ROOT --git-http --gdb-version=7.1 --sysroot=$ANDROID_NDK_ROOT/platforms/android-9/arch-arm --verbose --package-dir=
             popd
@@ -587,10 +543,18 @@ function prepareNDKs
 function prepareGDB
 {
     package_name_ver=${GDB_VER//./_} # replace . with _
-    package_path=$REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_$package_name_ver/data
-    echo "package_path=$REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_$package_name_ver/data"
+    if [ -z $GDB_TARG_HOST_TAG ] ; then
+        GDB_PKG_NAME=gdb-$GDB_VER-$HOST_TAG
+        GDB_FLDR_NAME=gdb-$GDB_VER
+        package_path=$REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.gdb_$package_name_ver/data
+    else
+        GDB_PKG_NAME=gdb_$GDB_TARG_HOST_TAG-$GDB_VER
+        GDB_FLDR_NAME=$GDB_PKG_NAME
+        package_path=$REPO_SRC_PATH/packages/org.kde.necessitas.misc.host_gdb_$package_name_ver/data
+    fi
+    echo "package_path=$package_path"
     #This function depends on prepareNDKs
-    if [ -f $package_path/gdb-${GDB_VER}-${HOST_TAG}.7z ]
+    if [ -f $package_path/$GDB_PKG_NAME.7z ]
     then
         return
     fi
@@ -600,7 +564,7 @@ function prepareGDB
     pyversion=2.7
     pyfullversion=2.7.1
     install_dir=$PWD/install
-    target_dir=$PWD/gdb-$GDB_VER
+    target_dir=$PWD/$GDB_FLDR_NAME
     mkdir -p $target_dir
 
     OLDPATH=$PATH
@@ -617,7 +581,7 @@ function prepareGDB
             export PATH=.:$PATH
             CC32=gcc.exe
             CXX32=g++.exe
-            PYCCFG="--enable-shared --disable-static"
+            PYCCFG="--enable-shared"
          else
             # On some OS X installs (case insensitive filesystem), the dir "Python" clashes with the executable "python"
             # --with-suffix can be used to get around this.
@@ -630,16 +594,18 @@ function prepareGDB
 
     OLDCC=$CC
     OLDCXX=$CXX
+    OLDCFLAGS=$CFLAGS
 
     downloadIfNotExists expat-2.0.1.tar.gz http://downloads.sourceforge.net/sourceforge/expat/expat-2.0.1.tar.gz || error_msg "Can't download expat library"
     if [ ! -d expat-2.0.1 ]
     then
         tar xzvf expat-2.0.1.tar.gz
         pushd expat-2.0.1
-            CC=$CC32 CXX=$CXX32 ./configure --disable-shared --enable-static -prefix=/ && make -j$JOBS && make DESTDIR=$install_dir install || error_msg "Can't compile expat library"
+            CC=$CC32 CXX=$CXX32 ./configure --disable-shared --enable-static -prefix=/
+            doMake "Can't compile expat" "all done"
+            make DESTDIR=$install_dir install || error_msg "Can't install expat library"
         popd
     fi
-
     # Again, what a terrible failure.
     unset PYTHONHOME
     if [ ! -f Python-$pyfullversion/all_done ]
@@ -653,12 +619,15 @@ function prepareGDB
                 makeInstallMinGWLibs $install_dir
             fi
             rm -rf Python-$pyfullversion
-            git clone git://gitorious.org/mingw-python/mingw-python.git Python-$pyfullversion
+            git clone git://gitorious.org/mingw-python/mingw-python.git Python-$pyfullversion || error_msg "Can't clone MinGW Python"
             USINGMAPYTHON=1
         fi
 
         pushd Python-$pyfullversion
-
+        if [ "$OSTYPE" = "msys" ] ; then
+            # Hack for MSI.
+            cp /c/strawberry/c/i686-w64-mingw32/include/fci.h fci.h
+        fi
         if [ "$USINGMAPYTHON" = "1" ] ; then
             autoconf
             touch Include/Python-ast.h
@@ -719,10 +688,10 @@ function prepareGDB
         mv $install_dir/bin/python$pyversion$SUFFIX $install_dir/bin/python$pyversion
         mv $install_dir/bin/python$SUFFIX $install_dir/bin/python
     fi
-    mv $install_dir/bin/python$EXE_EXT $install_dir/bin/python$EXE_EXT
     cp -a $install_dir/bin/python$pyversion* $target_dir/python/bin/
     if [ "$OSTYPE" = "msys" ] ; then
         cp -fr $install_dir/bin/Lib $target_dir/
+        cp -f $install_dir/bin/libpython$pyversion.dll $target_dir/python/bin/
     fi
     $STRIP $target_dir/python/bin/python$pyversion$EXE_EXT
 
@@ -733,31 +702,35 @@ function prepareGDB
 
     if [ ! -d gdb-src ]
     then
-        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src
+        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src || error_msg "Can't clone gdb"
     fi
     pushd gdb-src
     git checkout $GDB_BRANCH
-    git reset --hard
+#    git reset --hard
     popd
 
-    if [ ! -d gdb-src/build-gdb-$GDB_VER ]
+    if [ ! -d gdb-src/build-$GDB_PKG_NAME ]
     then
-        mkdir -p gdb-src/build-gdb-$GDB_VER
-        pushd gdb-src/build-gdb-$GDB_VER
+        mkdir -p gdb-src/build-$GDB_PKG_NAME
+        pushd gdb-src/build-$GDB_PKG_NAME
         OLDPATH=$PATH
         export PATH=$install_dir/bin/:$PATH
-        CC=$CC32 CXX=$CXX32 $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/platforms/android-9/arch-arm --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
+        if [ -z $GDB_TARG_HOST_TAG ] ; then
+            CC=$CC32 CXX=$CXX32 CFLAGS="-O0 -g" $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/platforms/android-9/arch-arm --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
+        else
+            CC=$CC32 CXX=$CXX32 $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=$HOST --host=$HOST --build=$HOST --disable-nls
+        fi
         doMake "Can't compile android gdb $GDB_VER" "all done"
         cp -a gdb/gdb$EXE_EXT $target_dir/
         cp -a gdb/gdbtui$EXE_EXT $target_dir/
-        # Fix building gdb-tui, it used to work and was handy to have.
-        $STRIP $target_dir/gdb$EXE_EXT
+#       $STRIP $target_dir/gdb$EXE_EXT .. Just while I fix native host GDB (can't debug the installer exe) and thumb-2 issues.
         export PATH=$OLDPATH
         popd
     fi
 
     CC=$OLDCC
     CXX=$OLDCXX
+    CFLAGS=$OLDCFLAGS
 
     pushd $target_dir
     find . -name *.py[co] | xargs rm -f
@@ -765,10 +738,10 @@ function prepareGDB
     find . -name tests | xargs rm -fr
     popd
 
-    $SDK_TOOLS_PATH/archivegen gdb-$GDB_VER gdb-$GDB_VER-${HOST_TAG}.7z
+    $SDK_TOOLS_PATH/archivegen $GDB_FLDR_NAME $GDB_PKG_NAME.7z
     mkdir -p $package_path
 
-    mv gdb-${GDB_VER}-${HOST_TAG}.7z $package_path/
+    mv $GDB_PKG_NAME.7z $package_path/
 
     popd #gdb-build
 }
@@ -790,7 +763,7 @@ function prepareGDBServer
 
     if [ ! -d gdb-src ]
     then
-        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src
+        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb-src || error_msg "Can't clone gdb"
         pushd gdb-src
         git checkout $GDB_BRANCH
         popd
@@ -862,7 +835,9 @@ function repackSDK
 
 function prepareGDBVersion
 {
+echo prepareGDBVersion $1 $2
     GDB_VER=$1
+    GDB_TARG_HOST_TAG=$2 # windows, linux-x86, darwin-x86 or nothing for android.
     if [ "$GDB_VER" = "7.3" ]; then
         GDB_ROOT_PATH=..
         GDB_BRANCH=integration_7_3
@@ -871,7 +846,9 @@ function prepareGDBVersion
         GDB_BRANCH=master
     fi
     prepareGDB
-    prepareGDBServer
+    if [ -z $GDB_TARG_HOST_TAG ] ; then
+        prepareGDBServer
+    fi
 }
 
 function prepareSDKs
@@ -920,17 +897,11 @@ function prepareSDKs
     then
         if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.platform_tools/data/android-sdk-windows-tools-mingw-android.7z ]
         then
-            git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various
-            mkdir -p android-various/make-3.82-build
-            pushd android-various/make-3.82-build
-            ../make-3.82/build-mingw.sh
-            popd
+            git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various || error_msg "Can't clone android-various"
             pushd android-various/android-sdk
             gcc -Wl,-subsystem,windows -Wno-write-strings android.cpp -static-libgcc -s -O2 -o android.exe
             popd
             mkdir -p android-sdk-windows/tools/
-            mkdir -p QtCreator/bin/
-            cp android-various/make-3.82-build/make.exe QtCreator/bin/
             cp android-various/android-sdk/android.exe android-sdk-windows/tools/
             $SDK_TOOLS_PATH/archivegen android-sdk-windows android-sdk-windows-tools-mingw-android.7z
             mv android-sdk-windows-tools-mingw-android.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.sdk.platform_tools/data/android-sdk-windows-tools-mingw-android.7z
@@ -1048,24 +1019,27 @@ function packSource
 
 function compileNecessitasQt
 {
+    package_name=${1//-/_} # replace - with _
+    NDK_TARGET=5
+    if [ $package_name = "armeabi_v7a" ]
+    then
+        NDK_TARGET=5
+    fi
+
     if [ ! -f all_done ]
     then
         git checkout testing
-        ../qt-src/androidconfigbuild.sh -c 1 -q 1 -n $TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION} -a $1 -k 0 -i /data/data/eu.licentia.necessitas.ministro/files/qt || error_msg "Can't configure android-qt"
+        ../qt-src/androidconfigbuild.sh -l $NDK_TARGET -c 1 -q 1 -n $TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION} -a $1 -k 0 -i /data/data/eu.licentia.necessitas.ministro/files/qt || error_msg "Can't configure android-qt"
         echo "all done">all_done
     fi
-
-    package_name=${1//-/_} # replace - with _
 
     if [ $package_name = "armeabi_v7a" ]
     then
         doSed $"s/= armeabi/= armeabi-v7a/g" mkspecs/android-g++/qmake.conf
-# On next release
-#        doSed $"s/= android-4/= android-5/g" mkspecs/android-g++/qmake.conf
+        doSed $"s/= android-4/= android-$NDK_TARGET/g" mkspecs/android-g++/qmake.conf
     else
         doSed $"s/= armeabi-v7a/= armeabi/g" mkspecs/android-g++/qmake.conf
-# On next release
-#        doSed $"s/= android-5/= android-4/g" mkspecs/android-g++/qmake.conf
+        doSed $"s/= android-$NDK_TARGET/= android-4/g" mkspecs/android-g++/qmake.conf
     fi
 
     rm -fr data
@@ -1073,10 +1047,6 @@ function compileNecessitasQt
     make install
     mkdir -p $2/$1
     mv data/data/eu.licentia.necessitas.ministro/files/qt/bin $2/$1
-    if [ "$OSTYPE" = "msys" ]; then
-        cp -a /usr/bin/libgcc_s_dw2-1.dll $2/$1/bin/
-        cp -a /usr/bin/libstdc++-6.dll $2/$1/bin/
-    fi
     $SDK_TOOLS_PATH/archivegen Android qt-tools-${HOST_TAG}.7z
     rm -fr $2/$1/bin
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data
@@ -1085,6 +1055,8 @@ function compileNecessitasQt
     cp ../qt-src/lib/*.xml $2/$1/lib/
     $SDK_TOOLS_PATH/archivegen Android qt-framework.7z
     mv qt-framework.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-framework.7z
+    # Not sure why we're using a different qt-framework package for Windows.
+    cp $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-framework.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-framework-windows.7z
     patchQtFiles
 }
 
@@ -1135,7 +1107,7 @@ function compileNecessitasQtMobility
         git checkout master
         popd
         ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -staticconfig android -qmake-exec ../build-$1/bin/qmake$EXE_EXT -modules "bearer location contacts multimedia versit messaging systeminfo serviceframework sensors gallery organizer feedback connectivity" || error_msg "Can't configure android-qtmobility"
-        doMake "Can't compile android-qtmobility" "all done"
+        doMake "Can't compile android-qtmobility" "all done" ma-make
     fi
     package_name=${1//-/_} # replace - with _
     rm -fr data
@@ -1290,6 +1262,13 @@ function prepareNecessitasQtWebkit
     popd #Android/Qt/$NECESSITAS_QT_VERSION_SHORT
 }
 
+function prepareOpenJDK
+{
+    if [ "$OSTYPE" = "msys" ] ; then
+        downloadIfNotExists oscg-openjdk6b21-1-windows-installer.exe http://oscg-downloads.s3.amazonaws.com/installers/oscg-openjdk6b21-1-windows-installer.exe
+		oscg-openjdk6b21-1-windows-installer.exe http://openscg.com/se/oscg_download.jsp?file=installers/oscg-openjdk6b21-1-windows-installer.exe&user=
+    fi
+}
 
 function patchPackages
 {
@@ -1371,8 +1350,8 @@ function unsetPackagesVariables
 
 function prepareSDKBinary
 {
-    echo $SDK_TOOLS_PATH/binarycreator -v -t $SDK_TOOLS_PATH/installerbase$EXE_EXT -c $REPO_SRC_PATH/config -p $REPO_SRC_PATH/packages -n $REPO_SRC_PATH/necessitas-sdk-installer$EXE_EXT org.kde.necessitas
-    $SDK_TOOLS_PATH/binarycreator -v -t $SDK_TOOLS_PATH/installerbase$EXE_EXT -c $REPO_SRC_PATH/config -p $REPO_SRC_PATH/packages -n $REPO_SRC_PATH/necessitas-sdk-installer$EXE_EXT org.kde.necessitas
+    echo $SDK_TOOLS_PATH/binarycreator -v -t $SDK_TOOLS_PATH/installerbase$EXE_EXT -c $REPO_SRC_PATH/config -p $REPO_SRC_PATH/packages -n $REPO_SRC_PATH/necessitas-sdk-installer$HOST_QT_CONFIG$EXE_EXT org.kde.necessitas
+    $SDK_TOOLS_PATH/binarycreator -v -t $SDK_TOOLS_PATH/installerbase$EXE_EXT -c $REPO_SRC_PATH/config -p $REPO_SRC_PATH/packages -n $REPO_SRC_PATH/necessitas-sdk-installer$HOST_QT_CONFIG$EXE_EXT org.kde.necessitas
 }
 
 function prepareSDKRepository
@@ -1387,14 +1366,14 @@ function prepareMinistroRepository
     if [ ! -f all_done ]
     then
         $STATIC_QT_PATH/bin/qmake -r || error_msg "Can't configure ministrorepogen"
-        doMake "Can't compile ministrorepogen" "all done"
+        doMake "Can't compile ministrorepogen" "all done" ma-make
     fi
     popd
     for architecture in armeabi armeabi-v7a
     do
         rm -fr $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION
         mkdir -p $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION
-        pushd $TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-$architecture
+        pushd $TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-$architecture || error_msg "Can't prepare ministro repo, Android Qt not built?"
         rm -fr Android
         for lib in `find . -name *.so`
         do
@@ -1420,10 +1399,11 @@ function prepareMinistroRepository
 
 function packforWindows
 {
+    echo packforWindows called $1 $2
     rm -fr $TEMP_PATH/packforWindows
     mkdir -p $TEMP_PATH/packforWindows
     pushd $TEMP_PATH/packforWindows
-        7z x $1/$2.7z
+        $SEVENZIP x $1/$2.7z
         mv Android Android_old
         $CPRL Android_old Android
         rm -fr Android_old
@@ -1487,34 +1467,42 @@ function prepareWindowsPackages
     fi
 
 }
-# This is needed early.
-SDK_TOOLS_PATH=$PWD/necessitas-installer-framework/installerbuilder/bin
-
-if [ "$OSTYPE" = "msys" ]; then
-    makeInstallMinGWTools $install_dir
-fi
- 
+makeInstallMinGWLibsAndTools
 prepareHostQt
 prepareSdkInstallerTools
+prepareGDBVersion 7.2 $HOST_TAG
+prepareGDBVersion 7.3 $HOST_TAG
+
 prepareNDKs
 prepareGDBVersion 7.2
 prepareGDBVersion 7.3
+
 prepareSDKs
+
 prepareNecessitasQtCreator
 prepareNecessitasQt
+
 # TODO :: Fix webkit build in Windows (-no-video fails) and Mac OS X (debug-and-release config incorrectly used and fails)
 if [ "$OSTYPE" = "linux-gnu" ] ; then
     prepareNecessitasQtWebkit
 fi
 
-prepareNecessitasQtMobility
-
-if [ "$OSTYPE" = "linux-gnu" ] ; then
-    prepareWindowsPackages
+if [ "$OSTYPE" != "msys" ] ; then
+    prepareNecessitasQtMobility # if [[ `gcc --version` =~ .*llvm.* ]]; => syntax error near `=~'
 fi
 
+prepareWindowsPackages
 setPackagesVariables
 prepareSDKBinary
+
+# Comment this block in if you want necessitas-sdk-installer-d and qtcreator-d to be built.
+##if [ ! "$OSTYPE" = "linux-gnu" ] ; then
+##    prepareHostQt -d
+##    prepareNecessitasQtCreator
+##    prepareSdkInstallerTools
+##    prepareSDKBinary
+##fi
+
 prepareSDKRepository
 unsetPackagesVariables
 prepareMinistroRepository
