@@ -552,7 +552,6 @@ function prepareGDB
         GDB_FLDR_NAME=$GDB_PKG_NAME
         package_path=$REPO_SRC_PATH/packages/org.kde.necessitas.misc.host_gdb_$package_name_ver/data
     fi
-    echo "package_path=$package_path"
     #This function depends on prepareNDKs
     if [ -f $package_path/$GDB_PKG_NAME.7z ]
     then
@@ -1350,7 +1349,6 @@ function unsetPackagesVariables
 
 function prepareSDKBinary
 {
-    echo $SDK_TOOLS_PATH/binarycreator -v -t $SDK_TOOLS_PATH/installerbase$EXE_EXT -c $REPO_SRC_PATH/config -p $REPO_SRC_PATH/packages -n $REPO_SRC_PATH/necessitas-sdk-installer$HOST_QT_CONFIG$EXE_EXT org.kde.necessitas
     $SDK_TOOLS_PATH/binarycreator -v -t $SDK_TOOLS_PATH/installerbase$EXE_EXT -c $REPO_SRC_PATH/config -p $REPO_SRC_PATH/packages -n $REPO_SRC_PATH/necessitas-sdk-installer$HOST_QT_CONFIG$EXE_EXT org.kde.necessitas
 }
 
@@ -1399,7 +1397,6 @@ function prepareMinistroRepository
 
 function packforWindows
 {
-    echo packforWindows called $1 $2
     rm -fr $TEMP_PATH/packforWindows
     mkdir -p $TEMP_PATH/packforWindows
     pushd $TEMP_PATH/packforWindows
