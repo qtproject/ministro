@@ -1464,7 +1464,10 @@ function prepareWindowsPackages
     fi
 
 }
-makeInstallMinGWLibsAndTools
+
+if [ "$OSTYPE" = "msys" ] ; then
+    makeInstallMinGWLibsAndTools
+fi
 prepareHostQt
 prepareSdkInstallerTools
 prepareGDBVersion 7.2 $HOST_TAG
