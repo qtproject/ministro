@@ -241,9 +241,8 @@ fi
 REPO_SRC_PATH=$PWD/ndk-packages
 mkdir $REPO_SRC_PATH
 PYTHONVER=/usr
+mkdir $TEMP_PATH
 pushd $TEMP_PATH
-
-echo $PWD $PWD $PWD $PWD
 
 if [ "$OSTYPE" = "msys" ] ; then
      makeInstallMinGWBits
