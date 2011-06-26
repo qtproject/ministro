@@ -195,7 +195,7 @@ function makeNDK
 
     echo GDB_ROOT_PATH $GDB_ROOT_PATH
     if [ ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 -o ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
-        $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-path=$GDB_ROOT_PATH --gdb-version=$GDB_VERSION --mpfr-version=2.4.2 --binutils-version=2.20.1 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest --only-gdb
+        $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-path=$GDB_ROOT_PATH --gdb-version=$GDB_VERSION --mpfr-version=2.4.2 --binutils-version=2.20.1 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
     else
         echo "Skipping NDK build, already done."
         echo $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
