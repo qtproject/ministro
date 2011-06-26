@@ -18,20 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ "$OSTYPE" = "msys" ]; then
-    TEMP_PATH=/usr/ndk-build
-else
-    pushd ~
-    TEMP_PATH=$PWD/ndk-build
-    popd
-fi
-
-REPO_SRC_PATH=$PWD/ndk
-mkdir $REPO_SRC_PATH
-PYTHONVER=/usr
-mkdir -p $TEMP_PATH
-pushd $TEMP_PATH
-
 function error_msg
 {
     echo $1 >&2
@@ -47,7 +33,11 @@ function downloadIfNotExists
 {
     if [ ! -f $1 ]
     then
-        wget $2 || removeAndExit $1
+            if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+            curl --insecure -S -L -O $2 || removeAndExit $1
+        else
+            wget --no-check-certificate -c $2 || removeAndExit $1
+        fi
     fi
 }
 
@@ -66,20 +56,20 @@ function makeInstallPython
         fi
     fi
 
-    if [ -f $REPO_SRC_PATH/python-${BUILD}.7z ]
+    if [ ! -f $REPO_SRC_PATH/python-${BUILD}.7z ]
     then
-        PYTHONVER=$PWD/python/install-python-$BUILD
-    else
-        if [ ! -d python ]
+        if [ ! -d Python-2.7.1 ]
         then
-            git clone git://gitorious.org/mingw-python/mingw-python.git python
+            git clone git://gitorious.org/mingw-python/mingw-python.git Python-2.7.1
         fi
-        cd python
-        ./build-python.sh
-        PYTHONVER=$PWD/install-python-$BUILD
+        pushd Python-2.7.1
+        mkdir python-build
+        pushd python-build
+        ../Python-2.7.1/build-python.sh
         # If successful, the build is packaged into /usr/ndk-build/python-mingw.7z
         cp ../python-${BUILD}.7z $REPO_SRC_PATH/
-        cd ..
+        popd
+		popd
     fi
 }
 
@@ -101,43 +91,51 @@ function makeInstallMinGWBits
     wget -c http://ftp.gnu.org/pub/gnu/readline/readline-6.2.tar.gz
     rm -rf readline-6.2
     tar -xvzf readline-6.2.tar.gz
-    cd readline-6.2
+    pushd readline-6.2
     CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses --enable-multibyte --prefix=/usr CFLAGS=-O2
     make && make install
-    cd ..
+    popd
 
     rm -rf android-various
     git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various
     mkdir -p android-various/make-3.82-build
-    cd android-various/make-3.82-build
+    pushd android-various/make-3.82-build
     ../make-3.82/build-mingw.sh
     cp make.exe $REPO_SRC_PATH/
-    cd ../..
-    cd android-various/android-sdk
+    popd
+    pushd android-various/android-sdk
     gcc -Wl,-subsystem,windows -Wno-write-strings android.cpp -static-libgcc -s -O3 -o android.exe 
     cp android.exe $REPO_SRC_PATH/
+	popd
 }
 
 function makeNDK
 {
     mkdir src
-    cd src
+    pushd src
 
-    if [ -f $REPO_SRC_PATH/python-${BUILD}.7z ]; then
-        rm -rf /tmp/python-install 
-        mkdir /tmp/python-install
-        pushd /tmp/python-install
-        7za x $REPO_SRC_PATH/python-${BUILD}.7z
-        PYTHONVER=$PWD
-        popd
+	GDB_BRANCH=integration_7_3
+	GDB_ROOT_PATH=
+#    GDB_BRANCH=master
+#    GDB_ROOT_PATH=gdb
+
+    PYTHONVER=$PWD/python-install
+    if [ ! -d $PYTHONVER ] ; then
+        if [ -f $REPO_SRC_PATH/python-${BUILD}.7z ]; then
+            mkdir $PYTHONVER
+            pushd $PYTHONVER
+                7za x $REPO_SRC_PATH/python-${BUILD}.7z
+                PYTHONVER=$PWD
+            popd
+        fi
     fi
 
     if [ ! -d "mpfr" ]
     then
         git clone git://android.git.kernel.org/toolchain/mpfr.git mpfr
-        cd mpfr
+        pushd mpfr
         downloadIfNotExists mpfr-2.4.2.tar.bz2 http://www.mpfr.org/mpfr-2.4.2/mpfr-2.4.2.tar.bz2
-        cd ..
+        popd
     fi
     if [ ! -d "binutils" ]
     then
@@ -163,25 +161,40 @@ function makeNDK
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb
     fi
-    TCSRC=`pwd`
-    cd ..
-    mkdir ndk
-    cd ndk
-    git clone git://android.git.kernel.org/platform/development.git development
-    git clone git://gitorious.org/mingw-android-ndk/mingw-android-ndk.git ndk
-    cd ndk
-    git checkout -b integration origin/integration
-    cd ..
-    export NDK=`pwd`/ndk
-    export ANDROID_NDK_ROOT=$NDK && $NDK/build/tools/build-platforms.sh --verbose
+    pushd gdb
+        git checkout integration_7_3
+        git reset --hard
+		GDB_ROOT_PATH=$PWD/$GDB_ROOT_PATH
+    popd
 
-    ROOTDIR=`pwd`
+    TCSRC=$PWD
+    popd
+
+    mkdir build-${BUILD_NDK}
+    pushd build-${BUILD_NDK}
+	if [ ! -d "development" ]
+	then
+        git clone git://android.git.kernel.org/platform/development.git development || error_msg "Can't clone development"
+	fi
+	if [ ! -d "ndk" ]
+	then
+        git clone git://gitorious.org/mingw-android-ndk/mingw-android-ndk.git ndk || error_msg "Can't clone ndk"
+    fi
+    pushd ndk
+        git checkout -b integration origin/integration
+    popd
+    export NDK=$PWD/ndk
+    export ANDROID_NDK_ROOT=$NDK
+    $NDK/build/tools/build-platforms.sh --verbose
+
+    ROOTDIR=$PWD
     RELEASE=`date +%Y%m%d`
     NDK=`pwd`/ndk
     ANDROID_NDK_ROOT=$NDK
 
+    echo GDB_ROOT_PATH $GDB_ROOT_PATH
     if [ ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 -o ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
-        $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-version=7.2.50.20110211 --mpfr-version=2.4.2 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
+        $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-path=$GDB_ROOT_PATH --gdb-version= --mpfr-version=2.4.2 --binutils-version=2.20.1 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
     else
         echo "Skipping NDK build, already done."
         echo $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
@@ -214,8 +227,34 @@ function mixPythonWithNDK
     popd
 }
 
+if [ "$OSTYPE" = "linux-gnu" ]; then
+    TEMP_PATH=/tmp/ndk-build
+else
+    TEMP_PATH=/usr/ndk-build
+    if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+        sudo mkdir -p $TEMP_PATH
+        sudo chown `whoami` $TEMP_PATH
+    fi
+fi
+
+REPO_SRC_PATH=$PWD/ndk-packages
+mkdir $REPO_SRC_PATH
+PYTHONVER=/usr
+pushd $TEMP_PATH
+
+echo $PWD $PWD $PWD $PWD
+
 if [ "$OSTYPE" = "msys" ] ; then
      makeInstallMinGWBits
+fi
+
+if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+    if [ ! -f /usr/local/bin/7za ] ; then
+        downloadIfNotExists p7zip-macosx.tar.bz2 http://mingw-and-ndk.googlecode.com/files/p7zip-macosx.tar.bz2
+        tar xjvf p7zip-macosx.tar.bz2
+        chmod 755 opt/bin/7za
+        cp opt/bin/7za /usr/local/bin
+    fi
 fi
 
 makeInstallPython
@@ -223,4 +262,3 @@ makeNDK
 mixPythonWithNDK
 
 popd
-
