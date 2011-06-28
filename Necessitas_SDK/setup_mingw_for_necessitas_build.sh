@@ -22,6 +22,31 @@ cp -r git-temp/share/gitk /usr/local/share/
 mkdir -p /usr/local/libexec
 cp -r git-temp/libexec/* /usr/local/libexec/
 
+# Fix mingw include/sys/types.h so that cross libgcc builds.
+cat > ./mingw-sys-types-caddr.patch <<DELIM
+--- /include-orig/sys/types.h   2009-11-28 07:12:40 +0000
++++ /include/sys/types.h        2010-06-17 21:28:23 +0100
+@@ -14,6 +14,11 @@
+ /* All the headers include this file. */
+ #include <_mingw.h>
+ 
++/* Added by Ray Donnelly (mingw.android@gmail.com). libgcc build fails for Android 
++   cross gcc without this. I should find another way as this is a horrible thing to do. */
++typedef        int     daddr_t;
++typedef        char *  caddr_t;
++
+ #define __need_wchar_t
+ #define __need_size_t
+ #define __need_ptrdiff_t
+DELIM
+
+PATCHFILE=`pwd`/mingw-sys-types-caddr.patch
+
+pushd .
+cd /usr/include
+patch -p0 < $PATCHFILE
+popd
+
 mkdir -p /usr/local/bin
 mkdir -p /usr/local/include
 

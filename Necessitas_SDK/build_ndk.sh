@@ -43,20 +43,7 @@ function downloadIfNotExists
 
 function makeInstallPython
 {
-    if [ "$OSTYPE" = "linux-gnu" ] ; then
-        BUILD=linux
-        BUILD_NDK=linux-x86
-    else
-        if [ "$OSTYPE" = "msys" ] ; then
-        BUILD=windows
-        BUILD_NDK=windows
-        else
-            BUILD=macosx
-            BUILD_NDK=darwin-x86
-        fi
-    fi
-
-    if [ ! -f $REPO_SRC_PATH/python-${BUILD}.7z ]
+    if [ ! -f $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z ]
     then
         if [ ! -d Python-2.7.1 ]
         then
@@ -65,11 +52,11 @@ function makeInstallPython
         pushd Python-2.7.1
         mkdir python-build
         pushd python-build
-        ../Python-2.7.1/build-python.sh
+        ../build-python.sh
         # If successful, the build is packaged into /usr/ndk-build/python-mingw.7z
-        cp ../python-${BUILD}.7z $REPO_SRC_PATH/
+        cp ../python-${BUILD_PYTHON}.7z $REPO_SRC_PATH/
         popd
-		popd
+        popd
     fi
 }
 
@@ -106,7 +93,7 @@ function makeInstallMinGWBits
     pushd android-various/android-sdk
     gcc -Wl,-subsystem,windows -Wno-write-strings android.cpp -static-libgcc -s -O3 -o android.exe 
     cp android.exe $REPO_SRC_PATH/
-	popd
+    popd
 }
 
 function makeNDK
@@ -114,17 +101,17 @@ function makeNDK
     mkdir src
     pushd src
 
-	GDB_BRANCH=integration_7_3
-	GDB_ROOT_PATH=
+    GDB_BRANCH=integration_7_3
+    GDB_ROOT_PATH=
 #    GDB_BRANCH=master
 #    GDB_ROOT_PATH=gdb
 
     PYTHONVER=$PWD/python-install
     if [ ! -d $PYTHONVER ] ; then
-        if [ -f $REPO_SRC_PATH/python-${BUILD}.7z ]; then
+        if [ -f $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z ]; then
             mkdir $PYTHONVER
             pushd $PYTHONVER
-                7za x $REPO_SRC_PATH/python-${BUILD}.7z
+                7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
                 PYTHONVER=$PWD
             popd
         fi
@@ -157,15 +144,16 @@ function makeNDK
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gcc.git gcc
     fi
-    if [ ! -d "gdb" ]
+    mkdir gdb
+    if [ ! -d "ma-gdb" ]
     then
-        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git gdb
+        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git ma-gdb
     fi
-    pushd gdb
+    pushd ma-gdb
         git checkout integration_7_3
         git reset --hard
-		GDB_ROOT_PATH=$PWD/$GDB_ROOT_PATH
-		GDB_VERSION=7.3
+        GDB_ROOT_PATH=$PWD/$GDB_ROOT_PATH
+        GDB_VERSION=7.3
     popd
 
     TCSRC=$PWD
@@ -206,8 +194,8 @@ function makeNDK
 
 function mixPythonWithNDK
 {
-    if [ ! -f $REPO_SRC_PATH/python-${BUILD}.7z ]; then
-       echo "Failed to find python, $REPO_SRC_PATH/python-${BUILD}.7z"
+    if [ ! -f $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z ]; then
+       echo "Failed to find python, $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z"
     fi
     if [ ! -f $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 ]; then
        echo "Failed to find gdbserver, $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2"
@@ -221,12 +209,28 @@ function mixPythonWithNDK
     tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
     tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2
     pushd toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
-    7za x $REPO_SRC_PATH/python-${BUILD}.7z
+    7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
     popd
     7za a -mx9 android-ndk-r5b-gdb-7.2-${BUILD}.7z toolchains
     cp android-ndk-r5b-gdb-7.2-${BUILD}.7z $REPO_SRC_PATH
     popd
 }
+
+if [ "$OSTYPE" = "linux-gnu" ] ; then
+    BUILD=linux
+    BUILD_NDK=linux-x86
+    BUILD_PYTHON=$BUILD
+else
+    if [ "$OSTYPE" = "msys" ] ; then
+    BUILD=windows
+    BUILD_NDK=windows
+    BUILD_PYTHON=mingw
+    else
+        BUILD=macosx
+        BUILD_NDK=darwin-x86
+        BUILD_PYTHON=$BUILD
+    fi
+fi
 
 if [ "$OSTYPE" = "linux-gnu" ]; then
     TEMP_PATH=/tmp/ndk-build
@@ -244,9 +248,9 @@ PYTHONVER=/usr
 mkdir $TEMP_PATH
 pushd $TEMP_PATH
 
-if [ "$OSTYPE" = "msys" ] ; then
-     makeInstallMinGWBits
-fi
+#if [ "$OSTYPE" = "msys" ] ; then
+#     makeInstallMinGWBits
+#fi
 
 if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
     if [ ! -f /usr/local/bin/7za ] ; then
