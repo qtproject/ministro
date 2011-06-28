@@ -68,7 +68,7 @@ if [ "$OSTYPE" = "msys" ] ; then
     EXE_EXT=.exe
     SHLIB_EXT=.dll
     SCRIPT_EXT=.bat
-    JOBS=`expr $NUMBER_OF_PROCESSORS + 1`
+    JOBS=`expr $NUMBER_OF_PROCESSORS + 2`
 else
     if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
         HOST_CFG_OPTIONS=" -platform macx-g++42 -sdk /Developer/SDKs/MacOSX10.5.sdk -arch i386 -arch x86_64 -cocoa -prefix . "
@@ -79,7 +79,8 @@ else
         HOST_TAG=darwin-x86
         HOST_TAG_NDK=darwin-x86
         SHLIB_EXT=.dylib
-        JOBS=9
+        JOBS=`sysctl -n hw.ncpu`
+        JOBS=`expr $JOBS + 2`
     else
         HOST_CFG_OPTIONS=" -platform linux-g++ "
         HOST_TAG=linux-x86
