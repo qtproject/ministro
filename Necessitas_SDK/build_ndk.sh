@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+. ndk_vars.sh
+
 function error_msg
 {
     echo $1 >&2
@@ -101,11 +103,6 @@ function makeNDK
     mkdir src
     pushd src
 
-    GDB_BRANCH=integration_7_3
-    GDB_ROOT_PATH=
-#    GDB_BRANCH=master
-#    GDB_ROOT_PATH=gdb
-
     PYTHONVER=$PWD/python-install
     if [ ! -d $PYTHONVER ] ; then
         if [ -f $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z ]; then
@@ -150,10 +147,9 @@ function makeNDK
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git ma-gdb
     fi
     pushd ma-gdb
-        git checkout integration_7_3
+        git checkout $GDB_BRANCH
         git reset --hard
         GDB_ROOT_PATH=$PWD/$GDB_ROOT_PATH
-        GDB_VERSION=7.3
     popd
 
     TCSRC=$PWD
@@ -183,7 +179,7 @@ function makeNDK
 
     echo GDB_ROOT_PATH $GDB_ROOT_PATH
     if [ ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 -o ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
-        $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-path=$GDB_ROOT_PATH --gdb-version=$GDB_VERSION --mpfr-version=2.4.2 --binutils-version=2.20.1 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
+        $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-path=$GDB_ROOT_PATH --gdb-version=$GDB_VER --mpfr-version=2.4.2 --binutils-version=2.20.1 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
     else
         echo "Skipping NDK build, already done."
         echo $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
@@ -203,16 +199,33 @@ function mixPythonWithNDK
     if [ ! -f $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
        echo "Failed to find toolchain, $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2"
     fi
-    rm -rf /tmp/android-ndk-r5b-${BUILD}
-    mkdir -p /tmp/android-ndk-r5b-${BUILD}
-    pushd /tmp/android-ndk-r5b-${BUILD}
+    mkdir -p /tmp/android-ndk-${NDK_VER}-${BUILD_NDK}-repack
+    rm -rf /tmp/android-ndk-${NDK_VER}-${BUILD_NDK}-repack/android-ndk-${NDK_VER}
+    pushd /tmp/android-ndk-${NDK_VER}-${BUILD_NDK}-repack
+    if [ "$OSTYPE" = "msys" ] ; then
+        downloadIfNotExists android-ndk-${NDK_VER}-windows.zip http://dl.google.com/android/ndk/android-ndk-${NDK_VER}-windows.zip
+        unzip android-ndk-${NDK_VER}-windows.zip
+    else
+        if [ "$OSTYPE" = "linux-gnu" ] ; then
+            downloadIfNotExists android-ndk-${NDK_VER}-linux-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-${NDK_VER}-linux-x86.tar.bz2
+            tar xjvf android-ndk-${NDK_VER}-linux-x86.tar.bz2
+        else
+            downloadIfNotExists android-ndk-${NDK_VER}-darwin-x86.tar.bz2 http://dl.google.com/android/ndk/android-ndk-${NDK_VER}-darwin-x86.tar.bz2
+            tar xjvf android-ndk-${NDK_VER}-darwin-x86.tar.bz2
+        fi
+    fi
+    pushd android-ndk-${NDK_VER}
     tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
     tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2
     pushd toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
     7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
     popd
-    7za a -mx9 android-ndk-r5b-gdb-7.2-${BUILD}.7z toolchains
-    cp android-ndk-r5b-gdb-7.2-${BUILD}.7z $REPO_SRC_PATH
+    # Get rid of old and unused stuff.
+    rm -rf toolchains/arm-eabi-4.4.0
+    rm -rf toolchains/x86-4.4.3
+    popd
+    7za a -mx9 android-ndk-${NDK_VER}-gdb-${GDB_VER}-${BUILD_NDK}.7z android-ndk-${NDK_VER}
+    mv android-ndk-${NDK_VER}-gdb-${GDB_VER}-${BUILD_NDK}.7z $REPO_SRC_PATH
     popd
 }
 
@@ -248,9 +261,9 @@ PYTHONVER=/usr
 mkdir $TEMP_PATH
 pushd $TEMP_PATH
 
-#if [ "$OSTYPE" = "msys" ] ; then
-#     makeInstallMinGWBits
-#fi
+if [ "$OSTYPE" = "msys" ] ; then
+    makeInstallMinGWBits
+fi
 
 if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
     if [ ! -f /usr/local/bin/7za ] ; then
