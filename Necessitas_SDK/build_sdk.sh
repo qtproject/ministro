@@ -68,7 +68,6 @@ if [ "$OSTYPE" = "msys" ] ; then
     EXE_EXT=.exe
     SHLIB_EXT=.dll
     SCRIPT_EXT=.bat
-    SEVENZIP=7za
     JOBS=`expr $NUMBER_OF_PROCESSORS + 1`
 else
     if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
@@ -80,14 +79,12 @@ else
         HOST_TAG=darwin-x86
         HOST_TAG_NDK=darwin-x86
         SHLIB_EXT=.dylib
-        SEVENZIP=7za
         JOBS=9
     else
         HOST_CFG_OPTIONS=" -platform linux-g++ "
         HOST_TAG=linux-x86
         HOST_TAG_NDK=linux-x86
         SHLIB_EXT=.so
-        SEVENZIP=7za
         JOBS=`cat /proc/cpuinfo | grep processor | wc -l`
         JOBS=`expr $JOBS + 2`
     fi
@@ -383,7 +380,7 @@ function makeInstallMinGWLibsAndTools
     pushd texinfo
 	downloadIfNotExists texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma http://heanet.dl.sourceforge.net/project/mingw/MSYS/texinfo/texinfo-4.13a-2/texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma
     rm -rf texinfo-4.13a-2-msys-1.0.13-bin.tar
-    $SEVENZIP x texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma
+    7za x texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma
     tar -xvf texinfo-4.13a-2-msys-1.0.13-bin.tar
     mv bin/* /usr/local/bin
     mv share/* /usr/local/share
@@ -417,19 +414,6 @@ function makeInstallMinGWLibsAndTools
         rm -rf zlib-1.2.5
         popd
     fi
-
-    downloadIfNotExists unzip60.tar.gz http://ovh.dl.sourceforge.net/project/infozip/UnZip%206.x%20%28latest%29/UnZip%206.0/unzip60.tar.gz
-    tar -xvzf unzip60.tar.gz
-    pushd unzip60
-    mingw32-make.exe -f win32/Makefile.gcc
-	cp unzip.exe /usr/local/bin
-    popd
-
-    downloadIfNotExists 7za920.zip http://downloads.sourceforge.net/sevenzip/7za920.zip
-    SEVEN7LOC=$PWD
-    pushd /usr/local/bin
-    unzip -o $SEVEN7LOC/7za920.zip
-    popd
 
     # This make can't build gdb or python (it doesn't re-interpret MSYS mounts), but includes jobserver patch from
     # Troy Runkel: http://article.gmane.org/gmane.comp.gnu.make.windows/3223/match=
@@ -1401,7 +1385,7 @@ function packforWindows
     rm -fr $TEMP_PATH/packforWindows
     mkdir -p $TEMP_PATH/packforWindows
     pushd $TEMP_PATH/packforWindows
-        $SEVENZIP x $1/$2.7z
+        7za x $1/$2.7z
         mv Android Android_old
         $CPRL Android_old Android
         rm -fr Android_old

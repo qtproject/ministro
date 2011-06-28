@@ -1,5 +1,21 @@
 #!/bin/bash
 
+mkdir mingw-temp
+pushd mingw-temp
+
+wget -c http://ovh.dl.sourceforge.net/project/infozip/UnZip%206.x%20%28latest%29/UnZip%206.0/unzip60.tar.gz
+tar -xvzf unzip60.tar.gz
+pushd unzip60
+mingw32-make.exe -f win32/Makefile.gcc
+cp unzip.exe /usr/local/bin
+popd
+
+wget -c http://downloads.sourceforge.net/sevenzip/7za920.zip
+SEVEN7LOC=$PWD
+pushd /usr/local/bin
+unzip -o $SEVEN7LOC/7za920.zip
+popd
+
 # Get git. Awkwardly, git is packed up with a full mingw/msys env, so unzip
 # it to a temporary folder and copy across only certain bits, also, copy them
 # to /usr/local/bin so as not to pollute /usr/bin
@@ -63,3 +79,47 @@ pushd libiconv-1.13
 CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses=$install_dir --enable-multibyte --prefix=/usr  CFLAGS=-O3
 make && make DESTDIR=/usr install
 popd
+
+# For mingw Python. Generate libmsi.a and copy msi.h, msidefs.h, msimcntl.h, msimcsdk.h, msiquery.h, fci.h to /usr/include.
+wget -c http://downloads.sourceforge.net/mingw-w64/Toolchains%20targetting%20Win32/Personal%20Builds/sezero_20101003/mingw-w32-bin_i686-mingw_20101003_sezero.zip
+mkdir mingw64-w32-temp
+unzip -d mingw64-w32-temp mingw-w32-bin_i686-mingw_20101003_sezero.zip
+
+cp mingw64-w32-temp/mingw32/i686-w64-mingw32/include/msi*.h /usr/include
+cp mingw64-w32-temp/mingw32/i686-w64-mingw32/include/fci.h /usr/include
+cp mingw64-w32-temp/mingw32/i686-w64-mingw32/include/inaddr.h /usr/include/inaddr.h
+cp mingw64-w32-temp/mingw32/bin/gendef.exe /usr/local/bin
+
+if [ ! -z $ProgramW6432 ] ; then
+    cp C:/Windows/SysWOW64/msi.dll ./msi.dll
+    cp C:/Windows/SysWOW64/cabinet.dll ./cabinet.dll
+    cp C:/Windows/SysWOW64/rpcrt4.dll ./rpcrt4.dll
+else
+    cp C:/Windows/System32/msi.dll ./msi.dll
+    cp C:/Windows/System32/cabinet.dll ./cabinet.dll
+    cp C:/Windows/System32/rpcrt4.dll ./rpcrt4.dll
+fi
+
+# If don't pass -a (assume stdcall if ambiguous, then link fails to find MsiGetLastErrorRecord, unfortunately we get warnings with this:
+# Warning: resolving _MsiGetLastErrorRecord@0 by linking to _MsiGetLastErrorRecord, Warning: resolving _MsiRecordGetInteger@8 by linking to _MsiRecordGetInteger
+# Use --enable-stdcall-fixup to disable these warnings
+
+gendef - msi.dll > msi.def
+gendef - cabinet.dll > cabinet.def
+
+gendef - rpcrt4.dll > rpcrt4.def
+cp msi.dll /usr/bin
+
+cp cabinet.dll /usr/bin
+cp rpcrt4.dll /usr/bin
+dlltool -C -D --export-all-symbols MSI.dll -A -d msi.def -l libmsi.a
+dlltool -C -D --export-all-symbols CABINET.dll -A -d cabinet.def -l libcabinet.a
+dlltool -C -D --export-all-symbols RPCRT4.dll -A -d rpcrt4.def -l librpcrt4.a
+
+mv libmsi.a /usr/lib
+mv libcabinet.a /usr/lib
+mv librpcrt4.a /usr/lib
+rm -rf mingw64-w32-temp
+
+popd
+rm -rf mingw-temp
