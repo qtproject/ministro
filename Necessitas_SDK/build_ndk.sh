@@ -49,7 +49,7 @@ function makeInstallPython
     then
         if [ ! -d Python-2.7.1 ]
         then
-            git clone git://gitorious.org/mingw-python/mingw-python.git Python-2.7.1
+            git clone git://gitorious.org/mingw-python/mingw-python.git Python-2.7.1 || error_msg "Can't clone Python"
         fi
         pushd Python-2.7.1
         mkdir python-build
@@ -86,7 +86,9 @@ function makeInstallMinGWBits
     popd
 
     rm -rf android-various
-    git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various
+    if [ ! -d android-various ] ; then
+        git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various || error_msg "Can't clone android-various"
+    fi
     mkdir -p android-various/make-3.82-build
     pushd android-various/make-3.82-build
     ../make-3.82/build-mingw.sh
@@ -100,51 +102,52 @@ function makeInstallMinGWBits
 
 function makeNDK
 {
+    PYTHONVER=`pwd`/Python-2.7.1/python-build/install-python-${BUILD_PYTHON}
     mkdir src
     pushd src
+#   PYTHONVER=$PWD/python-install
 
-    PYTHONVER=$PWD/python-install
     if [ ! -d $PYTHONVER ] ; then
         if [ -f $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z ]; then
-            mkdir $PYTHONVER
+            mkdir -p $PYTHONVER
             pushd $PYTHONVER
                 7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
-                PYTHONVER=$PWD
+                PYTHONVER=`pwd`
             popd
         fi
     fi
 
     if [ ! -d "mpfr" ]
     then
-        git clone git://android.git.kernel.org/toolchain/mpfr.git mpfr
+        git clone git://android.git.kernel.org/toolchain/mpfr.git mpfr || error_msg "Can't clone mpfr"
         pushd mpfr
         downloadIfNotExists mpfr-2.4.2.tar.bz2 http://www.mpfr.org/mpfr-2.4.2/mpfr-2.4.2.tar.bz2
         popd
     fi
     if [ ! -d "binutils" ]
     then
-        git clone git://android.git.kernel.org/toolchain/binutils.git binutils
+        git clone git://android.git.kernel.org/toolchain/binutils.git binutils || error_msg "Can't clone binutils"
     fi
     if [ ! -d "gmp" ]
     then
-        git clone git://android.git.kernel.org/toolchain/gmp.git gmp
+        git clone git://android.git.kernel.org/toolchain/gmp.git gmp || error_msg "Can't clone gmp"
     fi
     if [ ! -d "gold" ]
     then
-        git clone git://android.git.kernel.org/toolchain/gold.git gold
+        git clone git://android.git.kernel.org/toolchain/gold.git gold || error_msg "Can't clone gold"
     fi
     if [ ! -d "build" ]
     then
-        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-build.git build
+        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-build.git build || error_msg "Can't clone build"
     fi
     if [ ! -d "gcc" ]
     then
-        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gcc.git gcc
+        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gcc.git gcc || error_msg "Can't clone gcc"
     fi
     mkdir gdb
     if [ ! -d "ma-gdb" ]
     then
-        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git ma-gdb
+        git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git ma-gdb || error_msg "Can't clone gdb"
     fi
     pushd ma-gdb
         git checkout $GDB_BRANCH
@@ -255,11 +258,16 @@ else
     fi
 fi
 
-REPO_SRC_PATH=$PWD/ndk-packages
+REPO_SRC_PATH=`pwd`/ndk-packages
 mkdir $REPO_SRC_PATH
 PYTHONVER=/usr
 mkdir $TEMP_PATH
 pushd $TEMP_PATH
+
+#cp -rf /usr/ndk-build-old/src .
+#mkdir build-windows
+#cp -rf /usr/ndk-build-old/build-windows/ndk ./build-windows
+#cp -rf /usr/ndk-build-old/build-windows/development ./build-windows
 
 if [ "$OSTYPE" = "msys" ] ; then
     makeInstallMinGWBits
