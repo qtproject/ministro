@@ -54,6 +54,7 @@ function makeInstallPython
         pushd Python-2.7.1
         mkdir python-build
         pushd python-build
+#        ../build-python.sh --with-pydebug
         ../build-python.sh
         # If successful, the build is packaged into /usr/ndk-build/python-mingw.7z
         cp ../python-${BUILD_PYTHON}.7z $REPO_SRC_PATH/
@@ -64,36 +65,43 @@ function makeInstallPython
 
 function makeInstallMinGWBits
 {
-    wget -c http://downloads.sourceforge.net/pdcurses/pdcurses/3.4/PDCurses-3.4.tar.gz
-    rm -rf PDCurses-3.4
-    tar -xvzf PDCurses-3.4.tar.gz
-    cd PDCurses-3.4/win32
-    sed '90s/-copy/-cp/' mingwin32.mak > mingwin32-fixed.mak
-    make -f mingwin32-fixed.mak WIDE=Y UTF8=Y DLL=N
-    cp pdcurses.a /usr/lib/libcurses.a
-    cp pdcurses.a /usr/lib/libncurses.a
-    cp pdcurses.a /usr/lib/libpdcurses.a
-    cp ../curses.h /usr/include
-    cp ../panel.h /usr/include
-    cd ../..
+    if [ ! -f /usr/lib/libcurses.a ] ; then
+        wget -c http://downloads.sourceforge.net/pdcurses/pdcurses/3.4/PDCurses-3.4.tar.gz
+        rm -rf PDCurses-3.4
+        tar -xvzf PDCurses-3.4.tar.gz
+        pushd PDCurses-3.4/win32
+        sed '90s/-copy/-cp/' mingwin32.mak > mingwin32-fixed.mak
+        make -f mingwin32-fixed.mak WIDE=Y UTF8=Y DLL=N
+        cp pdcurses.a /usr/lib/libcurses.a
+        cp pdcurses.a /usr/lib/libncurses.a
+        cp pdcurses.a /usr/lib/libpdcurses.a
+        cp ../curses.h /usr/include
+        cp ../panel.h /usr/include
+        popd
+    fi
 
-    wget -c http://ftp.gnu.org/pub/gnu/readline/readline-6.2.tar.gz
-    rm -rf readline-6.2
-    tar -xvzf readline-6.2.tar.gz
-    pushd readline-6.2
-    CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses --enable-multibyte --prefix=/usr CFLAGS=-O2
-    make && make install
-    popd
+    if [ ! -f /usr/lib/libreadline.a ] ; then
+        wget -c http://ftp.gnu.org/pub/gnu/readline/readline-6.2.tar.gz
+        rm -rf readline-6.2
+        tar -xvzf readline-6.2.tar.gz
+        pushd readline-6.2
+        CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses --enable-multibyte --prefix=/usr CFLAGS=-O2
+        make && make install
+        popd
+    fi
 
-    rm -rf android-various
     if [ ! -d android-various ] ; then
         git clone git://gitorious.org/mingw-android-various/mingw-android-various.git android-various || error_msg "Can't clone android-various"
     fi
-    mkdir -p android-various/make-3.82-build
-    pushd android-various/make-3.82-build
-    ../make-3.82/build-mingw.sh
-    cp make.exe $REPO_SRC_PATH/
-    popd
+
+    if [ ! -f $REPO_SRC_PATH/make.exe ] ; then
+        mkdir -p android-various/make-3.82-build
+        pushd android-various/make-3.82-build
+        ../make-3.82/build-mingw.sh
+        cp make.exe $REPO_SRC_PATH/
+        popd
+    fi
+
     pushd android-various/android-sdk
     gcc -Wl,-subsystem,windows -Wno-write-strings android.cpp -static-libgcc -s -O3 -o android.exe 
     cp android.exe $REPO_SRC_PATH/
@@ -181,6 +189,8 @@ function makeNDK
     ANDROID_NDK_ROOT=$NDK
 
     echo GDB_ROOT_PATH $GDB_ROOT_PATH
+    PYTHONHOME=""
+    unset PYTHONHOME
     if [ ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 -o ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
         $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-path=$GDB_ROOT_PATH --gdb-version=$GDB_VER --mpfr-version=2.4.2 --binutils-version=2.20.1 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
     else
