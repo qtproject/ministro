@@ -123,3 +123,6 @@ rm -rf mingw64-w32-temp
 
 popd
 rm -rf mingw-temp
+rm -rf /etc/fstab
+
+exit

@@ -446,14 +446,14 @@ function makeInstallMinGWLibs
 function prepareNDKs
 {
     # repack official windows NDK
-    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-windows.7z ]
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-windows.7z ]
     then
-        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-windows.zip http://dl.google.com/android/ndk/android-ndk-${ANDROID_NDK_VERSION}-windows.zip
+        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3-windows.7z
         rm -fr android-ndk-${ANDROID_NDK_VERSION}
-        unzip android-ndk-${ANDROID_NDK_VERSION}-windows.zip
-        $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-windows.7z
+        7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3-windows.7z
+        $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-ma-windows.7z
         mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_MAJOR_VERSION}/data
-        mv android-ndk-${ANDROID_NDK_VERSION}-windows.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-windows.7z
+        mv android-ndk-${ANDROID_NDK_VERSION}-ma-windows.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-windows.7z
         rm -fr android-ndk-${ANDROID_NDK_VERSION}
     fi
 
@@ -494,8 +494,8 @@ function prepareNDKs
 
     if [ ! -d $ANDROID_NDK_FOLDER_NAME ]; then
         if [ "$OSTYPE" = "msys" ]; then
-            downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-windows.zip http://dl.google.com/android/ndk/android-ndk-${ANDROID_NDK_VERSION}-windows.zip
-            unzip android-ndk-${ANDROID_NDK_VERSION}-windows.zip
+            downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3-windows.7z
+            7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3-windows.7z
         fi
 
         if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
@@ -1008,7 +1008,7 @@ function compileNecessitasQt
     if [ $package_name = "armeabi_v7a" ]
     then
         # Change this to 5?
-        NDK_TARGET=4
+        NDK_TARGET=5
     fi
 
     if [ ! -f all_done ]
@@ -1293,6 +1293,7 @@ function setPackagesVariables
     patchPackage "@@NECESSITAS_QT_CREATOR_VERSION@@" $NECESSITAS_QT_CREATOR_VERSION "org.kde.necessitas.tools.qtcreator"
 
     patchPackage "@@ANDROID_NDK_VERSION@@" $ANDROID_NDK_VERSION "org.kde.necessitas.misc.ndk.r5"
+    patchPackage "@@ANDROID_NDK_VERSION@@" $ANDROID_NDK_VERSION "org.kde.necessitas.misc.ndk.ma_r5"
 
     patchPackage "@@ANDROID_API_4_VERSION@@" $ANDROID_API_4_VERSION "org.kde.necessitas.misc.sdk.android_4"
     patchPackage "@@ANDROID_API_5_VERSION@@" $ANDROID_API_5_VERSION "org.kde.necessitas.misc.sdk.android_5"
@@ -1314,6 +1315,7 @@ function unsetPackagesVariables
     patchPackage $NECESSITAS_QT_CREATOR_VERSION "@@NECESSITAS_QT_CREATOR_VERSION@@" "org.kde.necessitas.tools.qtcreator"
 
     patchPackage $ANDROID_NDK_VERSION "@@ANDROID_NDK_VERSION@@" "org.kde.necessitas.misc.ndk.r5"
+    patchPackage $ANDROID_NDK_VERSION "@@ANDROID_NDK_VERSION@@" "org.kde.necessitas.misc.ndk.ma_r5"
 
     patchPackage $ANDROID_API_4_VERSION "@@ANDROID_API_4_VERSION@@" "org.kde.necessitas.misc.sdk.android_4"
     patchPackage $ANDROID_API_5_VERSION "@@ANDROID_API_5_VERSION@@" "org.kde.necessitas.misc.sdk.android_5"
@@ -1451,9 +1453,9 @@ function prepareWindowsPackages
 
 }
 
-if [ "$OSTYPE" = "msys" ] ; then
-    makeInstallMinGWLibsAndTools
-fi
+#if [ "$OSTYPE" = "msys" ] ; then
+#    makeInstallMinGWLibsAndTools
+#fi
 prepareHostQt
 prepareSdkInstallerTools
 prepareGDBVersion 7.2 $HOST_TAG
