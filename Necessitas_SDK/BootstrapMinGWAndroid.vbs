@@ -55,10 +55,10 @@ msgbox "Launching MinGW installer, Use pre-packaged repository," & vbcrlf & "ins
 run minGWInstaller
 copy wgetExe,"C:\usr\bin\wget.exe"
 run "cmd /c xcopy /S /R /Y C:\usr\msys\1.0 C:\usr"
+run "cmd /c del /F /Q /S C:\usr\msys"
 'run "cmd /c mkdir C:\usr\local"
 'run "cmd /c xcopy /S /R /Y C:\usr\msys\1.0 C:\usr\local"
 'run "cmd /c xcopy /S /R /Y C:\usr\local\msys.bat C:\usr\"
 'run "cmd /c xcopy /S /R /Y C:\usr\local\bin\sh.exe C:\usr\bin"
 'run "cmd /c xcopy /S /R /Y C:\usr\local\bin\msys-1.0.exe C:\usr\bin"
 'run "cmd /c del /F /Q C:\usr\local\msys.bat"
-'run "cmd /c del /F /Q /S C:\usr\msys"
