@@ -3,7 +3,7 @@
 mkdir mingw-temp
 pushd mingw-temp
 
-wget -c http://ovh.dl.sourceforge.net/project/infozip/UnZip%206.x%20%28latest%29/UnZip%206.0/unzip60.tar.gz
+wget -c http://sourceforge.net/projects/infozip/files/UnZip%206.x%20%28latest%29/UnZip%206.0/unzip60.tar.gz/download
 tar -xvzf unzip60.tar.gz
 pushd unzip60
 mingw32-make.exe -f win32/Makefile.gcc
