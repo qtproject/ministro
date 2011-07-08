@@ -44,18 +44,19 @@ function move(source,dest)
 end function
 
 minGWInstaller=WshShell.CurrentDirectory & "\mingw-get-inst-20110530.exe"
-'gitInstaller=WshShell.CurrentDirectory & "\Git-1.7.4-preview20110204.exe"
+gitInstaller=WshShell.CurrentDirectory & "\Git-1.7.4-preview20110204.exe"
 wgetExe=WshShell.CurrentDirectory & "\wget.exe"
 downloadHTTP "http://kent.dl.sourceforge.net/project/mingw/Automated%20MinGW%20Installer/mingw-get-inst/mingw-get-inst-20110530/mingw-get-inst-20110530.exe", minGWInstaller
-'downloadHTTP "http://msysgit.googlecode.com/files/Git-1.7.4-preview20110204.exe", gitInstaller
+downloadHTTP "http://msysgit.googlecode.com/files/Git-1.7.4-preview20110204.exe", gitInstaller
 downloadHTTP "http://users.ugent.be/~bpuype/cgi-bin/fetch.pl?dl=wget/wget.exe", wgetExe
-'msgbox "Launching Windows Git installer, install to C:\usr"
-'run gitInstaller
 msgbox "Launching MinGW installer, Use pre-packaged repository," & vbcrlf & "install to C:\usr," & vbcrlf & "select C and C++ compilers," & vbcrlf & "MSYS Basic System and MinGW Developer Toolkit"
 run minGWInstaller
+msgbox "Launching Windows Git installer, install to C:\msys-git"
+run gitInstaller
 copy wgetExe,"C:\usr\bin\wget.exe"
 run "cmd /c xcopy /S /R /Y C:\usr\msys\1.0 C:\usr"
 run "cmd /c del /F /Q /S C:\usr\msys"
+copy "C:\msys-git\bin\msys-1.0.dll","C:\usr\bin\msys-1.0.dll"
 'run "cmd /c mkdir C:\usr\local"
 'run "cmd /c xcopy /S /R /Y C:\usr\msys\1.0 C:\usr\local"
 'run "cmd /c xcopy /S /R /Y C:\usr\local\msys.bat C:\usr\"
