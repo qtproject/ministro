@@ -151,6 +151,7 @@ function makeNDK
     if [ ! -d "gcc" ]
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gcc.git gcc || error_msg "Can't clone gcc"
+        git checkout integration
     fi
     mkdir gdb
     if [ ! -d "ma-gdb" ]
