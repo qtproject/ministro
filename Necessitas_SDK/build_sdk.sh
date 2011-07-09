@@ -758,14 +758,6 @@ function prepareGDBServer
 
     mkdir android-sysroot
     $CPRL $TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/platforms/android-9/arch-arm/* android-sysroot/ || error_msg "Can't copy android sysroot"
-    # Fix gdbserver bug by using a Gingerbread version of libc.a
-    # 'The remote end hung up.'
-    # git archive --remote=git://android.git.kernel.org/platform/development.git HEAD:ndk/platforms/android-3/arch-arm/lib libc.a | tar -x
-    downloadIfNotExists libc.a https://review.source.android.com//cat/23118%2C1%2Cndk/platforms/android-3/arch-arm/lib/libc.a^0
-    cp libc.a^0 libc.zip
-    rm libc_new-*.a
-    unzip libc.zip
-    mv libc_new-*.a android-sysroot/usr/lib/libc.a
     rm -f android-sysroot/usr/lib/libthread_db*
     rm -f android-sysroot/usr/include/thread_db.h
 

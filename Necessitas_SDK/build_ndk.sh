@@ -202,6 +202,8 @@ function makeNDK
     cp $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2
 }
 
+# This also copies the new libstdc++'s over the old ones (the NDK's build scripts are
+# buggy (--keep-libstdc++ doesn't work right).
 function mixPythonWithNDK
 {
     if [ ! -f $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z ]; then
@@ -230,6 +232,10 @@ function mixPythonWithNDK
     fi
     pushd android-ndk-${NDK_VER}
     tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
+    # The official NDK uses thumb version of libstdc++ for armeabi and
+    # an arm version for armeabi-v7a, so copy the appropriate one over.
+    cp toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}/arm-linux-androideabi/lib/thumb/libstdc++.* sources/cxx-stl/gnu-libstdc++/libs/armeabi/
+    cp toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}/arm-linux-androideabi/lib/armv7-a/libstdc++.* sources/cxx-stl/gnu-libstdc++/libs/armeabi-v7a/
     tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2
     pushd toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
     7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
