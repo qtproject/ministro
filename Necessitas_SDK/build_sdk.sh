@@ -24,10 +24,10 @@
 REPO_SRC_PATH=$PWD
 TODAY=`date +%Y-%m-%d`
 
-TEMP_PATH_PREFIX=/usr
+TEMP_PATH_PREFIX=/tmp
 
 TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
-if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" -o "$OSTYPE" = "linux-gnu" ]; then
+if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
     # On Mac OS X, user accounts don't have write perms for /var, same is true for Ubuntu.
     sudo mkdir -p $TEMP_PATH
     sudo chmod 777 $TEMP_PATH
@@ -861,7 +861,6 @@ function repackSDK
 
 function prepareGDBVersion
 {
-echo prepareGDBVersion $1 $2
     GDB_VER=$1
     GDB_TARG_HOST_TAG=$2 # windows, linux-x86, darwin-x86 or nothing for android.
     if [ "$GDB_VER" = "7.3" ]; then
