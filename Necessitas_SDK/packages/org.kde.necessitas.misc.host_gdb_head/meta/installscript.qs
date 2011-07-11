@@ -36,7 +36,7 @@ function Component()
 {
     if( component.fromOnlineRepository )
     {
-        component.addDownloadableArchive( "gdb_"+OsToHostTag()+"-7.3.7z" );
+        component.addDownloadableArchive( "gdb_"+OsToHostTag()+"-head.7z" );
     }
 }
 
@@ -45,7 +45,7 @@ Component.prototype.createOperations = function()
     // Call the base createOperations(unpacking ...)
     component.createOperations();
 
-    var basePath = "@TargetDir@/gdb_"+OsToHostTag()+"-7.3/";
+    var basePath = "@TargetDir@/gdb_"+OsToHostTag()+"-head/";
     var gdbPath = basePath+"gdb";
     var pythonPath=basePath+"python/bin/python2.7"
     if (installer.value("os") == "win")
