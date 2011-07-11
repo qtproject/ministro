@@ -22,15 +22,12 @@
 . sdk_vars.sh
 
 REPO_SRC_PATH=$PWD
-TEMP_PATH_PREFIX=/tmp
 TODAY=`date +%Y-%m-%d`
 
-if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
-    TEMP_PATH_PREFIX=/usr
-fi
+TEMP_PATH_PREFIX=/usr
 
 TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
-if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
+if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" -o "$OSTYPE" = "linux-gnu" ]; then
     # On Mac OS X, user accounts don't have write perms for /var, same is true for Ubuntu.
     sudo mkdir -p $TEMP_PATH
     sudo chmod 777 $TEMP_PATH
@@ -376,7 +373,7 @@ function makeInstallMinGWLibsAndTools
 
     mkdir mingw-bits
     pushd mingw-bits
-	
+
     mkdir texinfo
     pushd texinfo
 	downloadIfNotExists texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma http://heanet.dl.sourceforge.net/project/mingw/MSYS/texinfo/texinfo-4.13a-2/texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma
@@ -1510,15 +1507,9 @@ if [ "$OSTYPE" = "msys" ] ; then
 fi
 prepareHostQt
 prepareSdkInstallerTools
-#prepareGDBVersion 7.2 $HOST_TAG
 prepareGDBVersion head $HOST_TAG
-
 prepareNDKs
-#prepareGDBVersion 7.2
-#prepareGDBVersion 7.3
-
 prepareSDKs
-
 prepareNecessitasQtCreator
 prepareNecessitasQt
 
