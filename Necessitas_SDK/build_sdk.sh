@@ -24,7 +24,11 @@
 REPO_SRC_PATH=$PWD
 TODAY=`date +%Y-%m-%d`
 
-TEMP_PATH_PREFIX=/tmp
+if [ "$OSTYPE" = "linux-gnu" ] ; then
+    TEMP_PATH_PREFIX=/tmp
+else
+    TEMP_PATH_PREFIX=/usr
+fi
 
 TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
 if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
@@ -1290,9 +1294,53 @@ function prepareNecessitasQtWebkit
 
 function prepareOpenJDK
 {
-    if [ "$OSTYPE" = "msys" ] ; then
-        downloadIfNotExists oscg-openjdk6b21-1-windows-installer.exe http://oscg-downloads.s3.amazonaws.com/installers/oscg-openjdk6b21-1-windows-installer.exe
-		oscg-openjdk6b21-1-windows-installer.exe http://openscg.com/se/oscg_download.jsp?file=installers/oscg-openjdk6b21-1-windows-installer.exe&user=
+    mkdir openjdk
+    pushd openjdk
+
+    mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.openjdk/data
+    WINE=0
+    which wine && WINE=1
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.openjdk/data/openjdk-windows.7z ] ; then
+        if [ "$OSTYPE" = "msys" -o "$WINE" = "1" ] ; then
+            downloadIfNotExists oscg-openjdk6b21-1-windows-installer.exe http://oscg-downloads.s3.amazonaws.com/installers/oscg-openjdk6b21-1-windows-installer.exe
+            rm -rf openjdk6b21-windows
+            oscg-openjdk6b21-1-windows-installer.exe --unattendedmodeui none --mode unattended --prefix `pwd`/openjdk6b21-windows
+            pushd openjdk6b21-windows
+            $SDK_TOOLS_PATH/archivegen openjdk-6.0.21 openjdk-windows.7z
+            popd
+            mv openjdk-windows.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.openjdk/data/
+        fi
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.openjdk/data/openjdk-linux-x86.7z ] ; then
+        downloadIfNotExists openjdk-1.6.0-b21.i386.openscg.deb http://oscg-downloads.s3.amazonaws.com/packages/openjdk-1.6.0-b21.i386.openscg.deb
+        ar x openjdk-1.6.0-b21.i386.openscg.deb
+        tar xzf data.tar.gz
+        pushd opt
+        $SDK_TOOLS_PATH/archivegen openjdk openjdk-linux-x86.7z
+        mv openjdk-linux-x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.openjdk/data/
+        popd
+        tar
+    fi
+
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.openjdk/data/openjdk-darwin-x86.7z ] ; then
+        downloadIfNotExists oscg-openjdk6b16-5a-osx-installer.zip http://oscg-downloads.s3.amazonaws.com/installers/oscg-openjdk6b16-5a-osx-installer.zip
+        unzip oscg-openjdk6b16-5a-osx-installer.zip
+        $SDK_TOOLS_PATH/archivegen oscg-openjdk6b16-5a-osx-installer.app openjdk-darwin-x86.7z
+        mv openjdk-darwin-x86.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.openjdk/data/
+    fi
+
+    popd
+}
+
+function prepareAnt
+{
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ant/data/ant.7z ] ; then
+        mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ant/data
+        downloadIfNotExists apache-ant-1.8.2-bin.tar.bz2 http://mirror.ox.ac.uk/sites/rsync.apache.org//ant/binaries/apache-ant-1.8.2-bin.tar.bz2
+        tar xjvf apache-ant-1.8.2-bin.tar.bz2
+        $SDK_TOOLS_PATH/archivegen apache-ant-1.8.2 ant.7z
+        mv ant.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ant/data/
     fi
 }
 
@@ -1506,6 +1554,8 @@ if [ "$OSTYPE" = "msys" ] ; then
 fi
 prepareHostQt
 prepareSdkInstallerTools
+prepareOpenJDK
+prepareAnt
 prepareGDBVersion head $HOST_TAG
 prepareNDKs
 prepareSDKs
