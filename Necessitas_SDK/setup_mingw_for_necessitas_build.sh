@@ -77,7 +77,10 @@ rm -rf libiconv-1.13
 tar -xvzf libiconv-1.13.tar.gz
 pushd libiconv-1.13
 CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses=$install_dir --enable-multibyte --prefix=/usr  CFLAGS=-O3
-make && make DESTDIR=/usr install
+make
+# Without the /mingw folder, this fails, but only after copying libiconv.a to the right place.
+make install
+cp include/iconv.h /usr/include
 popd
 
 # For mingw Python. Generate libmsi.a and copy msi.h, msidefs.h, msimcntl.h, msimcsdk.h, msiquery.h, fci.h to /usr/include.
