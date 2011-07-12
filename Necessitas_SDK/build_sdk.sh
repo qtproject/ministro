@@ -1307,8 +1307,8 @@ function prepareOpenJDK
             oscg-openjdk6b21-1-windows-installer.exe --unattendedmodeui none --mode unattended --prefix `pwd`/openjdk6b21-windows
             pushd openjdk6b21-windows
             $SDK_TOOLS_PATH/archivegen openjdk-6.0.21 openjdk-windows.7z
-            popd
             mv openjdk-windows.7z $REPO_SRC_PATH/packages/org.kde.necessitas.misc.openjdk/data/
+            popd
         fi
     fi
 
