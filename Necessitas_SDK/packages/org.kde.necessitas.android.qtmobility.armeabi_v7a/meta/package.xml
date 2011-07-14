@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>QtMobility @@NECESSITAS_QTMOBILITY_VERSION@@-armeabi_v7a</DisplayName>
+    <DisplayName>QtMobility 1.2.0-armeabi_v7a</DisplayName>
     <Description>Development libraries for development applications on Android devices, armeabi_v7a architecture.</Description>
-    <Version>@@NECESSITAS_QTMOBILITY_VERSION@@</Version>
-    <ReleaseDate>@@TODAY@@</ReleaseDate>
+    <Version>1.2.0</Version>
+    <ReleaseDate>2011-07-14</ReleaseDate>
     <Name>org.kde.necessitas.android.qtmobility.armeabi_v7a</Name>
     <Dependencies>org.kde.necessitas.android.qt.armeabi_v7a</Dependencies>
     <Dependencies>org.kde.necessitas.android.qtwebkit.armeabi_v7a</Dependencies>

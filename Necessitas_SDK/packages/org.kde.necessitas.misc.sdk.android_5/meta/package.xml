@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
     <DisplayName>API 5 (deprecated)</DisplayName>
-    <Description>Android SDK API 5 (@@ANDROID_API_5_VERSION@@), Deprecated !</Description>
-    <Version>@@ANDROID_API_5_VERSION@@</Version>
-    <ReleaseDate>@@TODAY@@</ReleaseDate>
+    <Description>Android SDK API 5 (2.0_r01), Deprecated !</Description>
+    <Version>2.0_r01</Version>
+    <ReleaseDate>2011-07-14</ReleaseDate>
     <Name>org.kde.necessitas.misc.sdk.android_5</Name>
     <Dependencies>org.kde.necessitas.misc.sdk.base</Dependencies>
     <Dependencies>org.kde.necessitas.misc.sdk.platform_tools</Dependencies>

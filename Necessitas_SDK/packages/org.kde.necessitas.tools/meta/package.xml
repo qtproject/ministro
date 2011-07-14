@@ -3,7 +3,7 @@
     <DisplayName>Development Tools</DisplayName>
     <Description>Tools to develop Qt applications on Android devices.</Description>
     <Version>1.0.0</Version>
-    <ReleaseDate>@@TODAY@@</ReleaseDate>
+    <ReleaseDate>2011-07-14</ReleaseDate>
     <Name>org.kde.necessitas.tools</Name>
     <SortingPriority>0</SortingPriority>
 </Package>

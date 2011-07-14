@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>Qt @@NECESSITAS_QT_VERSION@@-armeabi_v7a</DisplayName>
+    <DisplayName>Qt 4.7.62.1-armeabi_v7a</DisplayName>
     <Description>Development libraries for development applications on Android devices, armeabi_v7a architecture.</Description>
-    <Version>@@NECESSITAS_QT_VERSION@@</Version>
-    <ReleaseDate>@@TODAY@@</ReleaseDate>
+    <Version>4.7.62.1</Version>
+    <ReleaseDate>2011-07-14</ReleaseDate>
     <Name>org.kde.necessitas.android.qt.armeabi_v7a</Name>
     <Script>installscript.qs</Script>
     <InstallPriority>0</InstallPriority>

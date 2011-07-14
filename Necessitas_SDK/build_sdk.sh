@@ -1576,12 +1576,12 @@ setPackagesVariables
 prepareSDKBinary
 
 # Comment this block in if you want necessitas-sdk-installer-d and qtcreator-d to be built.
-#if [ ! "$OSTYPE" = "linux-gnu" ] ; then
-#    prepareHostQt -d
-#    prepareNecessitasQtCreator
-#    prepareSdkInstallerTools
-#    prepareSDKBinary
-#fi
+if [ ! "$OSTYPE" = "linux-gnu" ] ; then
+    prepareHostQt -d
+    prepareNecessitasQtCreator
+    prepareSdkInstallerTools
+    prepareSDKBinary
+fi
 
 prepareSDKRepository
 unsetPackagesVariables

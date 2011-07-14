@@ -36,7 +36,7 @@ Component.prototype.createOperations = function()
     try
     {
         component.createOperations();
-        var qtPath = "@TargetDir@/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/armeabi-v7a";
+        var qtPath = "@TargetDir@/Android/Qt/4762/armeabi-v7a";
         component.addOperation( "QtPatch", qtPath, "/data/data/eu.licentia.necessitas.ministro/files/qt" );
     }
     catch( e )

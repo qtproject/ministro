@@ -3,7 +3,7 @@
     <DisplayName>QtMobility</DisplayName>
     <Description>QtMobility</Description>
     <Version>1.0</Version>
-    <ReleaseDate>@@TODAY@@</ReleaseDate>
+    <ReleaseDate>2011-07-14</ReleaseDate>
     <Name>org.kde.necessitas.android.qtmobility</Name>
     <SortingPriority>2</SortingPriority>
 </Package>

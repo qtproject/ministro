@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>Qt @@NECESSITAS_QT_VERSION@@-src</DisplayName>
+    <DisplayName>Qt 4.7.62.1-src</DisplayName>
     <Description>Development libraries for development applications on Android devices, source package.</Description>
-    <Version>@@NECESSITAS_QT_VERSION@@</Version>
-    <ReleaseDate>@@TODAY@@</ReleaseDate>
+    <Version>4.7.62.1</Version>
+    <ReleaseDate>2011-07-14</ReleaseDate>
     <Name>org.kde.necessitas.android.qt.src</Name>
     <Script>installscript.qs</Script>
     <InstallPriority>0</InstallPriority>

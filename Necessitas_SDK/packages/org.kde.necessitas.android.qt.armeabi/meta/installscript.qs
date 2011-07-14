@@ -43,11 +43,11 @@ Component.prototype.createOperations = function()
     try
     {
         component.createOperations();
-        var qtPath = "@TargetDir@/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/armeabi";
+        var qtPath = "@TargetDir@/Android/Qt/4762/armeabi";
         component.addOperation( "QtPatch", qtPath );
         component.addOperation( "RegisterQtInCreator",
                                 "@TargetDir@",
-                                "Necessitas Qt @@NECESSITAS_QT_VERSION@@ for Android armv5",
+                                "Necessitas Qt 4.7.62.1 for Android armv5",
                                 qtPath );
     }
     catch( e )

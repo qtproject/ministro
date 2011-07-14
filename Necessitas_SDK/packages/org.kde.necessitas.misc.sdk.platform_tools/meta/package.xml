@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>Platform tools @@ANDROID_PLATFORM_TOOLS_VERSION@@</DisplayName>
-    <Description>Android SDK platform tools package @@ANDROID_PLATFORM_TOOLS_VERSION@@</Description>
-    <Version>@@ANDROID_PLATFORM_TOOLS_VERSION@@</Version>
-    <ReleaseDate>@@TODAY@@</ReleaseDate>
+    <DisplayName>Platform tools r04</DisplayName>
+    <Description>Android SDK platform tools package r04</Description>
+    <Version>r04</Version>
+    <ReleaseDate>2011-07-14</ReleaseDate>
     <Name>org.kde.necessitas.misc.sdk.platform_tools</Name>
     <Dependencies>org.kde.necessitas.misc.sdk.base</Dependencies>
     <Script>installscript.qs</Script>

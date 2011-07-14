@@ -3,6 +3,6 @@
     <DisplayName>Android SDK</DisplayName>
     <Description>Android SDK.</Description>
     <Version>1.0.0</Version>
-    <ReleaseDate>@@TODAY@@</ReleaseDate>
+    <ReleaseDate>2011-07-14</ReleaseDate>
     <Name>org.kde.necessitas.misc.sdk</Name>
 </Package>

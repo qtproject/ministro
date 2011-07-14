@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>Android NDK-@@ANDROID_NDK_VERSION@@</DisplayName>
-    <Description>Android NDK-@@ANDROID_NDK_VERSION@@</Description>
-    <Version>5.0.0-@@ANDROID_NDK_VERSION@@</Version>
-    <ReleaseDate>@@TODAY@@</ReleaseDate>
+    <DisplayName>Android NDK-r5c</DisplayName>
+    <Description>Android NDK-r5c</Description>
+    <Version>5.0.0-r5c</Version>
+    <ReleaseDate>2011-07-14</ReleaseDate>
     <Name>org.kde.necessitas.misc.ndk.r5</Name>
     <Script>installscript.qs</Script>
     <Dependencies>org.kde.necessitas.tools.qtcreator</Dependencies>

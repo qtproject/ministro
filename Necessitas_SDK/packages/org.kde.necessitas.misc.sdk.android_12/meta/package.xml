@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
     <DisplayName>API 12</DisplayName>
-    <Description>Android SDK API 12 (@@ANDROID_API_12_VERSION@@)</Description>
-    <Version>@@ANDROID_API_12_VERSION@@</Version>
-    <ReleaseDate>@@TODAY@@</ReleaseDate>
+    <Description>Android SDK API 12 (3.1_r01)</Description>
+    <Version>3.1_r01</Version>
+    <ReleaseDate>2011-07-14</ReleaseDate>
     <Name>org.kde.necessitas.misc.sdk.android_12</Name>
     <Dependencies>org.kde.necessitas.misc.sdk.base</Dependencies>
     <Dependencies>org.kde.necessitas.misc.sdk.platform_tools</Dependencies>
