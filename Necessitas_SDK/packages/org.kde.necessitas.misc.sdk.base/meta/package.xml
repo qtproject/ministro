@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>Base package r11</DisplayName>
-    <Description>Android SDK base package r11</Description>
-    <Version>r11</Version>
-    <ReleaseDate>2011-07-14</ReleaseDate>
+    <DisplayName>Base package @@ANDROID_SDK_VERSION@@</DisplayName>
+    <Description>Android SDK base package @@ANDROID_SDK_VERSION@@</Description>
+    <Version>@@ANDROID_SDK_VERSION@@</Version>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.misc.sdk.base</Name>
     <Script>installscript.qs</Script>
 </Package>

@@ -3,7 +3,7 @@
     <DisplayName>OpenJDK</DisplayName>
     <Description>Open Java Development Kit (oscg)</Description>
     <Version>6</Version>
-    <ReleaseDate>2011-07-14</ReleaseDate>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.misc.openjdk</Name>
     <Script>installscript.qs</Script>
     <InstallPriority>99999</InstallPriority>

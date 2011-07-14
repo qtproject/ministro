@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>QtWebKit 2.1.1-armeabi</DisplayName>
+    <DisplayName>QtWebKit @@NECESSITAS_QTWEBKIT_VERSION@@-armeabi</DisplayName>
     <Description>Development libraries for development applications on Android devices, armeabi architecture.</Description>
-    <Version>2.1.1</Version>
-    <ReleaseDate>2011-07-14</ReleaseDate>
+    <Version>@@NECESSITAS_QTWEBKIT_VERSION@@</Version>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.android.qtwebkit.armeabi</Name>
     <Dependencies>org.kde.necessitas.android.qt.armeabi</Dependencies>
     <Script>installscript.qs</Script>

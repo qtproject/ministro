@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
     <DisplayName>API 11</DisplayName>
-    <Description>Android SDK API 11 (3.0_r01)</Description>
-    <Version>3.0_r01</Version>
-    <ReleaseDate>2011-07-14</ReleaseDate>
+    <Description>Android SDK API 11 (@@ANDROID_API_11_VERSION@@)</Description>
+    <Version>@@ANDROID_API_11_VERSION@@</Version>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.misc.sdk.android_11</Name>
     <Dependencies>org.kde.necessitas.misc.sdk.base</Dependencies>
     <Dependencies>org.kde.necessitas.misc.sdk.platform_tools</Dependencies>

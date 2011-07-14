@@ -3,7 +3,7 @@
     <DisplayName>Host gdb-head</DisplayName>
     <Description>Custom host GDB with python capabilities</Description>
     <Version>7.3.50.20110709</Version>
-    <ReleaseDate>2011-07-14</ReleaseDate>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.misc.host_gdb_head</Name>
     <Script>installscript.qs</Script>
     <InstallPriority>99999</InstallPriority>

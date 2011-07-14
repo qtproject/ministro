@@ -3,7 +3,7 @@
     <DisplayName>Android</DisplayName>
     <Description>Android</Description>
     <Version>1.0</Version>
-    <ReleaseDate>2011-07-14</ReleaseDate>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.android</Name>
     <SortingPriority>0</SortingPriority>
 </Package>

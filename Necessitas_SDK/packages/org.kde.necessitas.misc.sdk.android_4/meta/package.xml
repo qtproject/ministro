@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Package>
     <DisplayName>API 4</DisplayName>
-    <Description>Android SDK API 4 (1.6_r03)</Description>
-    <Version>1.6_r03</Version>
-    <ReleaseDate>2011-07-14</ReleaseDate>
+    <Description>Android SDK API 4 (@@ANDROID_API_4_VERSION@@)</Description>
+    <Version>@@ANDROID_API_4_VERSION@@</Version>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.misc.sdk.android_4</Name>
     <Dependencies>org.kde.necessitas.misc.sdk.base</Dependencies>
     <Dependencies>org.kde.necessitas.misc.sdk.platform_tools</Dependencies>
