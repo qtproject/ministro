@@ -108,6 +108,21 @@ function makeInstallMinGWBits
     popd
 }
 
+function makeNDKForArch
+{
+    ARCH=$1
+    ROOTDIR=$2
+    REPO_SRC_PATH=$3
+    if [ ! -f $ROOTDIR/$ARCH-linux-androideabi-4.4.3-gdbserver.tar.bz2 -o ! -f $ROOTDIR/$ARCH-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
+        $NDK/build/tools/rebuild-all-prebuilt.sh --arch=$ARCH --patches-dir=$NDK/build/tools/toolchain-patches --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-path=$GDB_ROOT_PATH --gdb-version=$GDB_VER --mpfr-version=2.4.2 --gmp-version=4.2.4 --binutils-version=2.20.1 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
+    else
+        echo "Skipping NDK build, already done."
+        echo $ROOTDIR/$ARCH-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
+    fi
+    cp $ROOTDIR/$ARCH-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 $REPO_SRC_PATH/$ARCH-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
+    cp $ROOTDIR/$ARCH-linux-androideabi-4.4.3-gdbserver.tar.bz2 $REPO_SRC_PATH/$ARCH-linux-androideabi-4.4.3-gdbserver.tar.bz2
+}
+
 function makeNDK
 {
     PYTHONVER=`pwd`/Python-2.7.1/python-build/install-python-${BUILD_PYTHON}
@@ -147,12 +162,21 @@ function makeNDK
     if [ ! -d "build" ]
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-build.git build || error_msg "Can't clone build"
+        git reset --hard
     fi
+    # reset so that ndk r6 patches apply.
+    pushd build
+        git reset --hard
+    popd
     if [ ! -d "gcc" ]
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gcc.git gcc || error_msg "Can't clone gcc"
-        git checkout integration
     fi
+    # reset so that ndk r6 patches apply.
+    pushd gcc
+        git checkout integration
+        git reset --hard
+    popd
     mkdir gdb
     if [ ! -d "ma-gdb" ]
     then
@@ -182,7 +206,7 @@ function makeNDK
     popd
     export NDK=$PWD/ndk
     export ANDROID_NDK_ROOT=$NDK
-    $NDK/build/tools/build-platforms.sh --verbose
+    $NDK/build/tools/build-platforms.sh --arch="arm" --verbose
 
     ROOTDIR=$PWD
     RELEASE=`date +%Y%m%d`
@@ -192,14 +216,8 @@ function makeNDK
     echo GDB_ROOT_PATH $GDB_ROOT_PATH
     PYTHONHOME=""
     unset PYTHONHOME
-    if [ ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 -o ! -f $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
-        $NDK/build/tools/rebuild-all-prebuilt.sh --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-path=$GDB_ROOT_PATH --gdb-version=$GDB_VER --mpfr-version=2.4.2 --binutils-version=2.20.1 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
-    else
-        echo "Skipping NDK build, already done."
-        echo $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
-    fi
-    cp $ROOTDIR/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
-    cp $ROOTDIR/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2
+#    makeNDKForArch x86 $ROOTDIR $REPO_SRC_PATH
+    makeNDKForArch arm $ROOTDIR $REPO_SRC_PATH
 }
 
 # This also copies the new libstdc++'s over the old ones (the NDK's build scripts are
@@ -210,10 +228,16 @@ function mixPythonWithNDK
        echo "Failed to find python, $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z"
     fi
     if [ ! -f $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2 ]; then
-       echo "Failed to find gdbserver, $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2"
+       echo "Failed to find arm gdbserver, $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2"
     fi
     if [ ! -f $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
-       echo "Failed to find toolchain, $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2"
+       echo "Failed to find arm toolchain, $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2"
+    fi
+    if [ ! -f $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-gdbserver.tar.bz2 ]; then
+       echo "Failed to find x86 gdbserver, $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-gdbserver.tar.bz2"
+    fi
+    if [ ! -f $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
+       echo "Failed to find x86 toolchain, $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2"
     fi
     mkdir -p /tmp/android-ndk-${NDK_VER}-${BUILD_NDK}-repack
     rm -rf /tmp/android-ndk-${NDK_VER}-${BUILD_NDK}-repack/android-ndk-${NDK_VER}
@@ -232,17 +256,23 @@ function mixPythonWithNDK
     fi
     pushd android-ndk-${NDK_VER}
     tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
+    tar -jxvf $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
     # The official NDK uses thumb version of libstdc++ for armeabi and
     # an arm version for armeabi-v7a, so copy the appropriate one over.
     cp toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}/arm-linux-androideabi/lib/thumb/libstdc++.* sources/cxx-stl/gnu-libstdc++/libs/armeabi/
     cp toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}/arm-linux-androideabi/lib/armv7-a/libstdc++.* sources/cxx-stl/gnu-libstdc++/libs/armeabi-v7a/
+    cp toolchains/x86-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}/x86-linux-androideabi/lib/ibstdc++.* sources/cxx-stl/gnu-libstdc++/libs/armeabi-v7a/
     tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2
+    tar -jxvf $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-gdbserver.tar.bz2
     pushd toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
-    7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
+        7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
+    popd
+    pushd toolchains/x86-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
+        7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
     popd
     # Get rid of old and unused stuff.
     rm -rf toolchains/arm-eabi-4.4.0
-    rm -rf toolchains/x86-4.4.3
+#    rm -rf toolchains/x86-4.4.3
     popd
     7za a -mx9 android-ndk-${NDK_VER}-gdb-${GDB_VER}-${BUILD_NDK}.7z android-ndk-${NDK_VER}
     mv android-ndk-${NDK_VER}-gdb-${GDB_VER}-${BUILD_NDK}.7z $REPO_SRC_PATH
