@@ -1054,7 +1054,12 @@ function packSource
 function compileNecessitasQt
 {
     package_name=${1//-/_} # replace - with _
-    NDK_TARGET=5
+    # Temporary build fix (may break earlier platforms, but not necessarily):
+    # Only android-ndk-r6/platforms/android-9/arch-$ARCH/usr/lib (yes both arm and x86) contains crtbegin_so.o, it's missing on
+    # other platforms; this file also exists in android-ndk-r6/toolchains/arm-linux-androideabi-4.4.3/prebuilt/windows/sysroot/usr/lib
+    # but not in the x86 equivalent, so for now, build it all for 9). The file has probably been renamed from crtbegin_dynamic.o
+    # the gcc link specs in ndk r6 cause crtbegin_so.o to get linked in.
+    NDK_TARGET=9
 
     if [ ! -f all_done ]
     then
