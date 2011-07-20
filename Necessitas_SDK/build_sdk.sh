@@ -148,6 +148,39 @@ function doMake
     fi
 }
 
+function doMakeInstall
+{
+    MAKEPROG=make
+    if [ "$OSTYPE" = "msys" -o  "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+        if [ "$OSTYPE" = "msys" ] ; then
+            MAKEDIR=`pwd -W`
+            MAKEFOREVER=1
+            if [ ! -z $2 ] ; then
+                MAKEPROG=$2
+            fi
+        else
+            MAKEDIR=`pwd`
+            MAKEFOREVER=0
+        fi
+        MAKEFILE=$MAKEDIR/Makefile
+        $MAKEPROG -f $MAKEFILE install
+        while [ "$?" != "0" -a "$MAKEFOREVER" = "1" ]
+        do
+            if [ -f /usr/break-make ]; then
+                echo "Detected break-make"
+                rm -f /usr/break-make
+                error_msg $1
+            fi
+            $MAKEPROG -f $MAKEFILE install
+        done
+        echo $2>all_done
+    else
+        make install || error_msg $1
+        echo $2>all_done
+    fi
+}
+
+
 function doSed
 {
     if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
@@ -485,7 +518,8 @@ function prepareNDKs
     # repack mingw android windows NDK
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-windows.7z ]
     then
-        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
+#        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
+        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z .
         rm -fr android-ndk-${ANDROID_NDK_VERSION}
         7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
         $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-ma-windows.7z
@@ -497,7 +531,8 @@ function prepareNDKs
     # repack mingw android mac NDK
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-darwin-x86.7z ]
     then
-        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
+#        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
+        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z .
         rm -fr android-ndk-${ANDROID_NDK_VERSION}
         7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
         $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-ma-darwin-x86.7z
@@ -509,7 +544,8 @@ function prepareNDKs
     # repack mingw android linux-x86 NDK
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-linux-x86.7z ]
     then
-        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
+#        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
+        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z .
         rm -fr android-ndk-${ANDROID_NDK_VERSION}
         7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
         $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-ma-linux-x86.7z
@@ -1054,11 +1090,9 @@ function packSource
 function compileNecessitasQt
 {
     package_name=${1//-/_} # replace - with _
-    # Temporary build fix (may break earlier platforms, but not necessarily):
     # Only android-ndk-r6/platforms/android-9/arch-$ARCH/usr/lib (yes both arm and x86) contains crtbegin_so.o, it's missing on
     # other platforms; this file also exists in android-ndk-r6/toolchains/arm-linux-androideabi-4.4.3/prebuilt/windows/sysroot/usr/lib
-    # but not in the x86 equivalent, so for now, build it all for 9). The file has probably been renamed from crtbegin_dynamic.o
-    # the gcc link specs in ndk r6 cause crtbegin_so.o to get linked in.
+    # but not in the x86 equivalent, so for now, build it all for 9).
     NDK_TARGET=9
 
     if [ ! -f all_done ]
@@ -1079,15 +1113,15 @@ function compileNecessitasQt
 
     rm -fr data
     export INSTALL_ROOT=$PWD
-    make install
+    doMakeInstall "Failed to make-install Qt Android $package_name" make
     mkdir -p $2/$1
-    mv data/data/eu.licentia.necessitas.ministro/files/qt/bin $2/$1
+    cp -rf data/data/eu.licentia.necessitas.ministro/files/qt/bin $2/$1
     $SDK_TOOLS_PATH/archivegen Android qt-tools-${HOST_TAG}.7z
     rm -fr $2/$1/bin
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data
     mv qt-tools-${HOST_TAG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-tools-${HOST_TAG}.7z
-    mv data/data/eu.licentia.necessitas.ministro/files/qt/* $2/$1
-    cp ../qt-src/lib/*.xml $2/$1/lib/
+    cp -rf data/data/eu.licentia.necessitas.ministro/files/qt/* $2/$1
+    cp -rf ../qt-src/lib/*.xml $2/$1/lib/
     $SDK_TOOLS_PATH/archivegen Android qt-framework.7z
     mv qt-framework.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-framework.7z
     # Not sure why we're using a different qt-framework package for Windows.

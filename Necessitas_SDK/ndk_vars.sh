@@ -1,4 +1,4 @@
-NDK_VER=r5c
+NDK_VER=r6
 
 # Refers to the gdb branches and folder structure on
 # git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gdb.git
