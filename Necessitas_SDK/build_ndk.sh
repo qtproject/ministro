@@ -264,12 +264,16 @@ function mixPythonWithNDK
     cp toolchains/x86-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}/x86-linux-androideabi/lib/ibstdc++.* sources/cxx-stl/gnu-libstdc++/libs/armeabi-v7a/
     tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2
     tar -jxvf $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-gdbserver.tar.bz2
-    pushd toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
-        7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
-    popd
-    pushd toolchains/x86-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
-        7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
-    popd
+    if [ -d toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK} ] ; then
+        pushd toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
+            7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
+        popd
+    fi
+    if [ -d toolchains/x86-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK} ] ; then
+        pushd toolchains/x86-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
+            7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
+        popd
+    fi
     # Get rid of old and unused stuff.
     rm -rf toolchains/arm-eabi-4.4.0
 #    rm -rf toolchains/x86-4.4.3
