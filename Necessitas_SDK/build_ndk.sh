@@ -172,11 +172,17 @@ function makeNDK
     then
         git clone git://gitorious.org/toolchain-mingw-android/mingw-android-toolchain-gcc.git gcc || error_msg "Can't clone gcc"
     fi
-    # reset so that ndk r6 patches apply.
+    # reset so that ndk r6 patches apply (usually this will undo the previously applied patches).
     pushd gcc
-        git checkout integration
         git reset --hard
+        git checkout --force integration
+        if [ -n "$GCC_GIT_DATE" ] ; then
+            REVISION=`git rev-list -n 1 --until="$GCC_GIT_DATE" HEAD`
+            echo "Using sources for date '$GCC_GIT_DATE': toolchain/$1 revision $REVISION"
+            git checkout $REVISION
+        fi
     popd
+
     mkdir gdb
     if [ ! -d "ma-gdb" ]
     then
