@@ -216,7 +216,7 @@ function makeNDK
     echo GDB_ROOT_PATH $GDB_ROOT_PATH
     PYTHONHOME=""
     unset PYTHONHOME
-#    makeNDKForArch x86 $ROOTDIR $REPO_SRC_PATH
+    makeNDKForArch x86 $ROOTDIR $REPO_SRC_PATH
     makeNDKForArch arm $ROOTDIR $REPO_SRC_PATH
 }
 

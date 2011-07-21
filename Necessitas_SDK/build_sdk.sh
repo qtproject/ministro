@@ -1143,6 +1143,14 @@ function prepareNecessitasQt
         popd
     fi
 
+    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.x86/data/qt-tools-${HOST_TAG}.7z ]
+    then
+        mkdir build-x86
+        pushd build-x86
+        compileNecessitasQt armeabi Android/Qt/$NECESSITAS_QT_VERSION_SHORT
+        popd #build-x86
+    fi
+
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.armeabi/data/qt-tools-${HOST_TAG}.7z ]
     then
         mkdir build-armeabi
