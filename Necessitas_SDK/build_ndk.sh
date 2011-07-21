@@ -233,10 +233,10 @@ function mixPythonWithNDK
     if [ ! -f $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
        echo "Failed to find arm toolchain, $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2"
     fi
-    if [ ! -f $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-gdbserver.tar.bz2 ]; then
+    if [ ! -f $REPO_SRC_PATH/x86-4.4.3-gdbserver.tar.bz2 ]; then
        echo "Failed to find x86 gdbserver, $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-gdbserver.tar.bz2"
     fi
-    if [ ! -f $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
+    if [ ! -f $REPO_SRC_PATH/x86-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
        echo "Failed to find x86 toolchain, $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2"
     fi
     mkdir -p /tmp/android-ndk-${NDK_VER}-${BUILD_NDK}-repack
@@ -256,21 +256,21 @@ function mixPythonWithNDK
     fi
     pushd android-ndk-${NDK_VER}
     tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
-    tar -jxvf $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
+    tar -jxvf $REPO_SRC_PATH/x86-4.4.3-${BUILD_NDK}.tar.bz2
     # The official NDK uses thumb version of libstdc++ for armeabi and
     # an arm version for armeabi-v7a, so copy the appropriate one over.
     cp toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}/arm-linux-androideabi/lib/thumb/libstdc++.* sources/cxx-stl/gnu-libstdc++/libs/armeabi/
     cp toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}/arm-linux-androideabi/lib/armv7-a/libstdc++.* sources/cxx-stl/gnu-libstdc++/libs/armeabi-v7a/
-    cp toolchains/x86-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}/x86-linux-androideabi/lib/ibstdc++.* sources/cxx-stl/gnu-libstdc++/libs/armeabi-v7a/
+    cp toolchains/x86-4.4.3/prebuilt/${BUILD_NDK}/i686-android-linux/lib/ibstdc++.* sources/cxx-stl/gnu-libstdc++/libs/armeabi-v7a/
     tar -jxvf $REPO_SRC_PATH/arm-linux-androideabi-4.4.3-gdbserver.tar.bz2
-    tar -jxvf $REPO_SRC_PATH/x86-linux-androideabi-4.4.3-gdbserver.tar.bz2
+    tar -jxvf $REPO_SRC_PATH/x86-4.4.3-gdbserver.tar.bz2
     if [ -d toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK} ] ; then
         pushd toolchains/arm-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
             7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
         popd
     fi
-    if [ -d toolchains/x86-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK} ] ; then
-        pushd toolchains/x86-linux-androideabi-4.4.3/prebuilt/${BUILD_NDK}
+    if [ -d toolchains/x86-4.4.3/prebuilt/${BUILD_NDK} ] ; then
+        pushd toolchains/x86-4.4.3/prebuilt/${BUILD_NDK}
             7za x $REPO_SRC_PATH/python-${BUILD_PYTHON}.7z
         popd
     fi
