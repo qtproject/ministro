@@ -1147,7 +1147,7 @@ function prepareNecessitasQt
     then
         mkdir build-x86
         pushd build-x86
-        compileNecessitasQt armeabi Android/Qt/$NECESSITAS_QT_VERSION_SHORT
+        compileNecessitasQt x86 Android/Qt/$NECESSITAS_QT_VERSION_SHORT
         popd #build-x86
     fi
 
