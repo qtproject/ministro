@@ -583,17 +583,20 @@ function prepareNDKs
             fi
         else
             if [ "$OSTYPE" = "msys" ]; then
-                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
+#                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
+                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z .
                 7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
             fi
 
             if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
-                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
+#                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
+                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z .
                 7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
             fi
 
             if [ "$OSTYPE" = "linux-gnu" ]; then
-                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
+#                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
+                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z .
                 7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
             fi
         fi
