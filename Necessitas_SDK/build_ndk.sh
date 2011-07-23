@@ -113,16 +113,17 @@ function makeNDKForArch
     ARCH=$1
     ROOTDIR=$2
     REPO_SRC_PATH=$3
-    if [ ! -f $ROOTDIR/$ARCH-linux-androideabi-4.4.3-gdbserver.tar.bz2 -o ! -f $ROOTDIR/$ARCH-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
-        $NDK/build/tools/rebuild-all-prebuilt.sh --arch=$ARCH --patches-dir=$NDK/build/tools/toolchain-patches --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-path=$GDB_ROOT_PATH --gdb-version=$GDB_VER --mpfr-version=2.4.2 --gmp-version=4.2.4 --binutils-version=2.20.1 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
-    else
-        echo "Skipping NDK build, already done."
-        echo $ROOTDIR/$ARCH-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
-    fi
     if [ "$ARCH" = "arm" ] ; then
         ARCH_ABI=$ARCH-linux-androideabi
     else
         ARCH_ABI=$ARCH
+    fi
+#    if [ ! -f $ROOTDIR/${ARCH_ABI}-4.4.3-gdbserver.tar.bz2 -o ! -f $ROOTDIR/${ARCH_ABI}-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
+    if [ ! -f $ROOTDIR/${ARCH_ABI}-4.4.3-${BUILD_NDK}.tar.bz2 ]; then
+        $NDK/build/tools/rebuild-all-prebuilt.sh --arch=$ARCH --patches-dir=$NDK/build/tools/toolchain-patches --build-dir=$ROOTDIR/ndk-toolchain-${BUILD}-build-tmp --verbose --package-dir=$ROOTDIR --gdb-path=$GDB_ROOT_PATH --gdb-version=$GDB_VER --mpfr-version=2.4.2 --gmp-version=4.2.4 --binutils-version=2.20.1 --toolchain-src-dir=$TCSRC --gdb-with-python=$PYTHONVER --only-latest
+    else
+        echo "Skipping NDK build, already done."
+        echo $ROOTDIR/${ARCH_ABI}-4.4.3-${BUILD_NDK}.tar.bz2
     fi
     cp $ROOTDIR/${ARCH_ABI}-4.4.3-${BUILD_NDK}.tar.bz2 $REPO_SRC_PATH/${ARCH_ABI}-4.4.3-${BUILD_NDK}.tar.bz2
     cp $ROOTDIR/${ARCH_ABI}-4.4.3-gdbserver.tar.bz2 $REPO_SRC_PATH/${ARCH_ABI}-4.4.3-gdbserver.tar.bz2
@@ -311,7 +312,7 @@ else
 fi
 
 if [ "$OSTYPE" = "linux-gnu" ]; then
-    TEMP_PATH=/tmp/ndk-build
+    TEMP_PATH=/usr/ndk-build
 else
     TEMP_PATH=/usr/ndk-build
     if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
