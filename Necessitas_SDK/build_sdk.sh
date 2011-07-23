@@ -1146,13 +1146,13 @@ function prepareNecessitasQt
         popd
     fi
 
-    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.x86/data/qt-tools-${HOST_TAG}.7z ]
-    then
-        mkdir build-x86
-        pushd build-x86
-        compileNecessitasQt x86 Android/Qt/$NECESSITAS_QT_VERSION_SHORT
-        popd #build-x86
-    fi
+#    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.x86/data/qt-tools-${HOST_TAG}.7z ]
+#    then
+#        mkdir build-x86
+#        pushd build-x86
+#        compileNecessitasQt x86 Android/Qt/$NECESSITAS_QT_VERSION_SHORT
+#        popd #build-x86
+#    fi
 
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.armeabi/data/qt-tools-${HOST_TAG}.7z ]
     then
@@ -1431,8 +1431,8 @@ function setPackagesVariables
 
     patchPackage "@@NECESSITAS_QT_CREATOR_VERSION@@" $NECESSITAS_QT_CREATOR_VERSION "org.kde.necessitas.tools.qtcreator"
 
-    patchPackage "@@ANDROID_NDK_VERSION@@" $ANDROID_NDK_VERSION "org.kde.necessitas.misc.ndk.r5"
-    patchPackage "@@ANDROID_NDK_VERSION@@" $ANDROID_NDK_VERSION "org.kde.necessitas.misc.ndk.ma_r5"
+    patchPackage "@@ANDROID_NDK_VERSION@@" $ANDROID_NDK_VERSION "org.kde.necessitas.misc.ndk.r6"
+    patchPackage "@@ANDROID_NDK_VERSION@@" $ANDROID_NDK_VERSION "org.kde.necessitas.misc.ndk.ma_r6"
 
     patchPackage "@@ANDROID_API_4_VERSION@@" $ANDROID_API_4_VERSION "org.kde.necessitas.misc.sdk.android_4"
     patchPackage "@@ANDROID_API_5_VERSION@@" $ANDROID_API_5_VERSION "org.kde.necessitas.misc.sdk.android_5"
@@ -1453,8 +1453,8 @@ function unsetPackagesVariables
 
     patchPackage $NECESSITAS_QT_CREATOR_VERSION "@@NECESSITAS_QT_CREATOR_VERSION@@" "org.kde.necessitas.tools.qtcreator"
 
-    patchPackage $ANDROID_NDK_VERSION "@@ANDROID_NDK_VERSION@@" "org.kde.necessitas.misc.ndk.r5"
-    patchPackage $ANDROID_NDK_VERSION "@@ANDROID_NDK_VERSION@@" "org.kde.necessitas.misc.ndk.ma_r5"
+    patchPackage $ANDROID_NDK_VERSION "@@ANDROID_NDK_VERSION@@" "org.kde.necessitas.misc.ndk.r6"
+    patchPackage $ANDROID_NDK_VERSION "@@ANDROID_NDK_VERSION@@" "org.kde.necessitas.misc.ndk.ma_r6"
 
     patchPackage $ANDROID_API_4_VERSION "@@ANDROID_API_4_VERSION@@" "org.kde.necessitas.misc.sdk.android_4"
     patchPackage $ANDROID_API_5_VERSION "@@ANDROID_API_5_VERSION@@" "org.kde.necessitas.misc.sdk.android_5"
