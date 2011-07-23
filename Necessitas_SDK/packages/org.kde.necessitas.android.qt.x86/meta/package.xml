@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Package>
+    <DisplayName>Qt @@NECESSITAS_QT_VERSION@@-armeabi</DisplayName>
+    <Description>Development libraries for development applications on Android devices, x86 architecture.</Description>
+    <Version>@@NECESSITAS_QT_VERSION@@</Version>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
+    <Name>org.kde.necessitas.android.qt.x86</Name>
+    <Script>installscript.qs</Script>
+    <InstallPriority>0</InstallPriority>
+    <SortingPriority>0</SortingPriority>
+</Package>
