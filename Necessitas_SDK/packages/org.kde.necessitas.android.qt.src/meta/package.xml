@@ -7,5 +7,5 @@
     <Name>org.kde.necessitas.android.qt.src</Name>
     <Script>installscript.qs</Script>
     <InstallPriority>0</InstallPriority>
-    <SortingPriority>0</SortingPriority>
+    <SortingPriority>1</SortingPriority>
 </Package>

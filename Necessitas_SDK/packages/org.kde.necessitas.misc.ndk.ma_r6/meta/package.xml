@@ -4,7 +4,7 @@
     <Description>Android NDK-@@ANDROID_NDK_VERSION@@ Experimental, includes binutils 2.10.1 and gdb 7.3.50.20110709</Description>
     <Version>5.0.0-@@ANDROID_NDK_VERSION@@</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>
-    <Name>org.kde.necessitas.misc.ndk.ma_r6</Name>
+    <Name>org.kde.necessitas.misc.ndk.ma_@@ANDROID_NDK_VERSION@@</Name>
     <Script>installscript.qs</Script>
     <Dependencies>org.kde.necessitas.tools.qtcreator</Dependencies>
     <InstallPriority>90</InstallPriority>
