@@ -119,8 +119,13 @@ function makeNDKForArch
         echo "Skipping NDK build, already done."
         echo $ROOTDIR/$ARCH-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
     fi
-    cp $ROOTDIR/$ARCH-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2 $REPO_SRC_PATH/$ARCH-linux-androideabi-4.4.3-${BUILD_NDK}.tar.bz2
-    cp $ROOTDIR/$ARCH-linux-androideabi-4.4.3-gdbserver.tar.bz2 $REPO_SRC_PATH/$ARCH-linux-androideabi-4.4.3-gdbserver.tar.bz2
+    if [ "$ARCH" = "arm" ] ; then
+        ARCH_ABI=$ARCH-linux-androideabi
+    else
+        ARCH_ABI=$ARCH
+    fi
+    cp $ROOTDIR/${ARCH_ABI}-4.4.3-${BUILD_NDK}.tar.bz2 $REPO_SRC_PATH/${ARCH_ABI}-4.4.3-${BUILD_NDK}.tar.bz2
+    cp $ROOTDIR/${ARCH_ABI}-4.4.3-gdbserver.tar.bz2 $REPO_SRC_PATH/${ARCH_ABI}-4.4.3-gdbserver.tar.bz2
 }
 
 function makeNDK
