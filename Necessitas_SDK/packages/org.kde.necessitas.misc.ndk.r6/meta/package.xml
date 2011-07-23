@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<Package>
+    <DisplayName>Android NDK-r6</DisplayName>
+    <Description>Android NDK-r6</Description>
+    <Version>5.0.0-r6</Version>
+    <ReleaseDate>2011-07-23</ReleaseDate>
+    <Name>org.kde.necessitas.misc.ndk.r6</Name>
+    <Script>installscript.qs</Script>
+    <Dependencies>org.kde.necessitas.tools.qtcreator</Dependencies>
+    <InstallPriority>90</InstallPriority>
+    <SortingPriority>90</SortingPriority>
+</Package>
