@@ -237,7 +237,7 @@ public class MinistroService extends Service {
         m_qtLibsRootPath = getFilesDir().getAbsolutePath()+"/qt/";
         SharedPreferences preferences=getSharedPreferences("Ministro", MODE_PRIVATE);
         long lastCheck = preferences.getLong(MINISTRO_CHECK_UPDATES_KEY,0);
-        if (System.currentTimeMillis()-lastCheck>24l*3600*100) // check once/day
+        if (MinistroActivity.isOnline(this) && System.currentTimeMillis()-lastCheck>24l*3600*100) // check once/day
         {
             refreshLibraries(true);
             SharedPreferences.Editor editor= preferences.edit();
@@ -261,7 +261,7 @@ public class MinistroService extends Service {
             @Override
             public void checkModules(IMinistroCallback callback,
                     String[] modules, String appName, int ministroApiLevel, int necessitasApiLevel) throws RemoteException {
-                checkModules(callback, modules, appName, ministroApiLevel, necessitasApiLevel);
+                checkModulesImpl(callback, modules, appName, ministroApiLevel, necessitasApiLevel);
             }
         };
     }
