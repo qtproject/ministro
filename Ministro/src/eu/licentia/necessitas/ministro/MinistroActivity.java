@@ -73,10 +73,10 @@ public class MinistroActivity extends Activity {
     private int m_id=-1;
     private String m_qtLibsRootPath;
 
-    private void checkNetworkAndDownload()
+    private void checkNetworkAndDownload(final boolean update)
     {
         if (isOnline(this))
-            new CheckLibraries().execute(false);
+            new CheckLibraries().execute(update);
         else
         {
             AlertDialog.Builder builder = new AlertDialog.Builder(MinistroActivity.this);
@@ -100,7 +100,7 @@ public class MinistroActivity extends Activity {
                                         @Override
                                         public void run() {
                                             m_dialog.dismiss();
-                                            new CheckLibraries().execute(false);
+                                            new CheckLibraries().execute(update);
                                         }
                                     });
                                 }
@@ -140,7 +140,7 @@ public class MinistroActivity extends Activity {
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.dismiss();
-                            checkNetworkAndDownload();
+                            checkNetworkAndDownload(false);
                         }
                     })
                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -153,7 +153,7 @@ public class MinistroActivity extends Activity {
                 alert.show();
             }
             else
-                checkNetworkAndDownload();
+                checkNetworkAndDownload(true);
         }
 
         @Override
