@@ -218,9 +218,14 @@ function prepareHostQt
     OPTS_CFG=" -developer-build "
     if [ "$HOST_QT_CONFIG" = "-d" ] ; then
         STATIC_QT_PATH_DEBUG=$PWD
-        if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+        if [ "$OSTYPE" = "msys" ] ; then
             OPTS_CFG=" -debug "
             HOST_QT_CFG="CONFIG+=debug"
+        else
+            if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ] ; then
+                OPTS_CFG=" -debug-and-release "
+                HOST_QT_CFG="CONFIG+=debug"
+            fi
         fi
     else
         STATIC_QT_PATH=$PWD
