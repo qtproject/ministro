@@ -30,7 +30,7 @@ else
     TEMP_PATH_PREFIX=/usr
 fi
 
-TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
+TEMP_PATH=$TEMP_PATH_PREFIX/nec
 if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
     # On Mac OS X, user accounts don't have write perms for /var, same is true for Ubuntu.
     sudo mkdir -p $TEMP_PATH
@@ -58,12 +58,13 @@ SHARED_QT_PATH=""
 SDK_TOOLS_PATH=""
 ANDROID_STRIP_BINARY=""
 ANDROID_READELF_BINARY=""
-QPATCH_PATH=""
+#QPATCH_PATH=""
 EXE_EXT=""
 export PYTHONHOME=""
 
 if [ "$OSTYPE" = "msys" ] ; then
-    HOST_CFG_OPTIONS=" -platform win32-g++ -reduce-exports -prefix . "
+    HOST_CFG_OPTIONS=" -platform win32-g++ -reduce-exports -ms-bitfields -prefix . "
+    HOST_QM_CFG_OPTIONS="CONFIG+=ms_bitfields CONFIG+=static_gcclibs"
     HOST_TAG=windows
     HOST_TAG_NDK=windows
     EXE_EXT=.exe
@@ -192,29 +193,64 @@ function doSed
     fi
 }
 
+function downloadLighthouseSource
+{
+    mkdir -p Android/Qt/$NECESSITAS_QT_VERSION_SHORT
+    pushd Android/Qt/$NECESSITAS_QT_VERSION_SHORT
+    if [ ! -d qt-src ]
+    then
+        git clone git://anongit.kde.org/android-qt.git qt-src|| error_msg "Can't clone android-qt"
+        pushd qt-src
+        git checkout experimental
+        popd
+    fi
+    popd
+}
 # $1 is either -d (debug build) or nothing.
 function prepareHostQt
 {
     # download, compile & install qt, it is used to compile the installer
     HOST_QT_CONFIG=$1
-    if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
+    if [ ! "$HOST_QT_VERSION" = "lighthouse" ]
     then
+#       if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
+        if [ "1" = "1" ]
+    then
+            if [ ! -d $HOST_QT_SRCDIR ]
+            then
+                git clone git://gitorious.org/~mingwandroid/qt/mingw-android-official-qt.git $HOST_QT_SRCDIR || error_msg "Can't clone mingw qt"
+                pushd $HOST_QT_SRCDIR
+                git checkout -b $HOST_QT_BRANCH
+                popd
+            fi
+        else
+            if [ "$OSTYPE" = "msys" ] ; then
+                HOST_QT_SRC_ARCHIVE=$HOST_QT_VERSION_DL.zip
+                downloadIfNotExists HOST_QT_SRC_ARCHIVE http://get.qt.nokia.com/qt/source/$HOST_QT_SRC_ARCHIVE
         if [ ! -d $HOST_QT_VERSION ]
         then
-            git clone git://gitorious.org/~mingwandroid/qt/mingw-android-official-qt.git $HOST_QT_VERSION || error_msg "Cant clone mingw qt"
+                    unzip $HOST_QT_SRC_ARCHIVE || error_msg "Can't unzip $HOST_QT_SRC_ARCHIVE"
         fi
     else
-        downloadIfNotExists $HOST_QT_VERSION.tar.gz http://get.qt.nokia.com/qt/source/$HOST_QT_VERSION.tar.gz
+                HOST_QT_SRC_ARCHIVE=$HOST_QT_VERSION_DL.tar.gz
+                downloadIfNotExists HOST_QT_SRC_ARCHIVE http://get.qt.nokia.com/qt/source/$HOST_QT_SRC_ARCHIVE
 
         if [ ! -d $HOST_QT_VERSION ]
         then
-            tar -xzvf $HOST_QT_VERSION.tar.gz || error_msg "Can't untar $HOST_QT_VERSION.tar.gz"
+                    tar -xzvf $HOST_QT_SRC_ARCHIVE || error_msg "Can't untar $HOST_QT_SRC_ARCHIVE"
+                fi
+            fi
         fi
+    else
+        downloadLighthouseSource
     fi
 
     #build qt statically, needed by Sdk installer
-    mkdir b-$HOST_QT_VERSION-st$HOST_QT_CONFIG
-    pushd b-$HOST_QT_VERSION-st$HOST_QT_CONFIG
+    if [ "$HOST_QT_VERSION" = "lighthouse" ] ; then
+        HOST_QT_SRCDIR=lighthouse
+    fi
+    mkdir b-$HOST_QT_SRCDIR-st$HOST_QT_CONFIG
+    pushd b-$HOST_QT_SRCDIR-st$HOST_QT_CONFIG
     OPTS_CFG=" -developer-build "
     if [ "$HOST_QT_CONFIG" = "-d" ] ; then
         STATIC_QT_PATH_DEBUG=$PWD
@@ -235,46 +271,56 @@ function prepareHostQt
             HOST_QT_CFG="CONFIG+=release"
         fi
     fi
+    # Even on Linux, static Qt 4.8 doesn't build!
     if [ ! -f all_done ]
     then
         rm -fr *
-        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -static -no-webkit -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        if [ "$HOST_QT_VERSION" = "lighthouse" ] ; then
+            ../Android/Qt/4762/qt-src/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -static -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        else
+            ../$HOST_QT_SRCDIR/configure        -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -static -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        fi
         doMake "Can't compile static $HOST_QT_VERSION" "all done" ma-make
         if [ "$OSTYPE" = "msys" ]; then
             # Horrible; need to fix this properly.
             doSed $"s/qt warn_on /qt static warn_on /" mkspecs/win32-g++/qmake.conf
+            doSed $"s/qt warn_on /qt static warn_on /" mkspecs/default/qmake.conf
         fi
     fi
     popd
 
     #build qt shared, needed by QtCreator
-    mkdir b-$HOST_QT_VERSION-sh$HOST_QT_CONFIG
-    pushd b-$HOST_QT_VERSION-sh$HOST_QT_CONFIG
+    mkdir b-$HOST_QT_SRCDIR-sh$HOST_QT_CONFIG
+    pushd b-$HOST_QT_SRCDIR-sh$HOST_QT_CONFIG
     SHARED_QT_PATH=$PWD
     if [ ! -f all_done ]
     then
         rm -fr *
-        ../$HOST_QT_VERSION/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -shared -webkit -no-phonon -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        if [ "$HOST_QT_VERSION" = "lighthouse" ] ; then
+            ../Android/Qt/4762/qt-src/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -shared -webkit -no-phonon -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        else
+            ../$HOST_QT_SRCDIR/configure        -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -shared -webkit -no-phonon -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+        fi
         doMake "Can't compile shared $HOST_QT_VERSION" "all done" ma-make
         if [ "$OSTYPE" = "msys" ]; then
             # Horrible; need to fix this properly.
             doSed $"s/qt warn_on /qt shared warn_on /" mkspecs/win32-g++/qmake.conf
+            doSed $"s/qt warn_on /qt shared warn_on /" mkspecs/default/qmake.conf
         fi
     fi
     popd
-
 }
 
 function prepareSdkInstallerTools
 {
     # get installer source code
-    SDK_TOOLS_PATH=$PWD/necessitas-installer-framework$HOST_QT_CONFIG/installerbuilder/bin
-    if [ ! -d necessitas-installer-framework$HOST_QT_CONFIG ]
+    SDK_TOOLS_PATH=$PWD/necessitas-installer-framework-$HOST_QT_BRANCH$HOST_QT_CONFIG/installerbuilder/bin
+    if [ ! -d necessitas-installer-framework-$HOST_QT_BRANCH$HOST_QT_CONFIG ]
     then
-        git clone git://gitorious.org/~taipan/qt-labs/necessitas-installer-framework.git necessitas-installer-framework$HOST_QT_CONFIG || error_msg "Can't clone necessitas-installer-framework"
+        git clone git://gitorious.org/~taipan/qt-labs/necessitas-installer-framework.git necessitas-installer-framework-$HOST_QT_BRANCH$HOST_QT_CONFIG || error_msg "Can't clone necessitas-installer-framework"
     fi
 
-    pushd necessitas-installer-framework$HOST_QT_CONFIG/installerbuilder
+    pushd necessitas-installer-framework-$HOST_QT_BRANCH$HOST_QT_CONFIG/installerbuilder
 
     if [ ! -f all_done ]
     then
@@ -382,25 +428,25 @@ function prepareNecessitasQtCreator
         popd
     fi
 
-    mkdir qpatch-build
-    pushd qpatch-build
-    if [ ! -f all_done ]
-    then
-        $STATIC_QT_PATH/bin/qmake $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r ../android-qt-creator/src/tools/qpatch/qpatch.pro
-        if [ "$OSTYPE" = "msys" ]; then
-            make -f Makefile.Release || error_msg "Can't compile qpatch"
-        else
-            make || error_msg "Can't compile qpatch"
-        fi
-        echo "all_done">all_done
-    fi
+#    mkdir qpatch-build
+#    pushd qpatch-build
+#    if [ ! -f all_done ]
+#    then
+#        $STATIC_QT_PATH/bin/qmake $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r ../android-qt-creator/src/tools/qpatch/qpatch.pro
+#        if [ "$OSTYPE" = "msys" ]; then
+#            make -f Makefile.Release || error_msg "Can't compile qpatch"
+#        else
+#            make || error_msg "Can't compile qpatch"
+#        fi
+#        echo "all_done">all_done
+#    fi
 
-    if [ "$OSTYPE" = "msys" ]; then
-        QPATCH_PATH=$PWD/release/qpatch$EXE_EXT
-    else
-        QPATCH_PATH=$PWD/qpatch
-    fi
-    popd
+#    if [ "$OSTYPE" = "msys" ]; then
+#        QPATCH_PATH=$PWD/release/qpatch$EXE_EXT
+#    else
+#        QPATCH_PATH=$PWD/qpatch
+#    fi
+#    popd
 }
 
 # A few things are downloaded as binaries.
@@ -523,8 +569,8 @@ function prepareNDKs
     # repack mingw android windows NDK
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-windows.7z ]
     then
-#        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
-        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z .
+        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
+#        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z .
         rm -fr android-ndk-${ANDROID_NDK_VERSION}
         7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
         $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-ma-windows.7z
@@ -588,20 +634,20 @@ function prepareNDKs
             fi
         else
             if [ "$OSTYPE" = "msys" ]; then
-#                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
-                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z .
+                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
+#                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z .
                 7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
             fi
 
             if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
-#                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
-                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z .
+                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
+#                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z .
                 7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
             fi
 
             if [ "$OSTYPE" = "linux-gnu" ]; then
-#                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
-                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z .
+                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
+#                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z .
                 7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
             fi
         fi
@@ -866,8 +912,13 @@ function prepareGDBServer
     OLD_LDFLAGS="$LDFLAGS"
 
     export CC="$TOOLCHAIN_PREFIX-gcc --sysroot=$PWD/android-sysroot"
-    export CFLAGS="-O2 -nostdlib -D__ANDROID__ -DANDROID -DSTDC_HEADERS -I$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/lib/gcc/arm-linux-androideabi/4.4.3/include -I$PWD/android-sysroot/usr/include -fno-short-enums"
-    export LDFLAGS="-static -Wl,-z,nocopyreloc -Wl,--no-undefined $PWD/android-sysroot/usr/lib/crtbegin_static.o -lc -lm -lgcc -lc $PWD/android-sysroot/usr/lib/crtend_android.o"
+    if [ "$MAKE_DEBUG_GDBSERVER" = "1" ] ; then
+        export CFLAGS="-O0 -g -nostdlib -D__ANDROID__ -DANDROID -DSTDC_HEADERS -I$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/lib/gcc/arm-linux-androideabi/4.4.3/include -I$PWD/android-sysroot/usr/include -fno-short-enums"
+        export LDFLAGS="-static -Wl,-z,nocopyreloc -Wl,--no-undefined $PWD/android-sysroot/usr/lib/crtbegin_static.o -lc -lm -lgcc -lc $PWD/android-sysroot/usr/lib/crtend_android.o"
+    else
+        export CFLAGS="-O2 -nostdlib -D__ANDROID__ -DANDROID -DSTDC_HEADERS -I$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/lib/gcc/arm-linux-androideabi/4.4.3/include -I$PWD/android-sysroot/usr/include -fno-short-enums"
+        export LDFLAGS="-static -Wl,-z,nocopyreloc -Wl,--no-undefined $PWD/android-sysroot/usr/lib/crtbegin_static.o -lc -lm -lgcc -lc $PWD/android-sysroot/usr/lib/crtend_android.o"
+    fi
 
     LIBTHREAD_DB_DIR=$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/sources/android/libthread_db/gdb-7.1.x/
     cp $LIBTHREAD_DB_DIR/thread_db.h android-sysroot/usr/include/
@@ -880,7 +931,11 @@ function prepareGDBServer
     export LDFLAGS="$OLD_LDFLAGS"
 
     mkdir gdbserver-$GDB_VER
-    $TOOLCHAIN_PREFIX-objcopy --strip-unneeded gdbserver $PWD/gdbserver-$GDB_VER/gdbserver
+    if [ "$MAKE_DEBUG_GDBSERVER" = "0" ] ; then
+        $TOOLCHAIN_PREFIX-objcopy --strip-unneeded gdbserver $PWD/gdbserver-$GDB_VER/gdbserver
+    else
+        cp gdbserver $PWD/gdbserver-$GDB_VER/gdbserver
+    fi
 
     $SDK_TOOLS_PATH/archivegen gdbserver-$GDB_VER gdbserver-$GDB_VER.7z
     mkdir -p $package_path
@@ -1055,7 +1110,7 @@ function patchQtFiles
     echo /data/data/eu.licentia.necessitas.ministro/files/qt >> qpatch.cmdline
     echo $PWD >> qpatch.cmdline
     echo . >> qpatch.cmdline
-    $QPATCH_PATH @qpatch.cmdline
+#    $QPATCH_PATH @qpatch.cmdline
 }
 
 function packSource
@@ -1102,11 +1157,12 @@ function compileNecessitasQt
     # other platforms; this file also exists in android-ndk-r6/toolchains/arm-linux-androideabi-4.4.3/prebuilt/windows/sysroot/usr/lib
     # but not in the x86 equivalent, so for now, build it all for 9).
     NDK_TARGET=9
-
+    # NQT_INSTALL_DIR=/data/data/eu.licentia.necessitas.ministro/files/qt
+    NQT_INSTALL_DIR=$PWD/install
     if [ ! -f all_done ]
     then
         git checkout testing
-        ../qt-src/android/androidconfigbuild.sh -l $NDK_TARGET -c 1 -q 1 -n $TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION} -a $1 -k 0 -i /data/data/eu.licentia.necessitas.ministro/files/qt || error_msg "Can't configure android-qt"
+        ../qt-src/android/androidconfigbuild.sh -l $NDK_TARGET -c 1 -q 1 -n $TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION} -a $1 -k 0 -i $NQT_INSTALL_DIR || error_msg "Can't configure android-qt"
         echo "all done">all_done
     fi
 
@@ -1123,34 +1179,23 @@ function compileNecessitasQt
     export INSTALL_ROOT=$PWD
     doMakeInstall "Failed to make-install Qt Android $package_name" make
     mkdir -p $2/$1
-    cp -rf data/data/eu.licentia.necessitas.ministro/files/qt/bin $2/$1
+    cp -rf $NQT_INSTALL_DIR/bin $2/$1
     $SDK_TOOLS_PATH/archivegen Android qt-tools-${HOST_TAG}.7z
     rm -fr $2/$1/bin
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data
     mv qt-tools-${HOST_TAG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-tools-${HOST_TAG}.7z
-    cp -rf data/data/eu.licentia.necessitas.ministro/files/qt/* $2/$1
+    cp -rf $NQT_INSTALL_DIR/* $2/$1
     cp -rf ../qt-src/lib/*.xml $2/$1/lib/
     $SDK_TOOLS_PATH/archivegen Android qt-framework.7z
     mv qt-framework.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-framework.7z
     # Not sure why we're using a different qt-framework package for Windows.
     cp $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-framework.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-framework-windows.7z
-    patchQtFiles
+#    patchQtFiles
 }
-
 
 function prepareNecessitasQt
 {
-    mkdir -p Android/Qt/$NECESSITAS_QT_VERSION_SHORT
-    pushd Android/Qt/$NECESSITAS_QT_VERSION_SHORT
-
-    if [ ! -d qt-src ]
-    then
-        git clone git://anongit.kde.org/android-qt.git qt-src|| error_msg "Can't clone android-qt"
-        pushd qt-src
-        git checkout experimental
-        popd
-    fi
-
+    downloadLighthouseSource
 #    if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.x86/data/qt-tools-${HOST_TAG}.7z ]
 #    then
 #        mkdir build-x86
@@ -1158,6 +1203,8 @@ function prepareNecessitasQt
 #        compileNecessitasQt x86 Android/Qt/$NECESSITAS_QT_VERSION_SHORT
 #        popd #build-x86
 #    fi
+
+    pushd Android/Qt/$NECESSITAS_QT_VERSION_SHORT
 
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.armeabi/data/qt-tools-${HOST_TAG}.7z ]
     then
@@ -1207,17 +1254,15 @@ function compileNecessitasQtMobility
     $SDK_TOOLS_PATH/archivegen Android qtmobility.7z
     mv qtmobility.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.$package_name/data/qtmobility.7z
     cp -a $2/$1/* ../build-$1
-    pushd ../build-$1
-    patchQtFiles
-    popd
+#    pushd ../build-$1
+#    patchQtFiles
+#    popd
 }
-
 
 function prepareNecessitasQtMobility
 {
     mkdir -p Android/Qt/$NECESSITAS_QT_VERSION_SHORT
     pushd Android/Qt/$NECESSITAS_QT_VERSION_SHORT
-
     if [ ! -d qtmobility-src ]
     then
         git clone git://anongit.kde.org/android-qt-mobility.git qtmobility-src || error_msg "Can't clone android-qt-mobility"
@@ -1306,16 +1351,15 @@ function compileNecessitasQtWebkit
     $SDK_TOOLS_PATH/archivegen Android qtwebkit.7z
     mv qtwebkit.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtwebkit.$package_name/data/qtwebkit.7z
     cp -a $2/$1/* ../build-$1/
-    pushd ../build-$1
-    patchQtFiles
-    popd
+#    pushd ../build-$1
+#    patchQtFiles
+#    popd
 }
 
 function prepareNecessitasQtWebkit
 {
     mkdir -p Android/Qt/$NECESSITAS_QT_VERSION_SHORT
     pushd Android/Qt/$NECESSITAS_QT_VERSION_SHORT
-
     if [ ! -d qtwebkit-src ]
     then
         git clone git://gitorious.org/~taipan/webkit/android-qtwebkit.git qtwebkit-src || error_msg "Can't clone android-qtwebkit"
@@ -1611,14 +1655,15 @@ prepareHostQt
 prepareSdkInstallerTools
 prepareOpenJDK
 prepareAnt
-prepareGDBVersion head $HOST_TAG
+# prepareGDBVersion head $HOST_TAG
+prepareGDBVersion head
 prepareNDKs
 prepareSDKs
 prepareNecessitasQtCreator
 prepareNecessitasQt
 
 # TODO :: Fix webkit build in Windows (-no-video fails) and Mac OS X (debug-and-release config incorrectly used and fails)
-if [ "$OSTYPE" = "linux-gnu" ] ; then
+if [ "$OSTYPE" = "linux-gnu-no" ] ; then
     prepareNecessitasQtWebkit
 fi
 
@@ -1631,7 +1676,7 @@ setPackagesVariables
 prepareSDKBinary
 
 # Comment this block in if you want necessitas-sdk-installer-d and qtcreator-d to be built.
-if [ ! "$OSTYPE" = "linux-gnu" ] ; then
+if [ "$MAKE_DEBUG_HOST_APPS" = "1" ] ; then
     prepareHostQt -d
     prepareNecessitasQtCreator
     prepareSdkInstallerTools

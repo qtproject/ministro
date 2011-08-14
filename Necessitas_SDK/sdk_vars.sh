@@ -1,7 +1,22 @@
 MINISTRO_VERSION="0.2" #Ministro repo version
-HOST_QT_VERSION=qt-everywhere-opensource-src-4.7.3 # Qt which is used to buil QtCreator and the SDK installer
 
-NECESSITAS_QT_CREATOR_VERSION="2.2.0.1"
+# There's no qpa plugin for Windows in Lighthouse yet.
+# The easiest workaround is probably to use angle (a Google Chrome spin-off project):
+# svn checkout http://angleproject.googlecode.com/svn/trunk/ angleproject-read-only
+# ..which translates GL to DirectX and apparently works quite well, and as used by
+# http://code.google.com/p/gamekit/source/browse/#svn%2Ftrunk%2FDependencies%2FWin32%2Fgles2
+# But for now, lighthouse can only be used as the Host Qt on Mac and Linux.
+# Configure options from http://wayland.freedesktop.org/toolkits.html are -qpa -egl -opengl es2
+# if [ "$OSTYPE" = "msys" ] ; then
+if [ "$1" = "$1" ] ; then
+    HOST_QT_VERSION=qt-everywhere-opensource-src-4.8.0 # Qt which is used to build QtCreator and the SDK installer (only matters that this isn't lighthouse)
+    HOST_QT_BRANCH=4.8
+    HOST_QT_SRCDIR=qeos-$HOST_QT_BRANCH
+else
+    HOST_QT_VERSION=lighthouse
+fi
+
+NECESSITAS_QT_CREATOR_VERSION="2.3.81"
 
 # Qt Framework versions
 NECESSITAS_QT_VERSION_SHORT=4762 #Necessitas Qt Framework Version
@@ -28,3 +43,8 @@ ANDROID_API_9_VERSION=2.3.1_r02
 ANDROID_API_10_VERSION=2.3.3_r01
 ANDROID_API_11_VERSION=3.0_r01
 ANDROID_API_12_VERSION=3.1_r01
+
+# Make debug versions of host applications (Qt Creator and installer).
+MAKE_DEBUG_HOST_APPS=1
+
+MAKE_DEBUG_GDBSERVER=1
