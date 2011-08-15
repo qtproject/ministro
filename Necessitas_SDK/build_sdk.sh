@@ -1168,15 +1168,15 @@ function compileNecessitasQt
 
     if [ $package_name = "armeabi_v7a" ]
     then
-        doSed $"s/= armeabi/= armeabi-v7a/g" mkspecs/android-g++/qmake.conf
-        doSed $"s/= android-4/= android-$NDK_TARGET/g" mkspecs/android-g++/qmake.conf
+        doSed $"s/= armeabi/= armeabi-v7a/g" install/mkspecs/android-g++/qmake.conf
+        doSed $"s/= android-4/= android-$NDK_TARGET/g" install/mkspecs/android-g++/qmake.conf
     else
-        doSed $"s/= armeabi-v7a/= armeabi/g" mkspecs/android-g++/qmake.conf
-        doSed $"s/= android-4/= android-$NDK_TARGET/g" mkspecs/android-g++/qmake.conf
+        doSed $"s/= armeabi-v7a/= armeabi/g" install/mkspecs/android-g++/qmake.conf
+        doSed $"s/= android-4/= android-$NDK_TARGET/g" install/mkspecs/android-g++/qmake.conf
     fi
 
-    rm -fr data
-    export INSTALL_ROOT=$PWD
+    rm -fr install
+    export INSTALL_ROOT=""
     doMakeInstall "Failed to make-install Qt Android $package_name" make
     mkdir -p $2/$1
     cp -rf $NQT_INSTALL_DIR/bin $2/$1
@@ -1238,7 +1238,8 @@ function compileNecessitasQtMobility
         pushd ../qtmobility-src
         git checkout master
         popd
-        ../qtmobility-src/configure -prefix $PWD/install -staticconfig android -qmake-exec ../build-$1/install/bin/qmake$EXE_EXT -modules "bearer location contacts multimedia versit messaging systeminfo serviceframework sensors gallery organizer feedback connectivity" || error_msg "Can't configure android-qtmobility"
+#        ../qtmobility-src/configure -prefix $PWD/install -staticconfig android -qmake-exec $PWD/../build-$1/install/bin/qmake$EXE_EXT -modules "bearer location contacts multimedia versit messaging systeminfo serviceframework sensors gallery organizer feedback connectivity" || error_msg "Can't configure android-qtmobility"
+        ../qtmobility-src/configure -prefix $PWD/install -staticconfig android -qmake-exec $TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-$1/install/bin/qmake$EXE_EXT -modules "bearer location contacts multimedia versit messaging systeminfo serviceframework sensors gallery organizer feedback connectivity" || error_msg "Can't configure android-qtmobility"
         doMake "Can't compile android-qtmobility" "all done" ma-make
     fi
     package_name=${1//-/_} # replace - with _
