@@ -356,7 +356,7 @@ function prepareNecessitasQtCreator
             doMake "Can't compile $QTC_PATH" "all done" ma-make
         fi
         rm -fr $QTC_INST_PATH
-        export INSTALL_ROOT=$QTC_INST_PATH
+        export INSTALL_ROOT=""
         make install
 
         #download and install sdk-updater-plugin
@@ -1238,17 +1238,17 @@ function compileNecessitasQtMobility
         pushd ../qtmobility-src
         git checkout master
         popd
-        ../qtmobility-src/configure -prefix /data/data/eu.licentia.necessitas.ministro/files/qt -staticconfig android -qmake-exec ../build-$1/bin/qmake$EXE_EXT -modules "bearer location contacts multimedia versit messaging systeminfo serviceframework sensors gallery organizer feedback connectivity" || error_msg "Can't configure android-qtmobility"
+        ../qtmobility-src/configure -prefix $PWD/install -staticconfig android -qmake-exec ../build-$1/install/bin/qmake$EXE_EXT -modules "bearer location contacts multimedia versit messaging systeminfo serviceframework sensors gallery organizer feedback connectivity" || error_msg "Can't configure android-qtmobility"
         doMake "Can't compile android-qtmobility" "all done" ma-make
     fi
     package_name=${1//-/_} # replace - with _
     rm -fr data
     rm -fr $2
-    export INSTALL_ROOT=$PWD
+    export INSTALL_ROOT=""
     make install
     mkdir -p $2/$1
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qtmobility.$package_name/data
-    mv data/data/eu.licentia.necessitas.ministro/files/qt/* $2/$1
+    mv $PWD/install/* $2/$1
     cp -a $PWD/$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-$1/* $2/$1
     rm -fr $PWD/$TEMP_PATH
     $SDK_TOOLS_PATH/archivegen Android qtmobility.7z
@@ -1323,7 +1323,7 @@ function compileNecessitasQtWebkit
         fi
         export WEBKITOUTPUTDIR=$PWD
         echo "doing perl"
-        ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-$1/bin/qmake$EXE_EXT --no-video --no-xslt || error_msg "Can't configure android-qtwebkit"
+        ../qtwebkit-src/WebKitTools/Scripts/build-webkit --qt --makeargs="-j$JOBS" --qmake=$TEMP_PATH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-$1/install/bin/qmake$EXE_EXT --no-video --no-xslt || error_msg "Can't configure android-qtwebkit"
         echo "all done">all_done
     fi
     package_name=${1//-/_} # replace - with _
