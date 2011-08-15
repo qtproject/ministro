@@ -582,8 +582,8 @@ function prepareNDKs
     # repack mingw android mac NDK
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-darwin-x86.7z ]
     then
-#        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
-        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z .
+        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
+#        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z .
         rm -fr android-ndk-${ANDROID_NDK_VERSION}
         7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
         $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-ma-darwin-x86.7z
@@ -595,8 +595,8 @@ function prepareNDKs
     # repack mingw android linux-x86 NDK
     if [ ! -f $REPO_SRC_PATH/packages/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-linux-x86.7z ]
     then
-#        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
-        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z .
+        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
+#        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z .
         rm -fr android-ndk-${ANDROID_NDK_VERSION}
         7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
         $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-ma-linux-x86.7z
@@ -1168,19 +1168,21 @@ function compileNecessitasQt
 
     if [ $package_name = "armeabi_v7a" ]
     then
-        doSed $"s/= armeabi/= armeabi-v7a/g" install/mkspecs/android-g++/qmake.conf
+        doSed $"s/= armeabi/= armeabi-v7a/g" mkspecs/android-g++/qmake.conf
         doSed $"s/= android-4/= android-$NDK_TARGET/g" install/mkspecs/android-g++/qmake.conf
     else
-        doSed $"s/= armeabi-v7a/= armeabi/g" install/mkspecs/android-g++/qmake.conf
+        doSed $"s/= armeabi-v7a/= armeabi/g" mkspecs/android-g++/qmake.conf
         doSed $"s/= android-4/= android-$NDK_TARGET/g" install/mkspecs/android-g++/qmake.conf
     fi
 
     rm -fr install
     export INSTALL_ROOT=""
-    doMakeInstall "Failed to make-install Qt Android $package_name" make
+    make install
+#    doMakeInstall "Failed to make-install Qt Android $package_name" make
     mkdir -p $2/$1
     cp -rf $NQT_INSTALL_DIR/bin $2/$1
     $SDK_TOOLS_PATH/archivegen Android qt-tools-${HOST_TAG}.7z
+    exit 2
     rm -fr $2/$1/bin
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data
     mv qt-tools-${HOST_TAG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-tools-${HOST_TAG}.7z
