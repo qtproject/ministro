@@ -283,8 +283,8 @@ function prepareHostQt
         doMake "Can't compile static $HOST_QT_VERSION" "all done" ma-make
         if [ "$OSTYPE" = "msys" ]; then
             # Horrible; need to fix this properly.
-            doSed $"s/qt warn_on /qt static warn_on /" mkspecs/win32-g++/qmake.conf
-            doSed $"s/qt warn_on /qt static warn_on /" mkspecs/default/qmake.conf
+            doSed $"s/qt warn_on /qt static ms_bitfields static_gcclibs warn_on /" mkspecs/win32-g++/qmake.conf
+            doSed $"s/qt warn_on /qt static ms_bitfields static_gcclibs warn_on /" mkspecs/default/qmake.conf
         fi
     fi
     popd
@@ -304,8 +304,8 @@ function prepareHostQt
         doMake "Can't compile shared $HOST_QT_VERSION" "all done" ma-make
         if [ "$OSTYPE" = "msys" ]; then
             # Horrible; need to fix this properly.
-            doSed $"s/qt warn_on /qt shared warn_on /" mkspecs/win32-g++/qmake.conf
-            doSed $"s/qt warn_on /qt shared warn_on /" mkspecs/default/qmake.conf
+            doSed $"s/qt warn_on /qt shared ms_bitfields static_gcclibs warn_on /" mkspecs/win32-g++/qmake.conf
+            doSed $"s/qt warn_on /qt shared ms_bitfields static_gcclibs warn_on /" mkspecs/default/qmake.conf
         fi
     fi
     popd
@@ -1658,7 +1658,7 @@ prepareHostQt
 prepareSdkInstallerTools
 prepareOpenJDK
 prepareAnt
-# prepareGDBVersion head $HOST_TAG
+prepareGDBVersion head $HOST_TAG
 prepareGDBVersion head
 prepareNDKs
 prepareSDKs
