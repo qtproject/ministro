@@ -358,7 +358,7 @@ function prepareNecessitasQtCreator
             doMake "Can't compile $QTC_PATH" "all done" ma-make
         fi
         rm -fr $QTC_INST_PATH
-        export INSTALL_ROOT=""
+        export INSTALL_ROOT=$QTC_INST_PATH
         make install
 
         #download and install sdk-updater-plugin
@@ -1184,7 +1184,6 @@ function compileNecessitasQt
     mkdir -p $2/$1
     cp -rf $NQT_INSTALL_DIR/bin $2/$1
     $SDK_TOOLS_PATH/archivegen Android qt-tools-${HOST_TAG}.7z
-    exit 2
     rm -fr $2/$1/bin
     mkdir -p $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data
     mv qt-tools-${HOST_TAG}.7z $REPO_SRC_PATH/packages/org.kde.necessitas.android.qt.$package_name/data/qt-tools-${HOST_TAG}.7z
