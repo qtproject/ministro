@@ -285,6 +285,7 @@ function prepareHostQt
             # Horrible; need to fix this properly.
             doSed $"s/qt warn_on /qt static ms_bitfields static_gcclibs warn_on /" mkspecs/win32-g++/qmake.conf
             doSed $"s/qt warn_on /qt static ms_bitfields static_gcclibs warn_on /" mkspecs/default/qmake.conf
+            cp -f mkspecs/win32-g++/qplatformdefs.h mkspecs/default/
         fi
     fi
     popd
@@ -306,6 +307,7 @@ function prepareHostQt
             # Horrible; need to fix this properly.
             doSed $"s/qt warn_on /qt shared ms_bitfields static_gcclibs warn_on /" mkspecs/win32-g++/qmake.conf
             doSed $"s/qt warn_on /qt shared ms_bitfields static_gcclibs warn_on /" mkspecs/default/qmake.conf
+            cp -f mkspecs/win32-g++/qplatformdefs.h mkspecs/default/
         fi
     fi
     popd
