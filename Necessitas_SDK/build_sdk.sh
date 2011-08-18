@@ -220,7 +220,12 @@ function prepareHostQt
             then
                 git clone git://gitorious.org/~mingwandroid/qt/mingw-android-official-qt.git $HOST_QT_SRCDIR || error_msg "Can't clone mingw qt"
                 pushd $HOST_QT_SRCDIR
-                git checkout -b $HOST_QT_BRANCH
+                if [ "$HOST_QT_BRANCH" = "4.8" ] ; then
+                    # TODORMD :: Ask BogDan how to get it setup so "git checkout -b $HOST_QT_BRANCH" works for my 4.8 branch.
+                    git checkout -b 4.8 refs/remotes/origin/4.8
+                else
+                    git checkout -b $HOST_QT_BRANCH
+                fi
                 popd
             fi
         else
@@ -276,7 +281,7 @@ function prepareHostQt
     then
         rm -fr *
         if [ "$HOST_QT_VERSION" = "lighthouse" ] ; then
-            ../Android/Qt/4762/qt-src/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -static -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+            ../Android/Qt/4762/qt-src/configure -fast -nomake examples -nomake demos -nomake tests -no-qpa -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -static -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         else
             ../$HOST_QT_SRCDIR/configure        -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -static -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         fi
@@ -298,7 +303,7 @@ function prepareHostQt
     then
         rm -fr *
         if [ "$HOST_QT_VERSION" = "lighthouse" ] ; then
-            ../Android/Qt/4762/qt-src/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -shared -webkit -no-phonon -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+            ../Android/Qt/4762/qt-src/configure -fast -nomake examples -nomake demos -nomake tests -no-qpa -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -shared -webkit -no-phonon -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         else
             ../$HOST_QT_SRCDIR/configure        -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -shared -webkit -no-phonon -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         fi
@@ -1667,7 +1672,7 @@ prepareNecessitasQtCreator
 prepareNecessitasQt
 
 # TODO :: Fix webkit build in Windows (-no-video fails) and Mac OS X (debug-and-release config incorrectly used and fails)
-if [ "$OSTYPE" = "linux-gnu-no" ] ; then
+if [ "$OSTYPE" = "linux-gnu" ] ; then
     prepareNecessitasQtWebkit
 fi
 
