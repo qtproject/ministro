@@ -281,7 +281,7 @@ function prepareHostQt
     then
         rm -fr *
         if [ "$HOST_QT_VERSION" = "lighthouse" ] ; then
-            ../Android/Qt/4762/qt-src/configure -fast -nomake examples -nomake demos -nomake tests -no-qpa -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -static -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+            ../Android/Qt/4762/qt-src/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -static -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         else
             ../$HOST_QT_SRCDIR/configure        -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -static -no-phonon -no-dbus -no-opengl -no-qt3support -no-xmlpatterns -no-svg -qt-sql-sqlite -plugin-sql-sqlite -confirm-license $HOST_CFG_OPTIONS $HOST_CFG_OPTIONS_STATIC $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         fi
@@ -303,7 +303,7 @@ function prepareHostQt
     then
         rm -fr *
         if [ "$HOST_QT_VERSION" = "lighthouse" ] ; then
-            ../Android/Qt/4762/qt-src/configure -fast -nomake examples -nomake demos -nomake tests -no-qpa -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -shared -webkit -no-phonon -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
+            ../Android/Qt/4762/qt-src/configure -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -shared -webkit -no-phonon -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         else
             ../$HOST_QT_SRCDIR/configure        -fast -nomake examples -nomake demos -nomake tests -system-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -shared -webkit -no-phonon -qt-sql-sqlite -plugin-sql-sqlite -no-qt3support -confirm-license $HOST_CFG_OPTIONS $OPTS_CFG -host-little-endian --prefix=$PWD || error_msg "Can't configure $HOST_QT_VERSION"
         fi
@@ -1672,13 +1672,13 @@ prepareNecessitasQtCreator
 prepareNecessitasQt
 
 # TODO :: Fix webkit build in Windows (-no-video fails) and Mac OS X (debug-and-release config incorrectly used and fails)
-if [ "$OSTYPE" = "linux-gnu" ] ; then
+#if [ "$OSTYPE" = "linux-gnu" ] ; then
     prepareNecessitasQtWebkit
-fi
+#fi
 
-if [ "$OSTYPE" != "msys" ] ; then
+#if [ "$OSTYPE" != "msys" ] ; then
     prepareNecessitasQtMobility # if [[ `gcc --version` =~ .*llvm.* ]]; => syntax error near `=~'
-fi
+#fi
 
 prepareWindowsPackages
 setPackagesVariables
