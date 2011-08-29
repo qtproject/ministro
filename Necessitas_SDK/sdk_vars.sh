@@ -1,4 +1,4 @@
-MINISTRO_VERSION="0.2" #Ministro repo version
+MINISTRO_VERSION="0.3" #Ministro repo version
 
 # There's no qpa plugin for Windows in Lighthouse yet.
 # The easiest workaround is probably to use angle (a Google Chrome spin-off project):
@@ -16,13 +16,15 @@ else
     HOST_QT_VERSION=lighthouse
 fi
 
+CHECKOUT_BRANCH="unstable"
+
 NECESSITAS_QT_CREATOR_VERSION="2.3.81"
 
 # Qt Framework versions
-NECESSITAS_QT_VERSION_SHORT=4762 #Necessitas Qt Framework Version
-NECESSITAS_QT_VERSION="4.7.62.1" #Necessitas Qt Framework Long Version
+NECESSITAS_QT_VERSION_SHORT=4763 #Necessitas Qt Framework Version
+NECESSITAS_QT_VERSION="4.7.63" #Necessitas Qt Framework Long Version
 
-NECESSITAS_QTWEBKIT_VERSION="2.1.1" #Necessitas QtWebkit Version
+NECESSITAS_QTWEBKIT_VERSION="2.2" #Necessitas QtWebkit Version
 
 NECESSITAS_QTMOBILITY_VERSION="1.2.0" #Necessitas QtMobility Version
 
@@ -45,6 +47,6 @@ ANDROID_API_11_VERSION=3.0_r01
 ANDROID_API_12_VERSION=3.1_r01
 
 # Make debug versions of host applications (Qt Creator and installer).
-MAKE_DEBUG_HOST_APPS=1
+MAKE_DEBUG_HOST_APPS=0
 
-MAKE_DEBUG_GDBSERVER=1
+MAKE_DEBUG_GDBSERVER=0
