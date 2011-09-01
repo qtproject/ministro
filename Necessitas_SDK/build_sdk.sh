@@ -70,8 +70,8 @@ pushd $TEMP_PATH
 
 MINISTRO_REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/qt
 REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/sdk
-cp -a $REPO_PATH_PACKAGES $TEMP_PATH_PREFIX/www/necessitas/sdk_src
 REPO_PATH_PACKAGES=$TEMP_PATH_PREFIX/www/necessitas/sdk_src
+cp -a $REPO_PATH_PACKAGES $TEMP_PATH_PREFIX/www/necessitas/sdk_src
 STATIC_QT_PATH=""
 SHARED_QT_PATH=""
 SDK_TOOLS_PATH=""
@@ -379,7 +379,7 @@ function prepareNecessitasQtCreator
         pushd $QTC_PATH
         QTC_INST_PATH=$PWD/QtCreator$HOST_QT_CONFIG
         if [ ! -f all_done ] ; then
-            git checkout $CHECKOUT_BRANCH
+            git checkout 2.3-stagging
             git pull
             $SHARED_QT_PATH/bin/qmake $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure android-qt-creator"
             doMake "Can't compile $QTC_PATH" "all done" ma-make
