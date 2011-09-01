@@ -70,17 +70,28 @@ mkdir -p /usr/local/include
 mv /usr/bin/iconv.exe /usr/local/bin/
 mv /usr/bin/libiconv-2.dll /usr/local/bin/
 mv /usr/include/iconv.h /usr/local/include/
+mv /usr/lib/libintl.dll.a /usr/local/lib
+mv /usr/lib/libintl.a /usr/local/lib
 
 # Download and compile new iconv.
-wget -c http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.tar.gz
-rm -rf libiconv-1.13
-tar -xvzf libiconv-1.13.tar.gz
-pushd libiconv-1.13
+wget -c http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz
+rm -rf libiconv-1.14
+tar -xvzf libiconv-1.14.tar.gz
+pushd libiconv-1.14
 CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses=$install_dir --enable-multibyte --prefix=/usr  CFLAGS=-O3
 make
 # Without the /mingw folder, this fails, but only after copying libiconv.a to the right place.
 make install
 cp include/iconv.h /usr/include
+popd
+
+wget -c http://ftp.gnu.org/pub/gnu/gettext/gettext-0.18.1.1.tar.gz
+rm -rf gettext-0.18.1.1
+tar -xvzf gettext-0.18.1.1.tar.gz
+pushd gettext-0.18.1.1
+CFLAGS=-O2 && ./configure --enable-static --disable-shared --with-curses=$install_dir --enable-multibyte --prefix=/usr  CFLAGS=-O3
+make
+make install
 popd
 
 # For mingw Python. Generate libmsi.a and copy msi.h, msidefs.h, msimcntl.h, msimcsdk.h, msiquery.h, fci.h to /usr/include.
