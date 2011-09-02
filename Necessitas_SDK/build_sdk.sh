@@ -82,8 +82,9 @@ EXE_EXT=""
 export PYTHONHOME=""
 
 if [ "$OSTYPE" = "msys" ] ; then
-    HOST_CFG_OPTIONS=" -platform win32-g++ -reduce-exports -ms-bitfields -tools-fully-static -prefix . "
-    HOST_QM_CFG_OPTIONS="CONFIG+=ms_bitfields CONFIG+=static_clibs"
+    # -tools-fully-static
+    HOST_CFG_OPTIONS=" -platform win32-g++ -reduce-exports -ms-bitfields -prefix . "
+    HOST_QM_CFG_OPTIONS="CONFIG+=ms_bitfields CONFIG+=static_gcclibs"
     HOST_TAG=windows
     HOST_TAG_NDK=windows
     EXE_EXT=.exe
@@ -1459,7 +1460,7 @@ function prepareOpenJDK
 
     if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.misc.openjdk/data/openjdk-darwin-x86.7z ] ; then
         downloadIfNotExists oscg-openjdk6b16-5a-osx-installer.zip http://oscg-downloads.s3.amazonaws.com/installers/oscg-openjdk6b16-5a-osx-installer.zip
-        unzip oscg-openjdk6b16-5a-osx-installer.zip
+        unzip -o oscg-openjdk6b16-5a-osx-installer.zip
         $SDK_TOOLS_PATH/archivegen oscg-openjdk6b16-5a-osx-installer.app openjdk-darwin-x86.7z
         mv openjdk-darwin-x86.7z $REPO_PATH_PACKAGES/org.kde.necessitas.misc.openjdk/data/
     fi
