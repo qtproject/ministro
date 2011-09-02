@@ -237,7 +237,7 @@ function prepareHostQt
     then
 #       if [ "$OSTYPE" = "msys" -o "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]
         if [ "1" = "1" ]
-    then
+        then
             if [ ! -d $HOST_QT_SRCDIR ]
             then
                 git clone git://gitorious.org/~mingwandroid/qt/mingw-android-official-qt.git $HOST_QT_SRCDIR || error_msg "Can't clone mingw qt"
@@ -254,16 +254,15 @@ function prepareHostQt
             if [ "$OSTYPE" = "msys" ] ; then
                 HOST_QT_SRC_ARCHIVE=$HOST_QT_VERSION_DL.zip
                 downloadIfNotExists HOST_QT_SRC_ARCHIVE http://get.qt.nokia.com/qt/source/$HOST_QT_SRC_ARCHIVE
-        if [ ! -d $HOST_QT_VERSION ]
-        then
+                if [ ! -d $HOST_QT_VERSION ]
+                then
                     unzip $HOST_QT_SRC_ARCHIVE || error_msg "Can't unzip $HOST_QT_SRC_ARCHIVE"
-        fi
-    else
+                fi
+            else
                 HOST_QT_SRC_ARCHIVE=$HOST_QT_VERSION_DL.tar.gz
                 downloadIfNotExists HOST_QT_SRC_ARCHIVE http://get.qt.nokia.com/qt/source/$HOST_QT_SRC_ARCHIVE
-
-        if [ ! -d $HOST_QT_VERSION ]
-        then
+                if [ ! -d $HOST_QT_VERSION ]
+                then
                     tar -xzvf $HOST_QT_SRC_ARCHIVE || error_msg "Can't untar $HOST_QT_SRC_ARCHIVE"
                 fi
             fi
