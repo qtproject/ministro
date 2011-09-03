@@ -70,7 +70,8 @@ pushd $TEMP_PATH
 MINISTRO_REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/qt
 REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/sdk
 REPO_PATH_PACKAGES=$REPO_SRC_PATH/packages
-cp -a $REPO_PATH_PACKAGES $TEMP_PATH_PREFIX/www/necessitas/sdk_src
+# TODO :: Ask BogDan what this was here for
+# cp -a $REPO_PATH_PACKAGES $TEMP_PATH_PREFIX/www/necessitas/sdk_src
 STATIC_QT_PATH=""
 SHARED_QT_PATH=""
 SDK_TOOLS_PATH=""
