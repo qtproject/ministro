@@ -32,6 +32,7 @@ NECESSITAS_QTMOBILITY_VERSION="1.2.0" #Necessitas QtMobility Version
 BUILD_ANDROID_GIT_NDK=0 # Latest and the greatest NDK built from sources
 ANDROID_NDK_MAJOR_VERSION=r6 # NDK major version, used by package name (and ma ndk)
 ANDROID_NDK_VERSION=r6b # NDK full package version
+USE_MA_NDK=1
 
 # SDK variables
 ANDROID_SDK_VERSION=r12

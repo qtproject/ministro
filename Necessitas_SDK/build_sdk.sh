@@ -637,20 +637,20 @@ function prepareNDKs
         rm -fr android-ndk-${ANDROID_NDK_MAJOR_VERSION}
     fi
 
-    if [ $BUILD_ANDROID_GIT_NDK = 1 ]
-    then
-        export ANDROID_NDK_ROOT=$PWD/android-ndk-${ANDROID_NDK_VERSION}-git
-        export ANDROID_NDK_FOLDER_NAME=android-ndk-${ANDROID_NDK_VERSION}-git
-    else
-        export ANDROID_NDK_ROOT=$PWD/android-ndk-${ANDROID_NDK_VERSION}
-        export ANDROID_NDK_FOLDER_NAME=android-ndk-${ANDROID_NDK_VERSION}
-    fi
-
     export ANDROID_NDK_HOST=$HOST_TAG_NDK
     if [ "$USE_MA_NDK" = "0" ]; then
         USED_ANDROID_NDK_VERSION=r6b
     else
         USED_ANDROID_NDK_VERSION=r6
+    fi
+
+    if [ $BUILD_ANDROID_GIT_NDK = 1 ]
+    then
+        export ANDROID_NDK_ROOT=$PWD/android-ndk-${ANDROID_NDK_VERSION}-git
+        export ANDROID_NDK_FOLDER_NAME=android-ndk-${ANDROID_NDK_VERSION}-git
+    else
+        export ANDROID_NDK_ROOT=$PWD/android-ndk-${USED_ANDROID_NDK_VERSION}
+        export ANDROID_NDK_FOLDER_NAME=android-ndk-${USED_ANDROID_NDK_VERSION}
     fi
 
     if [ ! -d $ANDROID_NDK_FOLDER_NAME ]; then
@@ -942,7 +942,7 @@ function prepareGDBServer
     rm -f android-sysroot/usr/lib/libthread_db*
     rm -f android-sysroot/usr/include/thread_db.h
 
-    TOOLCHAIN_PREFIX=$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi
+    TOOLCHAIN_PREFIX=$TEMP_PATH/android-ndk-${USED_ANDROID_NDK_VERSION}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$HOST_TAG_NDK/bin/arm-linux-androideabi
 
     OLD_CC="$CC"
     OLD_CFLAGS="$CFLAGS"
@@ -957,7 +957,7 @@ function prepareGDBServer
         export LDFLAGS="-static -Wl,-z,nocopyreloc -Wl,--no-undefined $PWD/android-sysroot/usr/lib/crtbegin_static.o -lc -lm -lgcc -lc $PWD/android-sysroot/usr/lib/crtend_android.o"
     fi
 
-    LIBTHREAD_DB_DIR=$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/sources/android/libthread_db/gdb-7.1.x/
+    LIBTHREAD_DB_DIR=$TEMP_PATH/android-ndk-${USED_ANDROID_NDK_VERSION}/sources/android/libthread_db/gdb-7.1.x
     cp $LIBTHREAD_DB_DIR/thread_db.h android-sysroot/usr/include/
     $TOOLCHAIN_PREFIX-gcc$EXE_EXT --sysroot=$PWD/android-sysroot -o $PWD/android-sysroot/usr/lib/libthread_db.a -c $LIBTHREAD_DB_DIR/libthread_db.c || error_msg "Can't compile android threaddb"
     $GDB_ROOT_PATH/gdb/gdbserver/configure --host=arm-eabi-linux --with-libthread-db=$PWD/android-sysroot/usr/lib/libthread_db.a || error_msg "Can't configure gdbserver"
@@ -1673,13 +1673,6 @@ function prepareWindowsPackages
     fi
 
 }
-
-# My new NDK is too untested to be used as the one that builds Android Qt, so use official NDK on Linux
-# for now.
-USE_MA_NDK=1
-if [ "$OSTYPE" = "linux-gnu" ] ; then
-    USE_MA_NDK=0
-fi
 
 if [ "$OSTYPE" = "msys" ] ; then
     makeInstallMinGWLibsAndTools
