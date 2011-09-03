@@ -380,7 +380,7 @@ function prepareNecessitasQtCreator
         pushd $QTC_PATH
         QTC_INST_PATH=$PWD/QtCreator$HOST_QT_CONFIG
         if [ ! -f all_done ] ; then
-            git checkout 2.3-stagging
+            git checkout 2.3-necessitas
             git pull
             $SHARED_QT_PATH/bin/qmake $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure android-qt-creator"
             doMake "Can't compile $QTC_PATH" "all done" ma-make
@@ -397,6 +397,7 @@ function prepareNecessitasQtCreator
             tar xvfz research-sdk-updater-plugin-master-snapshot-20110524185306.tar.gz
         fi
         pushd research-sdk-updater-plugin-master-snapshot-20110524185306
+            doSed $"s/FutureProgress::DontKeepOnFinish/FutureProgress::HideOnFinish/" updateinfoplugin.cpp
             $SHARED_QT_PATH/bin/qmake $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure sdk-updater-plugin"
             doMake "Can't compile sdk-updater-plugin" "all done" ma-make
             make install
@@ -1682,9 +1683,9 @@ prepareHostQt
 prepareSdkInstallerTools
 prepareOpenJDK
 prepareAnt
+prepareNDKs
 prepareGDBVersion head $HOST_TAG
 prepareGDBVersion head
-prepareNDKs
 prepareSDKs
 prepareNecessitasQtCreator
 prepareNecessitasQt
