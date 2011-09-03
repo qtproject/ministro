@@ -596,43 +596,44 @@ function prepareNDKs
         rm -fr android-ndk-${ANDROID_NDK_VERSION}
     fi
 
+    # mingw android NDKs are only r6 for now, not r6b.
     # repack mingw android windows NDK
-    if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-windows.7z ]
+    if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-ma-windows.7z ]
     then
-        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
-#        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z .
-        rm -fr android-ndk-${ANDROID_NDK_VERSION}
-        7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
-        $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-ma-windows.7z
+        downloadIfNotExists android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-windows.7z
+#        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-windows.7z .
+        rm -fr android-ndk-${ANDROID_NDK_MAJOR_VERSION}
+        7za x android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-windows.7z
+        $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_MAJOR_VERSION} android-ndk-${ANDROID_NDK_MAJOR_VERSION}-ma-windows.7z
         mkdir -p $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data
-        mv android-ndk-${ANDROID_NDK_VERSION}-ma-windows.7z $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-windows.7z
-        rm -fr android-ndk-${ANDROID_NDK_VERSION}
+        mv android-ndk-${ANDROID_NDK_MAJOR_VERSION}-ma-windows.7z $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-ma-windows.7z
+        rm -fr android-ndk-${ANDROID_NDK_MAJOR_VERSION}
     fi
 
     # repack mingw android mac NDK
-    if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-darwin-x86.7z ]
+    if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-ma-darwin-x86.7z ]
     then
-        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
-#        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z .
-        rm -fr android-ndk-${ANDROID_NDK_VERSION}
-        7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
-        $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-ma-darwin-x86.7z
+        downloadIfNotExists android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
+#        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z .
+        rm -fr android-ndk-${ANDROID_NDK_MAJOR_VERSION}
+        7za x android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
+        $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_MAJOR_VERSION} android-ndk-${ANDROID_NDK_MAJOR_VERSION}-ma-darwin-x86.7z
         mkdir -p $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data
-        mv android-ndk-${ANDROID_NDK_VERSION}-ma-darwin-x86.7z $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-darwin-x86.7z
-        rm -fr android-ndk-${ANDROID_NDK_VERSION}
+        mv android-ndk-${ANDROID_NDK_MAJOR_VERSION}-ma-darwin-x86.7z $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-ma-darwin-x86.7z
+        rm -fr android-ndk-${ANDROID_NDK_MAJOR_VERSION}
     fi
 
     # repack mingw android linux-x86 NDK
-    if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-linux-x86.7z ]
+    if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-ma-linux-x86.7z ]
     then
-        downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
-#        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z .
-        rm -fr android-ndk-${ANDROID_NDK_VERSION}
-        7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
-        $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-ma-linux-x86.7z
+        downloadIfNotExists android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-linux-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
+#        cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-linux-x86.7z .
+        rm -fr android-ndk-${ANDROID_NDK_MAJOR_VERSION}
+        7za x android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
+        $SDK_TOOLS_PATH/archivegen android-ndk-${ANDROID_NDK_MAJOR_VERSION} android-ndk-${ANDROID_NDK_MAJOR_VERSION}-ma-linux-x86.7z
         mkdir -p $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data
-        mv android-ndk-${ANDROID_NDK_VERSION}-ma-linux-x86.7z $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_VERSION}-ma-linux-x86.7z
-        rm -fr android-ndk-${ANDROID_NDK_VERSION}
+        mv android-ndk-${ANDROID_NDK_MAJOR_VERSION}-ma-linux-x86.7z $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.ma_${ANDROID_NDK_MAJOR_VERSION}/data/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-ma-linux-x86.7z
+        rm -fr android-ndk-${ANDROID_NDK_MAJOR_VERSION}
     fi
 
     if [ $BUILD_ANDROID_GIT_NDK = 1 ]
@@ -1533,7 +1534,7 @@ function setPackagesVariables
     patchPackage "@@NECESSITAS_QT_CREATOR_VERSION@@" $NECESSITAS_QT_CREATOR_VERSION "org.kde.necessitas.tools.qtcreator"
 
     patchPackage "@@ANDROID_NDK_VERSION@@" $ANDROID_NDK_VERSION "org.kde.necessitas.misc.ndk.r6"
-    patchPackage "@@ANDROID_NDK_VERSION@@" $ANDROID_NDK_VERSION "org.kde.necessitas.misc.ndk.ma_r6"
+    patchPackage "@@ANDROID_NDK_MAJOR_VERSION@@" $ANDROID_NDK_MAJOR_VERSION "org.kde.necessitas.misc.ndk.ma_r6"
 
     patchPackage "@@ANDROID_API_4_VERSION@@" $ANDROID_API_4_VERSION "org.kde.necessitas.misc.sdk.android_4"
     patchPackage "@@ANDROID_API_5_VERSION@@" $ANDROID_API_5_VERSION "org.kde.necessitas.misc.sdk.android_5"
