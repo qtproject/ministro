@@ -522,7 +522,7 @@ function makeInstallMinGWLibsAndTools
     if [ ! -f /usr/lib/libz.a ] ; then
         tar -xvzf zlib-1.2.5.tar.gz
         pushd zlib-1.2.5
-        doSed $"s/usr\/local/usr/" win32/Makefile.gcc
+        doSed $"s#usr/#local/usr#" win32/Makefile.gcc
         make -f win32/Makefile.gcc
         export INCLUDE_PATH=/usr/include
         export LIBRARY_PATH=/usr/lib
@@ -1122,6 +1122,11 @@ function prepareSDKs
     repackSDK android-${ANDROID_API_12_VERSION}-linux android-${ANDROID_API_12_VERSION}-linux android-sdk-linux_x86/platforms android-12
     repackSDK android-${ANDROID_API_12_VERSION}-linux android-${ANDROID_API_12_VERSION}-macosx android-sdk-mac_x86/platforms android-12
     repackSDK android-${ANDROID_API_12_VERSION}-linux android-${ANDROID_API_12_VERSION}-windows android-sdk-windows/platforms android-12
+
+    # repack api-13
+    repackSDK android-${ANDROID_API_13_VERSION}-linux android-${ANDROID_API_13_VERSION}-linux android-sdk-linux_x86/platforms android-13
+    repackSDK android-${ANDROID_API_13_VERSION}-linux android-${ANDROID_API_13_VERSION}-macosx android-sdk-mac_x86/platforms android-13
+    repackSDK android-${ANDROID_API_13_VERSION}-linux android-${ANDROID_API_13_VERSION}-windows android-sdk-windows/platforms android-13
 }
 
 function patchQtFiles
@@ -1491,7 +1496,8 @@ function patchPackages
     do
         for file_name in `find . -name $files_name`
         do
-            doSed $"s/$1/$2/g" $file_name
+            # Can't use / as a delimiter for paths.
+            doSed $"s#$1#$2#g" $file_name
         done
     done
     popd
@@ -1499,15 +1505,19 @@ function patchPackages
 
 function patchPackage
 {
-    pushd $REPO_PATH_PACKAGES/$3
-    for files_name in "*.qs" "*.xml"
-    do
-        for file_name in `find . -name $files_name`
+    if [ -d $REPO_PATH_PACKAGES/$3 ] ; then
+        pushd $REPO_PATH_PACKAGES/$3
+        for files_name in "*.qs" "*.xml"
         do
-            doSed $"s/$1/$2/g" $file_name
+            for file_name in `find . -name $files_name`
+            do
+                doSed $"s#$1#$2#g" $file_name
+            done
         done
-    done
-    popd
+        popd
+    else
+        echo "patchPackage : Warning, failed to find directory $REPO_PATH_PACKAGES/$3"
+    fi
 }
 
 function setPackagesVariables
@@ -1534,7 +1544,7 @@ function setPackagesVariables
     patchPackage "@@ANDROID_API_10_VERSION@@" $ANDROID_API_10_VERSION "org.kde.necessitas.misc.sdk.android_10"
     patchPackage "@@ANDROID_API_11_VERSION@@" $ANDROID_API_11_VERSION "org.kde.necessitas.misc.sdk.android_11"
     patchPackage "@@ANDROID_API_12_VERSION@@" $ANDROID_API_12_VERSION "org.kde.necessitas.misc.sdk.android_12"
-    patchPackage "@@ANDROID_API_13_VERSION@@" $ANDROID_API_12_VERSION "org.kde.necessitas.misc.sdk.android_13"
+    patchPackage "@@ANDROID_API_13_VERSION@@" $ANDROID_API_13_VERSION "org.kde.necessitas.misc.sdk.android_13"
     patchPackage "@@ANDROID_PLATFORM_TOOLS_VERSION@@" $ANDROID_PLATFORM_TOOLS_VERSION "org.kde.necessitas.misc.sdk.platform_tools"
     patchPackage "@@ANDROID_SDK_VERSION@@" $ANDROID_SDK_VERSION "org.kde.necessitas.misc.sdk.base"
 }
@@ -1682,9 +1692,9 @@ prepareNecessitasQt
 # git clone often fails for webkit
 prepareNecessitasQtWebkit
 
-#if [ "$OSTYPE" != "msys" ] ; then
+if [ "$OSTYPE" != "msys" ] ; then
     prepareNecessitasQtMobility # if [[ `gcc --version` =~ .*llvm.* ]]; => syntax error near `=~'
-#fi
+fi
 
 prepareWindowsPackages
 setPackagesVariables
