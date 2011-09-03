@@ -1193,6 +1193,9 @@ function compileNecessitasQt
     then
         git checkout $CHECKOUT_BRANCH
         git pull
+        # The examples need qtmain_android.cpp in the install dir.
+        mkdir -p $NQT_INSTALL_DIR/src/android/cpp/
+        cp src/android/cpp/qtmain_android.cpp $NQT_INSTALL_DIR/src/android/cpp/
         ../qt-src/android/androidconfigbuild.sh -l $NDK_TARGET -c 1 -q 1 -n $TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION} -a $1 -k 0 -i $NQT_INSTALL_DIR || error_msg "Can't configure android-qt"
         echo "all done">all_done
     fi
