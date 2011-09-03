@@ -42,11 +42,12 @@ TODAY=`date +%Y-%m-%d`
 
 if [ "$OSTYPE" = "linux-gnu" ] ; then
     TEMP_PATH_PREFIX=/tmp
+    TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
 else
     TEMP_PATH_PREFIX=/usr
+    TEMP_PATH=$TEMP_PATH_PREFIX/nec
 fi
 
-TEMP_PATH=$TEMP_PATH_PREFIX/nec
 if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
     # On Mac OS X, user accounts don't have write perms for /var, same is true for Ubuntu.
     sudo mkdir -p $TEMP_PATH
