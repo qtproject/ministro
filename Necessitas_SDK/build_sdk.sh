@@ -42,12 +42,11 @@ TODAY=`date +%Y-%m-%d`
 
 if [ "$OSTYPE" = "linux-gnu" ] ; then
     TEMP_PATH_PREFIX=/tmp
-    TEMP_PATH=$TEMP_PATH_PREFIX/necessitas
 else
     TEMP_PATH_PREFIX=/usr
-    TEMP_PATH=$TEMP_PATH_PREFIX/nec
 fi
 
+TEMP_PATH=$TEMP_PATH_PREFIX/nec
 if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
     # On Mac OS X, user accounts don't have write perms for /var, same is true for Ubuntu.
     sudo mkdir -p $TEMP_PATH
@@ -70,7 +69,7 @@ pushd $TEMP_PATH
 
 MINISTRO_REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/qt
 REPO_PATH=$TEMP_PATH_PREFIX/www/necessitas/sdk
-REPO_PATH_PACKAGES=$TEMP_PATH_PREFIX/www/necessitas/sdk_src
+REPO_PATH_PACKAGES=$REPO_SRC_PATH/packages
 cp -a $REPO_PATH_PACKAGES $TEMP_PATH_PREFIX/www/necessitas/sdk_src
 STATIC_QT_PATH=""
 SHARED_QT_PATH=""
@@ -1673,9 +1672,8 @@ prepareNecessitasQtCreator
 prepareNecessitasQt
 
 # TODO :: Fix webkit build in Windows (-no-video fails) and Mac OS X (debug-and-release config incorrectly used and fails)
-#if [ "$OSTYPE" = "linux-gnu" ] ; then
-    prepareNecessitasQtWebkit
-#fi
+# git clone often fails for webkit
+prepareNecessitasQtWebkit
 
 #if [ "$OSTYPE" != "msys" ] ; then
     prepareNecessitasQtMobility # if [[ `gcc --version` =~ .*llvm.* ]]; => syntax error near `=~'
