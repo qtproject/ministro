@@ -647,6 +647,11 @@ function prepareNDKs
     fi
 
     export ANDROID_NDK_HOST=$HOST_TAG_NDK
+    if [ "$USE_MA_NDK" = "0" ]; then
+        USED_ANDROID_NDK_VERSION=r6b
+    else
+        USED_ANDROID_NDK_VERSION=r6
+    fi
 
     if [ ! -d $ANDROID_NDK_FOLDER_NAME ]; then
         if [ "$USE_MA_NDK" = "0" ]; then
@@ -666,21 +671,21 @@ function prepareNDKs
             fi
         else
             if [ "$OSTYPE" = "msys" ]; then
-                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
-#                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z .
-                7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-windows.7z
+                downloadIfNotExists android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-windows.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-windows.7z
+#                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-windows.7z .
+                7za x android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-windows.7z
             fi
 
             if [ "$OSTYPE" = "darwin9.0" -o "$OSTYPE" = "darwin10.0" ]; then
-                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
-#                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z .
-                7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
+                downloadIfNotExists android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
+#                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z .
+                7za x android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-darwin-x86.7z
             fi
 
             if [ "$OSTYPE" = "linux-gnu" ]; then
-                downloadIfNotExists android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
-#                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z .
-                7za x android-ndk-${ANDROID_NDK_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
+                downloadIfNotExists android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-linux-x86.7z http://mingw-and-ndk.googlecode.com/files/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
+#                cp $REPO_SRC_PATH/ndk-packages/android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-linux-x86.7z .
+                7za x android-ndk-${ANDROID_NDK_MAJOR_VERSION}-gdb-7.3.50.20110709-linux-x86.7z
             fi
         fi
 
@@ -689,7 +694,7 @@ function prepareNDKs
             mv android-ndk-${ANDROID_NDK_VERSION} android-ndk-${ANDROID_NDK_VERSION}-git
             git clone http://android.git.kernel.org/platform/ndk.git android_git_ndk || error_msg "Can't clone ndk"
             pushd android_git_ndk
-                ./build/tools/rebuild-all-prebuilt.sh --ndk-dir=$ANDROID_NDK_ROOT --git-http --gdb-version=7.1 --sysroot=$ANDROID_NDK_ROOT/platforms/android-9/arch-arm --verbose --package-dir=
+                ./build/tools/rebuild-all-prebuilt.sh --ndk-dir=$ANDROID_NDK_ROOT --git-http --gdb-version=7.1 --sysroot=$USED_ANDROID_NDK_ROOT/platforms/android-9/arch-arm --verbose --package-dir=
             popd
             rm -fr android_git_ndk
             mkdir -p $REPO_PATH_PACKAGES/org.kde.necessitas.misc.ndk.${ANDROID_NDK_VERSION}_git/data
@@ -876,7 +881,7 @@ function prepareGDB
         OLDPATH=$PATH
         export PATH=$install_dir/bin/:$PATH
         if [ -z $GDB_TARG_HOST_TAG ] ; then
-            CC=$CC32 CXX=$CXX32 CFLAGS="-O0 -g" $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/platforms/android-9/arch-arm --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
+            CC=$CC32 CXX=$CXX32 CFLAGS="-O0 -g" $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-sysroot=$TEMP_PATH/android-ndk-${USED_ANDROID_NDK_VERSION}/platforms/android-9/arch-arm --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=arm-elf-linux --host=$HOST --build=$HOST --disable-nls
         else
             CC=$CC32 CXX=$CXX32 $GDB_ROOT_PATH/configure --enable-initfini-array --enable-gdbserver=no --enable-tui=yes --with-python=$install_dir --with-expat=yes --with-libexpat-prefix=$install_dir --prefix=$target_dir --target=$HOST --host=$HOST --build=$HOST --disable-nls
         fi
@@ -933,7 +938,7 @@ function prepareGDBServer
     pushd gdb-src/build-gdbserver-$GDB_VER
 
     mkdir android-sysroot
-    $CPRL $TEMP_PATH/android-ndk-${ANDROID_NDK_VERSION}/platforms/android-9/arch-arm/* android-sysroot/ || error_msg "Can't copy android sysroot"
+    $CPRL $TEMP_PATH/android-ndk-${USED_ANDROID_NDK_VERSION}/platforms/android-9/arch-arm/* android-sysroot/ || error_msg "Can't copy android sysroot"
     rm -f android-sysroot/usr/lib/libthread_db*
     rm -f android-sysroot/usr/include/thread_db.h
 
