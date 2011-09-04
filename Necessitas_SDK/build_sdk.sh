@@ -391,13 +391,12 @@ function prepareNecessitasQtCreator
 
         #download and install sdk-updater-plugin
         export QTC_SOURCE=$PWD
-        downloadIfNotExists research-sdk-updater-plugin-master-snapshot-20110524185306.tar.gz http://android-lighthouse.googlecode.com/files/research-sdk-updater-plugin-master-snapshot-20110524185306.tar.gz
+        downloadIfNotExists research-sdk-updater-plugin-master-snapshot-20110524185306-updated.tar.gz http://android-lighthouse.googlecode.com/files/research-sdk-updater-plugin-master-snapshot-20110524185306-updated.tar.gz
         if [ ! -d research-sdk-updater-plugin-master-snapshot-20110524185306 ]
         then
-            tar xvfz research-sdk-updater-plugin-master-snapshot-20110524185306.tar.gz
+            tar xvfz research-sdk-updater-plugin-master-snapshot-20110524185306-updated.tar.gz
         fi
         pushd research-sdk-updater-plugin-master-snapshot-20110524185306
-            doSed $"s/FutureProgress::DontKeepOnFinish/FutureProgress::HideOnFinish/" updateinfoplugin.cpp
             $SHARED_QT_PATH/bin/qmake $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure sdk-updater-plugin"
             doMake "Can't compile sdk-updater-plugin" "all done" ma-make
             make install
