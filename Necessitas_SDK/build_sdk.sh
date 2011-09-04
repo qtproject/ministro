@@ -1352,7 +1352,8 @@ function compileNecessitasQtWebkit
     if [ ! -f all_done ]
     then
         if [ "$OSTYPE" = "msys" ] ; then
-            if [ ! -f `which gprof` ] ; then
+            which gperf && GPERF=1
+            if [ ! "$GPERF" = "1" ] ; then
                 downloadIfNotExists gperf-3.0.4.tar.gz http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz
                 rm -rf gperf-3.0.4
                 tar -xzvf gperf-3.0.4.tar.gz
@@ -1539,6 +1540,7 @@ function setPackagesVariables
     patchPackage "@@NECESSITAS_QT_CREATOR_VERSION@@" $NECESSITAS_QT_CREATOR_VERSION "org.kde.necessitas.tools.qtcreator"
 
     patchPackage "@@ANDROID_NDK_VERSION@@" $ANDROID_NDK_VERSION "org.kde.necessitas.misc.ndk.r6"
+    patchPackage "@@ANDROID_NDK_MAJOR_VERSION@@" $ANDROID_NDK_MAJOR_VERSION "org.kde.necessitas.misc.ndk.r6"
     patchPackage "@@ANDROID_NDK_MAJOR_VERSION@@" $ANDROID_NDK_MAJOR_VERSION "org.kde.necessitas.misc.ndk.ma_r6"
 
     patchPackage "@@ANDROID_API_4_VERSION@@" $ANDROID_API_4_VERSION "org.kde.necessitas.misc.sdk.android_4"
@@ -1605,6 +1607,7 @@ function prepareMinistroRepository
 
 function packforWindows
 {
+    echo "packforWindows $1/$2"
     rm -fr $TEMP_PATH/packforWindows
     mkdir -p $TEMP_PATH/packforWindows
     pushd $TEMP_PATH/packforWindows
@@ -1689,6 +1692,7 @@ prepareNecessitasQt
 
 # TODO :: Fix webkit build in Windows (-no-video fails) and Mac OS X (debug-and-release config incorrectly used and fails)
 # git clone often fails for webkit
+# Webkit is broken currently.
 prepareNecessitasQtWebkit
 
 if [ "$OSTYPE" != "msys" ] ; then
