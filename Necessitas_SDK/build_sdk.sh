@@ -80,7 +80,6 @@ ANDROID_STRIP_BINARY=""
 ANDROID_READELF_BINARY=""
 #QPATCH_PATH=""
 EXE_EXT=""
-export PYTHONHOME=""
 
 if [ "$OSTYPE" = "msys" ] ; then
     # -tools-fully-static
