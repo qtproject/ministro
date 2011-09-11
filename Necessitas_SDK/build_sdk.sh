@@ -228,6 +228,7 @@ function downloadLighthouseSource
     popd
     popd # Android/Qt/$NECESSITAS_QT_VERSION_SHORT
 }
+
 # $1 is either -d (debug build) or nothing.
 function prepareHostQt
 {
@@ -353,7 +354,7 @@ function prepareSdkInstallerTools
     git pull
     if [ ! -f all_done ]
     then
-        $STATIC_QT_PATH_DEBUG/bin/qmake $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure necessitas-installer-framework"
+        $STATIC_QT_PATH_DEBUG/bin/qmake CONFIG+=static $HOST_QT_CFG $HOST_QM_CFG_OPTIONS -r || error_msg "Can't configure necessitas-installer-framework"
         doMake "Can't compile necessitas-installer-framework" "all done" ma-make
     fi
     popd
@@ -1202,7 +1203,7 @@ function compileNecessitasQt
     if [ ! -f all_done ]
     then
         pushd ../qt-src
-        git checkout $CHECKOUT_BRANCH
+        git checkout experimental
         git pull
         mkdir -p $NQT_INSTALL_DIR/src/android/cpp/
         # The examples need qtmain_android.cpp in the install dir.
@@ -1243,15 +1244,16 @@ function compileNecessitasQt
 function prepareNecessitasQt
 {
     downloadLighthouseSource
-#    if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.android.qt.x86/data/qt-tools-${HOST_TAG}.7z ]
-#    then
-#        mkdir build-x86
-#        pushd build-x86
-#        compileNecessitasQt x86 Android/Qt/$NECESSITAS_QT_VERSION_SHORT
-#        popd #build-x86
-#    fi
 
     pushd Android/Qt/$NECESSITAS_QT_VERSION_SHORT
+
+    if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.android.qt.x86/data/qt-tools-${HOST_TAG}.7z ]
+    then
+        mkdir build-x86
+        pushd build-x86
+        compileNecessitasQt x86 Android/Qt/$NECESSITAS_QT_VERSION_SHORT
+        popd #build-x86
+    fi
 
     if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.android.qt.armeabi/data/qt-tools-${HOST_TAG}.7z ]
     then
@@ -1572,7 +1574,7 @@ function prepareMinistroRepository
     pushd $REPO_SRC_PATH/ministrorepogen
     if [ ! -f all_done ]
     then
-        $STATIC_QT_PATH/bin/qmake -r || error_msg "Can't configure ministrorepogen"
+        $STATIC_QT_PATH/bin/qmake CONFIG+=static -r || error_msg "Can't configure ministrorepogen"
         doMake "Can't compile ministrorepogen" "all done" ma-make
     fi
     popd
