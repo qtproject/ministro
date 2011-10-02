@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="eu.licentia.necessitas.ministro"
-      android:versionCode="2" android:versionName="2.0">
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
+      android:versionCode="2" android:versionName="2.0" package="org.kde.necessitas.ministro">
     <application android:icon="@drawable/icon" android:label="@string/app_name">
         <activity android:name=".MinistroActivity"
                   android:label="@string/app_name"
@@ -12,20 +10,20 @@
                 <category android:name="android.intent.category.VIEW" />
             </intent-filter>
         </activity>
-        <activity android:name="MinistroConfigActivity"
+        <activity android:name="org.kde.necessitas.ministro.MinistroConfigActivity"
                   android:label="@string/app_name">
             <intent-filter>
-                <action android:name="eu.licentia.necessitas.ministro.MinistroConfigActivity" />
+                <action android:name="org.kde.necessitas.ministro.MinistroConfigActivity" />
                 <category android:name="android.intent.category.VIEW" />
             </intent-filter>
         </activity>
-        <service android:name=".MinistroService">
+        <service android:name="org.kde.necessitas.ministro.MinistroService">
             <intent-filter>
-                <action android:name="eu.licentia.necessitas.ministro.IMinistro" />
                 <action android:name="org.kde.necessitas.ministro" />
             </intent-filter>
         </service>
     </application>
     <uses-sdk android:minSdkVersion="4" />
-<uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 </manifest>

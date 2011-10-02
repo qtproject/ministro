@@ -18,7 +18,7 @@
 #include <jni.h>
 #include <sys/stat.h>
 
-jint Java_eu_licentia_necessitas_ministro_MinistroActivity_nativeChmode(JNIEnv * env, jobject obj, jstring filePath, jint mode)
+jint Java_org_kde_necessitas_ministro_MinistroActivity_nativeChmode(JNIEnv * env, jobject obj, jstring filePath, jint mode)
 {
     const char *file = (*env)->GetStringUTFChars(env, filePath, 0);
     int res = chmod(file, mode);

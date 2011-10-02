@@ -15,13 +15,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package eu.licentia.necessitas.ministro;
+package org.kde.necessitas.ministro;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,16 +40,36 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
-public class MinistroService extends Service {
+public class MinistroService extends Service
+{
     private static final String TAG = "MinistroService";
 
     private static final String MINISTRO_CHECK_UPDATES_KEY="LASTCHECK";
     private static final String MINISTRO_REPOSITORY_KEY="REPOSITORY";
     private static final String MINISTRO_DEFAULT_REPOSITORY="stable";
+
+    /// loader parameter keys
+    private static final String ERROR_CODE_KEY="error.code";
+    private static final String ERROR_MESSAGE_KEY="error.message";
+    private static final String DEX_PATH_KEY="dex.path";
+    private static final String LIB_PATH_KEY="lib.path";
+    private static final String LOADER_CLASS_NAME_KEY="loader.class.name";
+    private static final String NATIVE_LIBRARIES_KEY="native.libraries";
+    private static final String ENVIRONMENT_VARIABLES_KEY="environment.variables";
+    private static final String APPLICATION_PARAMETERS_KEY="application.parameters";
+    /// loader parameter keys
+
+    /// loader error codes
+    private static final int EC_NO_ERROR=0;
+    private static final int EC_INCOMPATIBLE=1;
+    private static final int EC_NOT_FOUND=2;
+    /// loader error codes
+
 
     public static String getRepository(Context c)
     {
@@ -72,12 +94,15 @@ public class MinistroService extends Service {
     private static MinistroService m_instance = null;
     private String m_environmentVariables = null;
     private String m_applicationParams = null;
-
+    private String m_loaderClassName = null;
+    private String m_pathSeparator = null;
     public static MinistroService instance()
     {
         return m_instance;
     }
-    public MinistroService() {
+
+    public MinistroService()
+    {
         m_instance = this;
     }
 
@@ -89,7 +114,8 @@ public class MinistroService extends Service {
 
     ArrayList<Library> getDownloadedLibraries()
     {
-        synchronized (this) {
+        synchronized (this)
+        {
             return m_downloadedLibraries;
         }
     }
@@ -98,7 +124,8 @@ public class MinistroService extends Service {
     private ArrayList<Library> m_availableLibraries = new ArrayList<Library>();
     ArrayList<Library> getAvailableLibraries()
     {
-        synchronized (this) {
+        synchronized (this)
+        {
             return m_availableLibraries;
         }
     }
@@ -106,17 +133,18 @@ public class MinistroService extends Service {
     class CheckForUpdates extends AsyncTask<Void, Void, Void>
     {
         @Override
-        protected void onPreExecute() {
+        protected void onPreExecute()
+        {
             if (m_version<MinistroActivity.downloadVersionXmlFile(MinistroService.this, true))
             {
                 NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
                 int icon = R.drawable.icon;
-                CharSequence tickerText = "New Qt libs found";              // ticker-text
-                long when = System.currentTimeMillis();         // notification time
-                Context context = getApplicationContext();      // application Context
-                CharSequence contentTitle = "Ministro update";  // expanded message title
-                CharSequence contentText = "New Qt libs has been found tap to update."; // expanded message text
+                CharSequence tickerText = getResources().getString(R.string.new_qt_libs_msg);       // ticker-text
+                long when = System.currentTimeMillis();                                             // notification time
+                Context context = getApplicationContext();                                          // application Context
+                CharSequence contentTitle = getResources().getString(R.string.ministro_update_msg); // expanded message title
+                CharSequence contentText = getResources().getString(R.string.new_qt_libs_tap_msg);  // expanded message text
 
                 Intent notificationIntent = new Intent(MinistroService.this, MinistroActivity.class);
                 PendingIntent contentIntent = PendingIntent.getActivity(MinistroService.this, 0, notificationIntent, 0);
@@ -127,10 +155,9 @@ public class MinistroService extends Service {
                 notification.defaults |= Notification.DEFAULT_SOUND;
                 notification.defaults |= Notification.DEFAULT_VIBRATE;
                 notification.defaults |= Notification.DEFAULT_LIGHTS;
-                try{
+                try {
                     nm.notify(1, notification);
-                }catch(Exception e)
-                {
+                } catch(Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -138,7 +165,6 @@ public class MinistroService extends Service {
 
         @Override
         protected Void doInBackground(Void... params) {
-            // TODO Auto-generated method stub
             return null;
         }
     }
@@ -147,8 +173,10 @@ public class MinistroService extends Service {
     // this method reload all downloaded libraries
     synchronized ArrayList<Library> refreshLibraries(boolean checkCrc)
     {
-        synchronized (this) {
-            try {
+        synchronized (this)
+        {
+            try
+            {
                 m_downloadedLibraries.clear();
                 m_availableLibraries.clear();
                 if (! (new File(m_versionXmlFile)).exists())
@@ -158,6 +186,7 @@ public class MinistroService extends Service {
                 Document dom = documentBuilder.parse(new FileInputStream(m_versionXmlFile));
                 Element root = dom.getDocumentElement();
                 m_version = Double.valueOf(root.getAttribute("version"));
+                m_loaderClassName=root.getAttribute("loaderClassName");
                 m_applicationParams=root.getAttribute("applicationParameters");
                 m_applicationParams=m_applicationParams.replaceAll("MINISTRO_PATH", getFilesDir().getAbsolutePath());
                 m_environmentVariables=root.getAttribute("environmentVariables");
@@ -232,9 +261,11 @@ public class MinistroService extends Service {
     ArrayList<ActionStruct> m_actions = new ArrayList<ActionStruct>();
 
     @Override
-    public void onCreate() {
+    public void onCreate()
+    {
         m_versionXmlFile = getFilesDir().getAbsolutePath()+"/version.xml";
         m_qtLibsRootPath = getFilesDir().getAbsolutePath()+"/qt/";
+        m_pathSeparator = System.getProperty("path.separator", ":");
         SharedPreferences preferences=getSharedPreferences("Ministro", MODE_PRIVATE);
         long lastCheck = preferences.getLong(MINISTRO_CHECK_UPDATES_KEY,0);
         if (MinistroActivity.isOnline(this) && System.currentTimeMillis()-lastCheck>24l*3600*100) // check once/day
@@ -251,39 +282,56 @@ public class MinistroService extends Service {
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroy()
+    {
         super.onDestroy();
     }
 
     @Override
-    public IBinder onBind(Intent intent){
-        return new IMinistro.Stub() {
+    public IBinder onBind(Intent intent)
+    {
+        return new IMinistro.Stub()
+        {
             @Override
-            public void checkModules(IMinistroCallback callback,
-                    String[] modules, String appName, int ministroApiLevel, int necessitasApiLevel) throws RemoteException {
+            public void checkModules(IMinistroCallback callback, String[] modules
+                                    , String appName, int ministroApiLevel
+                                    , int necessitasApiLevel) throws RemoteException
+            {
                 checkModulesImpl(callback, modules, appName, ministroApiLevel, necessitasApiLevel);
             }
         };
     }
 
     /**
-     * Implements the {@link IMinistro.Stub#checkModules(IMinistroCallback, String[], String, int, int)}
-     * service method.
-     * 
-     * @param callback
-     * @param modules
-     * @param appName
-     * @param ministroApiLevel
-     * @param necessitasApiLevel
-     * @throws RemoteException
-     */
-    final void checkModulesImpl(IMinistroCallback callback,
-            String[] modules, String appName, int ministroApiLevel, int necessitasApiLevel) throws RemoteException {
+    * Implements the {@link IMinistro.Stub#checkModules(IMinistroCallback, String[], String, int, int)}
+    * service method.
+    *
+    * @param callback
+    * @param modules
+    * @param appName
+    * @param ministroApiLevel
+    * @param necessitasApiLevel
+    * @throws RemoteException
+    */
+    final void checkModulesImpl(IMinistroCallback callback, String[] modules
+                                , String appName, int ministroApiLevel
+                                , int qtApiLevel) throws RemoteException
+    {
 
         if (ministroApiLevel<MINISTRO_MIN_API_LEVEL || ministroApiLevel>MINISTRO_MAX_API_LEVEL)
         {
             // panic !!! Ministro service is not compatible, user should upgrade Ministro package
-        	Log.w(TAG, "Ministro cannot satisfy API version: " + ministroApiLevel);
+            Bundle loaderParams = new Bundle();
+            loaderParams.putInt(ERROR_CODE_KEY, EC_INCOMPATIBLE);
+            loaderParams.putString(ERROR_MESSAGE_KEY, getResources().getString(R.string.incompatible_ministo_api));
+            try
+            {
+                callback.loaderReady(loaderParams);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            Log.w(TAG, "Ministro cannot satisfy API version: " + ministroApiLevel);
             return;
         }
 
@@ -292,36 +340,37 @@ public class MinistroService extends Service {
 
         // this method is called by the activity client who needs modules.
         ArrayList<String> notFoundModules = new ArrayList<String>();
-        ArrayList<String> libraries = new ArrayList<String>();
-        Collections.addAll(libraries, modules);
-        if (checkModules(libraries, notFoundModules))
+        Bundle loaderParams = checkModules(modules, notFoundModules);
+        if (loaderParams.containsKey(ERROR_CODE_KEY) && EC_NO_ERROR == loaderParams.getInt(ERROR_CODE_KEY))
         {
-            // All modules are available, as such the other application can be notified that it
-            // can start without problems.
-            String[] libs = new String[libraries.size()];
-            libs = libraries.toArray(libs);
-            callback.libs(libs, m_environmentVariables, m_applicationParams, 0, null);
+            try
+            {
+                callback.loaderReady(loaderParams);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
         else
         {
-            // Starts a retrieval of the modules which are not readily accessible. 
+            // Starts a retrieval of the modules which are not readily accessible.
             startRetrieval(callback, modules, notFoundModules, appName);
         }
     }
 
     /**
-     * Creates and sets up a {@link MinistroActivity} to retrieve the modules specified in the
-     * <code>notFoundModules</code> argument.
-     * 
-     * @param callback
-     * @param modules
-     * @param notFoundModules
-     * @param appName
-     * @throws RemoteException
-     */
-    private void startRetrieval(IMinistroCallback callback,
-		String[] modules, ArrayList<String> notFoundModules, String appName)
-        throws RemoteException
+    * Creates and sets up a {@link MinistroActivity} to retrieve the modules specified in the
+    * <code>notFoundModules</code> argument.
+    *
+    * @param callback
+    * @param modules
+    * @param notFoundModules
+    * @param appName
+    * @throws RemoteException
+    */
+    private void startRetrieval(IMinistroCallback callback, String[] modules
+                                , ArrayList<String> notFoundModules, String appName) throws RemoteException
     {
         ActionStruct as = new ActionStruct(callback, modules, notFoundModules, appName);
         m_actions.add(as); // if not, lets start an activity to do it.
@@ -352,12 +401,12 @@ public class MinistroService extends Service {
     }
 
     /**
-     * Called by a finished {@link MinistroActivity} in order to let
-     * the service notify the application which caused the activity about
-     * the result of the retrieval.
-     * 
-     * @param id
-     */
+    * Called by a finished {@link MinistroActivity} in order to let
+    * the service notify the application which caused the activity about
+    * the result of the retrieval.
+    *
+    * @param id
+    */
     void retrievalFinished(int id)
     {
         for (int i=0;i<m_actions.size();i++)
@@ -366,7 +415,6 @@ public class MinistroService extends Service {
             if (action.id==id)
             {
                 postRetrieval(action.callback, action.modules);
-
                 m_actions.remove(i);
                 break;
             }
@@ -376,89 +424,94 @@ public class MinistroService extends Service {
     }
 
     /**
-     * Helper method for the last step of the retrieval process.
-     * 
-     * <p>Checks the availability of the requested modules and informs
-     * the requesting application about it via the {@link IMinistroCallback}
-     * instance.</p>
-     * 
-     * @param callback
-     * @param modules
-     */
-    private void postRetrieval(IMinistroCallback callback, String[] modules) {
-        ArrayList<String> libraries = new ArrayList<String>();
-        Collections.addAll(libraries, modules);
-
+    * Helper method for the last step of the retrieval process.
+    *
+    * <p>Checks the availability of the requested modules and informs
+    * the requesting application about it via the {@link IMinistroCallback}
+    * instance.</p>
+    *
+    * @param callback
+    * @param modules
+    */
+    private void postRetrieval(IMinistroCallback callback, String[] modules)
+    {
         // Does a final check whether the libraries are accessible (without caring for
         // the non-accessible ones).
-        boolean res = checkModules(libraries, null);
-
-        String[] libs = new String[libraries.size()];
-        libs = libraries.toArray(libs);
-
         try
         {
-            if (res)
-                callback.libs(libs, m_environmentVariables, m_applicationParams ,0, null);
-            else
-                callback.libs(libs, m_environmentVariables, m_applicationParams, 1, "Can't find all modules");
+            callback.loaderReady(checkModules(modules, null));
         }
-        catch (RemoteException e)
+        catch (Exception e)
         {
-            Log.w(TAG, "Was unable to do 'libs' callback after retrieving libraries. Ignoring and assuming that the other application exited.");
+            e.printStackTrace();
         }
-
     }
 
     /**
-     * Checks whether a given list of libraries are readily accessible (e.g. usable by a program).
-     * 
-     * <p>If the <code>notFoundModules</code> argument is given, the method fills the list with
-     * libraries that need to be retrieved first.</p>
-     * 
-     * @param libs
-     * @param notFoundModules
-     * @return
-     */
-    boolean checkModules(ArrayList<String> libs, ArrayList<String> notFoundModules)
+    * Checks whether a given list of libraries are readily accessible (e.g. usable by a program).
+    *
+    * <p>If the <code>notFoundModules</code> argument is given, the method fills the list with
+    * libraries that need to be retrieved first.</p>
+    *
+    * @param libs
+    * @param notFoundModules
+    * @return true if all modules are available
+    */
+    Bundle checkModules(String[] modules, ArrayList<String> notFoundModules)
     {
-        ArrayList<Module> modules= new ArrayList<Module>();
+        Bundle params = new Bundle();
         boolean res=true;
-        for (int i=0;i<libs.size();i++)
-            res = res & addModules(libs.get(i), modules, notFoundModules); // don't stop on first error
+        ArrayList<Module> libs= new ArrayList<Module>();
+        Set<String> jars= new HashSet<String>();
+        for (String module: modules)
+            res = res & addModules(module, libs, notFoundModules, jars); // don't stop on first error
 
+        ArrayList<String> tempStringArray = new ArrayList<String>();
         // sort all libraries
-        Collections.sort(modules, new ModuleCompare());
-        libs.clear();
-        for (int i=0;i<modules.size();i++)
-            libs.add(m_qtLibsRootPath+modules.get(i).path);
-        return res;
+        Collections.sort(libs, new ModuleCompare());
+        for (Module lib: libs)
+            tempStringArray.add(m_qtLibsRootPath+lib.path);
+        params.putString(NATIVE_LIBRARIES_KEY, Library.join(tempStringArray, m_pathSeparator));
+
+        tempStringArray.clear();
+        for (String jar: jars)
+            tempStringArray.add(m_qtLibsRootPath+jar);
+        params.putString(DEX_PATH_KEY, Library.join(tempStringArray, m_pathSeparator));
+
+        params.putString(LOADER_CLASS_NAME_KEY, m_loaderClassName);
+        params.putString(LIB_PATH_KEY, m_qtLibsRootPath);
+        params.putString(ENVIRONMENT_VARIABLES_KEY, m_environmentVariables);
+        params.putString(APPLICATION_PARAMETERS_KEY, m_applicationParams);
+        params.putInt(ERROR_CODE_KEY, res?EC_NO_ERROR:EC_NOT_FOUND);
+        return params;
     }
 
-   /**
+/**
     * Helper method for the module resolution mechanism. It deals with an individual module's
     * resolution request.
-    * 
+    *
     * <p>The method checks whether a given <em>single</em> <code>module</code> is already
     * accessible or needs to be retrieved first. In the latter case the method returns
     * <code>false</code>.</p>
-    * 
+    *
     * <p>The method traverses a <code>module<code>'s dependencies automatically.</p>
-    * 
+    *
     * <p>In order to find out whether a <code>module</code> is accessible the method consults
     * the list of downloaded libraries. If found, an entry to the <code>modules</code> list is
     * added.</p>
-    * 
+    *
     * <p>In case the <code>module</ocde> is not immediately accessible and the <code>notFoundModules</code>
     * argument exists, a list of available libraries is consulted to fill a list of modules which
-    * yet need to be retrieved.</p>  
-    * 
+    * yet need to be retrieved.</p>
+    *
     * @param module
     * @param modules
     * @param notFoundModules
+    * @param jars
     * @return <code>true</code> if the given module and all its dependencies are readily available.
     */
-    private boolean addModules(String module, ArrayList<Module> modules, ArrayList<String> notFoundModules)
+    private boolean addModules(String module, ArrayList<Module> modules
+                              , ArrayList<String> notFoundModules, Set<String> jars)
     {
         // Module argument is not supposed to be null at this point.
         if (modules == null)
@@ -482,11 +535,15 @@ public class MinistroService extends Service {
                 m.name=m_downloadedLibraries.get(i).name;
                 m.path=m_downloadedLibraries.get(i).filePath;
                 m.level=m_downloadedLibraries.get(i).level;
+                if (m_downloadedLibraries.get(i).needs != null)
+                    for(NeedsStruct needed: m_downloadedLibraries.get(i).needs)
+                        if (needed.type != null && needed.type.equals("jar"))
+                            jars.add(needed.filePath);
                 modules.add(m);
                 boolean res = true;
                 if (m_downloadedLibraries.get(i).depends != null)
                     for (int depIt=0;depIt<m_downloadedLibraries.get(i).depends.length;depIt++)
-                        res &= addModules(m_downloadedLibraries.get(i).depends[depIt], modules, notFoundModules);
+                        res &= addModules(m_downloadedLibraries.get(i).depends[depIt], modules, notFoundModules, jars);
                 return res;
             }
         }
@@ -502,7 +559,7 @@ public class MinistroService extends Service {
                     return false;
             }
 
-            // Deal with not yet readily accessible module's dependencies.  
+            // Deal with not yet readily accessible module's dependencies.
             notFoundModules.add(module);
             for (int i = 0; i< m_availableLibraries.size(); i++)
             {
@@ -510,7 +567,7 @@ public class MinistroService extends Service {
                 {
                     if (m_availableLibraries.get(i).depends != null)
                         for (int depIt=0;depIt<m_availableLibraries.get(i).depends.length;depIt++)
-                            addModules(m_availableLibraries.get(i).depends[depIt], modules, notFoundModules);
+                            addModules(m_availableLibraries.get(i).depends[depIt], modules, notFoundModules, jars);
                     break;
                 }
             }
@@ -518,28 +575,29 @@ public class MinistroService extends Service {
         return false;
     }
 
-/** Sorter for libraries.
- * 
- * Hence the order in which the libraries have to be loaded is important, it is neccessary
- * to sort them.
- */
-static private class ModuleCompare implements Comparator<Module> {
-    @Override
-    public int compare(Module a, Module b) {
-        return a.level-b.level;
+    /** Sorter for libraries.
+    *
+    * Hence the order in which the libraries have to be loaded is important, it is neccessary
+    * to sort them.
+    */
+    static private class ModuleCompare implements Comparator<Module>
+    {
+        @Override
+        public int compare(Module a, Module b)
+        {
+            return a.level-b.level;
+        }
     }
-}
 
-/** Helper class which allows manipulating libraries.
- * 
- * It is similar to the {@link Library} class but has fewer fields.
- */
-static private class Module
-{
-    String path;
-    String name;
-    int level;
-
-}
+    /** Helper class which allows manipulating libraries.
+    *
+    * It is similar to the {@link Library} class but has fewer fields.
+    */
+    static private class Module
+    {
+        String path;
+        String name;
+        int level;
+    }
 
 }

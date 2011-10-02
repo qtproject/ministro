@@ -93,6 +93,7 @@ int main(int argc, char *argv[])
             return 1;
 
     QStringList excludePaths=element.attribute("excludePaths").split(';');
+    QString loaderClassName=element.attribute("loaderClassName");
     QString applicationParameters=element.attribute("applicationParameters");
     QString environmentVariables=element.attribute("environmentVariables");
 
@@ -137,6 +138,8 @@ int main(int argc, char *argv[])
             NeedsStruct needed;
             needed.name=childs.attribute("name");
             needed.relativePath=childs.attribute("file");
+            if (childs.hasAttribute("type"))
+                needed.type=childs.attribute("type");
             libs[libraryName].needs<<needed;
             childs=childs.nextSiblingElement();
         }
@@ -160,7 +163,7 @@ int main(int argc, char *argv[])
             QFile::link(QString("android-%1").arg(androdPlatform), QString("android-%1").arg(symLink));
         QFile outXmlFile(xmlPath);
         outXmlFile.open(QIODevice::WriteOnly);
-        outXmlFile.write(QString("<libs version=\"%1\" applicationParameters=\"%2\" environmentVariables=\"%3\">\n").arg(version).arg(applicationParameters).arg(environmentVariables).toUtf8());
+        outXmlFile.write(QString("<libs version=\"%1\" applicationParameters=\"%2\" environmentVariables=\"%3\" loaderClassName=\"%4\">\n").arg(version).arg(applicationParameters).arg(environmentVariables).arg(loaderClassName).toUtf8());
         foreach (const QString & key, libs.keys())
         {
             if (libs[key].platform && libs[key].platform != androdPlatform)
@@ -204,8 +207,13 @@ int main(int argc, char *argv[])
                         qWarning()<<"Warning : Can't find \""<<libsPath+"/"+needed.relativePath<<"\" item will be skipped";
                         continue;
                     }
-                    outXmlFile.write(QString("\t\t\t<item name=\"%1\" url=\"http://files.kde.org/necessitas/qt/android/%2/objects/%3/%4\" file=\"%4\" size=\"%5\" sha1=\"%6\" />\n")
-                                     .arg(needed.name).arg(abiVersion).arg(version).arg(needed.relativePath).arg(fileSize).arg(sha1Hash).toUtf8());
+
+                    QString type;
+                    if (needed.type.length())
+                        type=QString(" type=\"%1\" ").arg(needed.type);
+
+                    outXmlFile.write(QString("\t\t\t<item name=\"%1\" url=\"http://files.kde.org/necessitas/qt/android/%2/objects/%3/%4\" file=\"%4\" size=\"%5\" sha1=\"%6\"%7/>\n")
+                                     .arg(needed.name).arg(abiVersion).arg(version).arg(needed.relativePath).arg(fileSize).arg(sha1Hash).arg(type).toUtf8());
                 }
                 outXmlFile.write("\t\t</needs>\n");
             }

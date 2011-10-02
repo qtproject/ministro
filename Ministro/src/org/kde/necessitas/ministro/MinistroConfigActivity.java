@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package eu.licentia.necessitas.ministro;
+package org.kde.necessitas.ministro;
 
 import android.app.Activity;
 import android.app.Notification;
@@ -49,8 +49,9 @@ public class MinistroConfigActivity extends Activity {
             public void onItemSelected(AdapterView<?> parent, View view, int pos,
                     long id) {
                 // TODO Auto-generated method stub
-                Toast.makeText(parent.getContext(), "Ministro will use " +
-                parent.getItemAtPosition(pos).toString()+" repository", Toast.LENGTH_LONG).show();
+                Toast.makeText(parent.getContext()
+                        , getResources().getString(R.string.ministro_repository_msg
+                        , parent.getItemAtPosition(pos).toString()), Toast.LENGTH_LONG).show();
                 MinistroService.setRepository(MinistroConfigActivity.this, parent.getItemAtPosition(pos).toString());
             }
 
@@ -65,11 +66,11 @@ public class MinistroConfigActivity extends Activity {
     protected void onDestroy() {
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         int icon = R.drawable.icon;
-        CharSequence tickerText = "Ministro repository changed";              // ticker-text
+        CharSequence tickerText = getResources().getString(R.string.ministro_repository_changed_msg); // ticker-text
         long when = System.currentTimeMillis();         // notification time
         Context context = getApplicationContext();      // application Context
-        CharSequence contentTitle = "Ministro update";  // expanded message title
-        CharSequence contentText = "Ministro repository changed tap to update."; // expanded message text
+        CharSequence contentTitle = getResources().getString(R.string.ministro_update_msg);  // expanded message title
+        CharSequence contentText = getResources().getString(R.string.ministro_repository_changed_tap_msg); // expanded message text
 
         Intent notificationIntent = new Intent(this, MinistroActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);

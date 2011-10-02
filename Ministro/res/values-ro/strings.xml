@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Alegeţi un depozit</string>
+    <string name="incompatible_ministo_api">Ministro nu este compatibil cu aplicaţia dumneavoastră. Vă rugăm să actualizaţi serviciul Ministro.</string>
+    <string name="ministro_network_access_msg">Ministro necesită acces la reţea. Activaţi reţeaua mobilă sau Wi-Fi pentru a descărca datele.</string>
+    <string name="setting_msg">Setări</string>
+    <string name="wait_for_network_connection_msg">Aştept conexiunea de reţea</string>
+    <string name="download_app_libs_msg">%1$s are nevoie de biblioteci suplimentare pentru a rula.\nDoriţi să le descărcaţi acum?</string>
+    <string name="start_downloading_msg">Încep descărcarea ...</string>
+    <string name="downloading_qt_libraries_msg">Descarc bibliotecile Qt</string>
+    <string name="checking_libraries_msg">Verific bibliotecile. Vă rugăm aşteptaţi ...</string>
+    <string name="extracting_SSL_msg">Extrag certificate SSL. Vă rugăm aşteptaţi ...</string>
+    <string name="new_qt_libs_msg">Au fost găsite biblioteci Qt noi</string>
+    <string name="new_qt_libs_tap_msg">Au fost găsite biblioteci Qt noi, apăsaţi pentru a le actualiza.</string>
+    <string name="ministro_repository_msg">Ministro va folosi depozitul %1$s</string>
+    <string name="ministro_repository_changed_msg">Depozitul Ministro s-a schimbat</string>
+    <string name="ministro_update_msg">Actualizare Ministro</string>
+    <string name="ministro_repository_changed_tap_msg">Ministro depozitul sa schimbat, apăsaţi pentru actualizare.</string>
+</resources>

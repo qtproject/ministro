@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package eu.licentia.necessitas.ministro;
+package org.kde.necessitas.ministro;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,7 +32,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -64,7 +63,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 
-public class MinistroActivity extends Activity {
+public class MinistroActivity extends Activity
+{
 
     public native static int nativeChmode(String filepath, int mode);
     private static final String DOMAIN_NAME="http://files.kde.org/necessitas/ministro/";
@@ -80,25 +80,28 @@ public class MinistroActivity extends Activity {
         else
         {
             AlertDialog.Builder builder = new AlertDialog.Builder(MinistroActivity.this);
-            builder.setMessage("Ministro requires network access. Enable mobile network or Wi-Fi to download data.");
+            builder.setMessage(getResources().getString(R.string.ministro_network_access_msg));
             builder.setCancelable(true);
-            builder.setNeutralButton("Setting", new DialogInterface.OnClickListener() {
+            builder.setNeutralButton(getResources().getString(R.string.setting_msg), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        final ProgressDialog m_dialog = ProgressDialog.show(MinistroActivity.this, null, "Waiting for network connection", true, true, new DialogInterface.OnCancelListener() {
+                        final ProgressDialog m_dialog = ProgressDialog.show(MinistroActivity.this, null, getResources().getString(R.string.wait_for_network_connection_msg), true, true, new DialogInterface.OnCancelListener() {
                             @Override
-                            public void onCancel(DialogInterface dialog) {
+                            public void onCancel(DialogInterface dialog)
+                            {
                                 finishMe();
                             }
                         });
                         getApplication().registerReceiver(new BroadcastReceiver() {
                             @Override
-                            public void onReceive(Context context, Intent intent) {
+                            public void onReceive(Context context, Intent intent)
+                            {
                                 if (isOnline(MinistroActivity.this))
                                 {
                                     getApplication().unregisterReceiver(this);
                                     runOnUiThread(new Runnable() {
                                         @Override
-                                        public void run() {
+                                        public void run()
+                                        {
                                             m_dialog.dismiss();
                                             new CheckLibraries().execute(update);
                                         }
@@ -110,14 +113,16 @@ public class MinistroActivity extends Activity {
                         dialog.dismiss();
                     }
                 });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
+            builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id)
+                    {
                             dialog.cancel();
                     }
                 });
             builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
                 @Override
-                public void onCancel(DialogInterface dialog) {
+                public void onCancel(DialogInterface dialog)
+                {
                     finishMe();
                 }
             });
@@ -126,24 +131,26 @@ public class MinistroActivity extends Activity {
         }
     }
 
-    private ServiceConnection m_ministroConnection=new ServiceConnection() {
+    private ServiceConnection m_ministroConnection=new ServiceConnection()
+    {
         @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
+        public void onServiceConnected(ComponentName name, IBinder service)
+        {
             if (getIntent().hasExtra("id") && getIntent().hasExtra("modules"))
             {
                 m_id=getIntent().getExtras().getInt("id");
                 m_modules=getIntent().getExtras().getStringArray("modules");
                 AlertDialog.Builder builder = new AlertDialog.Builder(MinistroActivity.this);
-                builder.setMessage(getIntent().getExtras().getString("name")+
-                        " needs extra libraries to run.\nDo you want to download them now?")
+                builder.setMessage(getResources().getString(R.string.download_app_libs_msg,
+                        getIntent().getExtras().getString("name")))
                     .setCancelable(false)
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.dismiss();
                             checkNetworkAndDownload(false);
                         }
                     })
-                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
                                 finishMe();
@@ -157,7 +164,8 @@ public class MinistroActivity extends Activity {
         }
 
         @Override
-        public void onServiceDisconnected(ComponentName name) {
+        public void onServiceDisconnected(ComponentName name)
+        {
             m_ministroConnection = null;
         }
     };
@@ -222,9 +230,9 @@ public class MinistroActivity extends Activity {
             InputStream instream = connection.getInputStream();
             byte[] tmp = new byte[2048];
             int downloaded;
-            while ((downloaded = instream.read(tmp)) != -1) {
+            while ((downloaded = instream.read(tmp)) != -1)
                 outstream.write(tmp, 0, downloaded);
-            }
+
             outstream.close();
             MinistroService.instance().refreshLibraries(false);
             return version;
@@ -242,21 +250,24 @@ public class MinistroActivity extends Activity {
         return -1;
     }
 
-    private class DownloadManager extends AsyncTask<Library, Integer, Long> {
+    private class DownloadManager extends AsyncTask<Library, Integer, Long>
+    {
         private ProgressDialog m_dialog = null;
-        private String m_status = "Start downloading ...";
+        private String m_status = getResources().getString(R.string.start_downloading_msg);
         private int m_totalSize=0, m_totalProgressSize=0;
 
         @Override
-        protected void onPreExecute() {
+        protected void onPreExecute()
+        {
             m_dialog = new ProgressDialog(MinistroActivity.this);
             m_dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            m_dialog.setTitle("Downloading Qt libraries");
+            m_dialog.setTitle(getResources().getString(R.string.downloading_qt_libraries_msg));
             m_dialog.setMessage(m_status);
             m_dialog.setCancelable(true);
             m_dialog.setOnCancelListener(new DialogInterface.OnCancelListener(){
                         @Override
-                        public void onCancel(DialogInterface dialog) {
+                        public void onCancel(DialogInterface dialog)
+                        {
                             DownloadManager.this.cancel(false);
                             finishMe();
                         }
@@ -280,7 +291,8 @@ public class MinistroActivity extends Activity {
                 int downloaded;
                 byte[] tmp = new byte[2048];
                 int oldProgress=-1;
-                while ((downloaded = instream.read(tmp)) != -1) {
+                while ((downloaded = instream.read(tmp)) != -1)
+                {
                     if (isCancelled())
                         break;
                     progressSize+=downloaded;
@@ -314,9 +326,12 @@ public class MinistroActivity extends Activity {
             m_totalProgressSize-=progressSize;
             return false;
         }
+
         @Override
-        protected Long doInBackground(Library... params) {
-            try {
+        protected Long doInBackground(Library... params)
+        {
+            try
+            {
                 for (int i=0;i<params.length;i++)
                 {
                     m_totalSize+=params[i].size;
@@ -331,7 +346,8 @@ public class MinistroActivity extends Activity {
                 {
                     if (isCancelled())
                         break;
-                    synchronized (m_status) {
+                    synchronized (m_status)
+                    {
                         m_status=params[i].name+" ";
                     }
                     publishProgress(0, m_totalProgressSize);
@@ -349,7 +365,8 @@ public class MinistroActivity extends Activity {
                     if (null != params[i].needs)
                         for (int j=0;j<params[i].needs.length;j++)
                         {
-                            synchronized (m_status) {
+                            synchronized (m_status)
+                            {
                                 m_status=params[i].needs[j].name+" ";
                             }
                             publishProgress(0, m_totalProgressSize);
@@ -378,8 +395,10 @@ public class MinistroActivity extends Activity {
         }
 
         @Override
-        protected void onProgressUpdate(Integer... values) {
-            synchronized (m_status) {
+        protected void onProgressUpdate(Integer... values)
+        {
+            synchronized (m_status)
+            {
                 m_dialog.setMessage(m_status+values[0]+"%");
                 m_dialog.setProgress(values[1]);
             }
@@ -387,7 +406,8 @@ public class MinistroActivity extends Activity {
         }
 
         @Override
-        protected void onPostExecute(Long result) {
+        protected void onPostExecute(Long result)
+        {
             super.onPostExecute(result);
             if (m_dialog != null)
             {
@@ -398,27 +418,32 @@ public class MinistroActivity extends Activity {
         }
     }
 
-    private class CheckLibraries extends AsyncTask<Boolean, Void, Double> {
-
+    private class CheckLibraries extends AsyncTask<Boolean, Void, Double>
+    {
         private ProgressDialog dialog = null;
         private ArrayList<Library> newLibs = new ArrayList<Library>();
         private String m_message;
         @Override
-        protected void onPreExecute() {
-            runOnUiThread(new Runnable() {
+        protected void onPreExecute()
+        {
+            runOnUiThread(new Runnable()
+            {
                 @Override
-                public void run() {
+                public void run()
+                {
                     dialog = ProgressDialog.show(MinistroActivity.this, null,
-                            "Checking libraries. Please wait...", true, true);
+                            getResources().getString(R.string.checking_libraries_msg), true, true);
                 }
             });
             super.onPreExecute();
         }
 
         @Override
-        protected Double doInBackground(Boolean... update) {
+        protected Double doInBackground(Boolean... update)
+        {
             double version=0.0;
-            try {
+            try
+            {
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder builder = factory.newDocumentBuilder();
                 Document dom = null;
@@ -439,13 +464,11 @@ public class MinistroActivity extends Activity {
                 }
                 else
                     libraries = MinistroService.instance().getAvailableLibraries();
+
                 ArrayList<String> notFoundModules = new ArrayList<String>();
                 if (m_modules!=null)
-                {
-                    ArrayList<String> requiredModules = new ArrayList<String>();
-                    Collections.addAll(requiredModules, m_modules);
-                    MinistroService.instance().checkModules(requiredModules, notFoundModules);
-                }
+                    MinistroService.instance().checkModules(m_modules, notFoundModules);
+
                 dom = builder.parse(new FileInputStream(MinistroService.instance().getVersionXmlFile()));
 
                 factory = DocumentBuilderFactory.newInstance();
@@ -459,7 +482,7 @@ public class MinistroActivity extends Activity {
                         !preferences.getString("INCREMENTAL", "").equals(android.os.Build.VERSION.INCREMENTAL) ||
                         !preferences.getString("RELEASE", "").equals(android.os.Build.VERSION.RELEASE))
                 {
-                    m_message = "Extracting SSL root certificates. Please wait...";
+                    m_message = getResources().getString(R.string.extracting_SSL_msg);
                     publishProgress((Void[])null);
                     String environmentVariables=root.getAttribute("environmentVariables");
                     environmentVariables=environmentVariables.replaceAll("MINISTRO_PATH", "");
@@ -471,13 +494,16 @@ public class MinistroActivity extends Activity {
                         {
                             String path=Library.mkdirParents(getFilesDir().getAbsolutePath(),environmentVariable[1], 0);
                             Library.removeAllFiles(path);
-                            try {
+                            try
+                            {
                                 KeyStore ks= KeyStore.getInstance(KeyStore.getDefaultType());
                                 FileInputStream instream = new FileInputStream(new File("/system/etc/security/cacerts.bks"));
                                 ks.load(instream, null);
-                                for (Enumeration<String> aliases = ks.aliases(); aliases.hasMoreElements(); ) {
+                                for (Enumeration<String> aliases = ks.aliases(); aliases.hasMoreElements(); )
+                                {
                                     String aName = aliases.nextElement();
-                                    try{
+                                    try
+                                    {
                                         X509Certificate cert=(X509Certificate) ks.getCertificate(aName);
                                         if (null==cert)
                                             continue;
@@ -487,13 +513,9 @@ public class MinistroActivity extends Activity {
                                         outstream.write(buff, 0, buff.length);
                                         outstream.close();
                                         nativeChmode(filePath, 0644);
-                                    }
-                                    catch(KeyStoreException e)
-                                    {
+                                    } catch(KeyStoreException e) {
                                         e.printStackTrace();
-                                    }
-                                    catch(Exception e)
-                                    {
+                                    } catch(Exception e) {
                                         e.printStackTrace();
                                     }
                                 }
@@ -566,12 +588,15 @@ public class MinistroActivity extends Activity {
         }
 
         @Override
-        protected void onProgressUpdate(Void... nothing) {
+        protected void onProgressUpdate(Void... nothing)
+        {
             dialog.setMessage(m_message);
             super.onProgressUpdate(nothing);
         }
+
         @Override
-        protected void onPostExecute(Double result) {
+        protected void onPostExecute(Double result)
+        {
             if (null != dialog)
             {
                 dialog.dismiss();
@@ -590,29 +615,33 @@ public class MinistroActivity extends Activity {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         m_qtLibsRootPath = getFilesDir().getAbsolutePath()+"/qt/";
         File dir=new File(m_qtLibsRootPath);
         dir.mkdirs();
         nativeChmode(m_qtLibsRootPath, 0755);
-        bindService(new Intent("eu.licentia.necessitas.ministro.IMinistro"), m_ministroConnection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent("org.kde.necessitas.ministro"), m_ministroConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy()
+    {
         super.onDestroy();
         unbindService(m_ministroConnection);
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(Configuration newConfig)
+    {
         //Avoid activity from being destroyed/created
         super.onConfigurationChanged(newConfig);
     }
 
-    static {
+    static
+    {
         System.loadLibrary("chmode");
     }
 }

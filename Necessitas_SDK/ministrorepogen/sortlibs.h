@@ -30,6 +30,7 @@ struct NeedsStruct
 {
     QString name;
     QString relativePath;
+    QString type;
 };
 
 struct Library

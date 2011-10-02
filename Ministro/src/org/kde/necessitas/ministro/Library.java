@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package eu.licentia.necessitas.ministro;
+package org.kde.necessitas.ministro;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -79,6 +81,8 @@ class Library
                 need.url=lib.getAttribute("url");
                 need.sha1=lib.getAttribute("sha1");
                 need.size=Long.valueOf(lib.getAttribute("size"));
+                if ( lib.hasAttribute("type") )
+                    need.type=lib.getAttribute("type");
                 needs.add(need);
             }
         }
@@ -158,7 +162,8 @@ class Library
 
     public static boolean checkCRC(String fileName, String sha1) throws IOException
     {
-        try {
+        try
+        {
             byte[] tmp = new byte[2048];
             MessageDigest digester = MessageDigest.getInstance("SHA-1");
             int downloaded;
@@ -198,6 +203,18 @@ class Library
         for (int i=0;i<files.length;i++)
             new File(path+files[i]).delete();
     }
+
+    public static String join(Collection<String> s, String delimiter)
+    {
+        if (s == null || s.isEmpty()) return "";
+        Iterator<String> iter = s.iterator();
+        StringBuilder builder = new StringBuilder(iter.next());
+        while( iter.hasNext() )
+        {
+            builder.append(delimiter).append(iter.next());
+        }
+        return builder.toString();
+    }
 };
 
 class NeedsStruct
@@ -205,6 +222,7 @@ class NeedsStruct
     public String name = null;
     public String filePath = null;
     public String sha1 = null;
-    public String url;
+    public String url = null;
+    public String type = null;
     public long size = 0;
 };
