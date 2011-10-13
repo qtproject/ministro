@@ -30,8 +30,8 @@ oneway interface IMinistroCallback {
 * This method is called by the Ministro service back into the application which
 * implements this interface.
 *
-* param in - loader
-*            loader fields:
+* param in - loaderParams
+*            loaderParams fields:
 *                 * Key Name                   Key type         Explanations
 *                 * "error.code"               Integer          See below
 *                 * "error.message"            String           Missing if no error, otherwise will contain the error message translated into phone language where available.
@@ -43,6 +43,7 @@ oneway interface IMinistroCallback {
 *  - 0 no error.
 *  - 1 incompatible Ministro version. Ministro needs to be upgraded.
 *  - 2 not all modules could be satisfy.
+*  - 3 invalid parameters
 *
 * This parameter will contain additional fields which are used by the loader to start your application, so it must be passed to loader.
 */

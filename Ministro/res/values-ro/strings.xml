@@ -17,4 +17,6 @@
     <string name="ministro_repository_changed_msg">Depozitul Ministro s-a schimbat</string>
     <string name="ministro_update_msg">Actualizare Ministro</string>
     <string name="ministro_repository_changed_tap_msg">Ministro depozitul sa schimbat, apăsaţi pentru actualizare.</string>
+    <string name="invalid_parameters">Parametrii sunt invalizi</string>
+    <string name="dependencies_error">Ministro nu poate găsi toate dependenţele aplicaţiei</string>
 </resources>

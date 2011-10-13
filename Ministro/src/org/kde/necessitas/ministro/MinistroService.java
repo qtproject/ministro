@@ -53,6 +53,14 @@ public class MinistroService extends Service
     private static final String MINISTRO_REPOSITORY_KEY="REPOSITORY";
     private static final String MINISTRO_DEFAULT_REPOSITORY="stable";
 
+    /// Ministro server parameter keys
+    private static final String REQUIRED_MODULES_KEY="required.modules";
+    private static final String APPLICATION_TITLE_KEY="application.title";
+    private static final String QT_PROVIDER_KEY="qt.provider";
+    private static final String MINIMUM_MINISTRO_API_KEY="minimum.ministro.api";
+    private static final String MINIMUM_QT_VERSION_KEY="minimum.qt.version";
+    /// Ministro server parameter keys
+
     /// loader parameter keys
     private static final String ERROR_CODE_KEY="error.code";
     private static final String ERROR_MESSAGE_KEY="error.message";
@@ -68,6 +76,7 @@ public class MinistroService extends Service
     private static final int EC_NO_ERROR=0;
     private static final int EC_INCOMPATIBLE=1;
     private static final int EC_NOT_FOUND=2;
+    private static final int EC_INVALID_PARAMETERS=3;
     /// loader error codes
 
 
@@ -293,11 +302,10 @@ public class MinistroService extends Service
         return new IMinistro.Stub()
         {
             @Override
-            public void checkModules(IMinistroCallback callback, String[] modules
-                                    , String appName, int ministroApiLevel
-                                    , int necessitasApiLevel) throws RemoteException
+            public void requestLoader(IMinistroCallback callback, Bundle parameters) throws RemoteException
             {
-                checkModulesImpl(callback, modules, appName, ministroApiLevel, necessitasApiLevel);
+
+                checkModulesImpl(callback, parameters);
             }
         };
     }
@@ -313,10 +321,37 @@ public class MinistroService extends Service
     * @param necessitasApiLevel
     * @throws RemoteException
     */
-    final void checkModulesImpl(IMinistroCallback callback, String[] modules
-                                , String appName, int ministroApiLevel
-                                , int qtApiLevel) throws RemoteException
+    final void checkModulesImpl(IMinistroCallback callback, Bundle parameters) throws RemoteException
     {
+        if (!parameters.containsKey(REQUIRED_MODULES_KEY)
+                || !parameters.containsKey(APPLICATION_TITLE_KEY)
+                || !parameters.containsKey(MINIMUM_MINISTRO_API_KEY)
+                || !parameters.containsKey(MINIMUM_QT_VERSION_KEY))
+        {
+            Bundle loaderParams = new Bundle();
+            loaderParams.putInt(ERROR_CODE_KEY, EC_INVALID_PARAMETERS);
+            loaderParams.putString(ERROR_MESSAGE_KEY, getResources().getString(R.string.invalid_parameters));
+            try
+            {
+                callback.loaderReady(loaderParams);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            Log.e(TAG, "Invalid parameters: " + parameters.toString());
+            return;
+        }
+        int ministroApiLevel = parameters.getInt(MINIMUM_MINISTRO_API_KEY);
+        String[] modules = parameters.getStringArray(REQUIRED_MODULES_KEY);
+        String appName = parameters.getString(APPLICATION_TITLE_KEY);
+
+
+        @SuppressWarnings("unused")
+        int qtApiLevel = parameters.getInt(MINIMUM_QT_VERSION_KEY); // TODO check if current QT version is compatible with required version
+        @SuppressWarnings("unused")
+        String qtProvider="necessitas";
+        if (parameters.containsKey(QT_PROVIDER_KEY))
+            qtProvider=parameters.getString(QT_PROVIDER_KEY); // TODO add the possibility to have more than one provider
 
         if (ministroApiLevel<MINISTRO_MIN_API_LEVEL || ministroApiLevel>MINISTRO_MAX_API_LEVEL)
         {
@@ -331,7 +366,7 @@ public class MinistroService extends Service
             catch (Exception e) {
                 e.printStackTrace();
             }
-            Log.w(TAG, "Ministro cannot satisfy API version: " + ministroApiLevel);
+            Log.e(TAG, "Ministro cannot satisfy API version: " + ministroApiLevel);
             return;
         }
 
@@ -483,6 +518,8 @@ public class MinistroService extends Service
         params.putString(ENVIRONMENT_VARIABLES_KEY, m_environmentVariables);
         params.putString(APPLICATION_PARAMETERS_KEY, m_applicationParams);
         params.putInt(ERROR_CODE_KEY, res?EC_NO_ERROR:EC_NOT_FOUND);
+        if (!res)
+            params.putString(ERROR_MESSAGE_KEY, getResources().getString(R.string.dependencies_error));
         return params;
     }
 
@@ -511,7 +548,7 @@ public class MinistroService extends Service
     * @return <code>true</code> if the given module and all its dependencies are readily available.
     */
     private boolean addModules(String module, ArrayList<Module> modules
-                              , ArrayList<String> notFoundModules, Set<String> jars)
+                            , ArrayList<String> notFoundModules, Set<String> jars)
     {
         // Module argument is not supposed to be null at this point.
         if (modules == null)
@@ -599,5 +636,4 @@ public class MinistroService extends Service
         String name;
         int level;
     }
-
 }
