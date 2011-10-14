@@ -4,7 +4,7 @@
     <string name="repositories_prompt">Alegeţi un depozit</string>
     <string name="incompatible_ministo_api">Ministro nu este compatibil cu aplicaţia dumneavoastră. Vă rugăm să actualizaţi serviciul Ministro.</string>
     <string name="ministro_network_access_msg">Ministro necesită acces la reţea. Activaţi reţeaua mobilă sau Wi-Fi pentru a descărca datele.</string>
-    <string name="setting_msg">Setări</string>
+    <string name="settings_msg">Setări</string>
     <string name="wait_for_network_connection_msg">Aştept conexiunea de reţea</string>
     <string name="download_app_libs_msg">%1$s are nevoie de biblioteci suplimentare pentru a rula.\nDoriţi să le descărcaţi acum?</string>
     <string name="start_downloading_msg">Încep descărcarea ...</string>

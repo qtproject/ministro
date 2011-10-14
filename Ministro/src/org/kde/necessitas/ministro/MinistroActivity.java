@@ -82,7 +82,7 @@ public class MinistroActivity extends Activity
             AlertDialog.Builder builder = new AlertDialog.Builder(MinistroActivity.this);
             builder.setMessage(getResources().getString(R.string.ministro_network_access_msg));
             builder.setCancelable(true);
-            builder.setNeutralButton(getResources().getString(R.string.setting_msg), new DialogInterface.OnClickListener() {
+            builder.setNeutralButton(getResources().getString(R.string.settings_msg), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         final ProgressDialog m_dialog = ProgressDialog.show(MinistroActivity.this, null, getResources().getString(R.string.wait_for_network_connection_msg), true, true, new DialogInterface.OnCancelListener() {
                             @Override

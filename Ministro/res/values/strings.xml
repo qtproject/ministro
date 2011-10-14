@@ -4,7 +4,7 @@
     <string name="repositories_prompt">Choose a repository</string>
     <string name="incompatible_ministo_api">Ministro is not compatible with your application. Please upgrade Ministro service.</string>
     <string name="ministro_network_access_msg">Ministro requires network access. Enable mobile network or Wi-Fi to download data.</string>
-    <string name="setting_msg">Setting</string>
+    <string name="settings_msg">Settings</string>
     <string name="wait_for_network_connection_msg">Waiting for network connection</string>
     <string name="download_app_libs_msg"> %1$s needs extra libraries to run.\nDo you want to download them now?</string>
     <string name="start_downloading_msg">Start downloading ...</string>
