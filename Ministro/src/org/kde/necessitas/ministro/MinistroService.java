@@ -67,6 +67,7 @@ public class MinistroService extends Service
     private static final String DEX_PATH_KEY="dex.path";
     private static final String LIB_PATH_KEY="lib.path";
     private static final String LOADER_CLASS_NAME_KEY="loader.class.name";
+
     private static final String NATIVE_LIBRARIES_KEY="native.libraries";
     private static final String ENVIRONMENT_VARIABLES_KEY="environment.variables";
     private static final String APPLICATION_PARAMETERS_KEY="application.parameters";
@@ -506,7 +507,7 @@ public class MinistroService extends Service
         Collections.sort(libs, new ModuleCompare());
         for (Module lib: libs)
             tempStringArray.add(m_qtLibsRootPath+lib.path);
-        params.putString(NATIVE_LIBRARIES_KEY, Library.join(tempStringArray, m_pathSeparator));
+        params.putStringArrayList(NATIVE_LIBRARIES_KEY, tempStringArray);
 
         tempStringArray.clear();
         for (String jar: jars)
