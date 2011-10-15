@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Pilih satu repositori</string>
+    <string name="incompatible_ministo_api">Ministro tidak serasi dengan aplikasi anda. Sila naik taraf servis Ministro.</string>
+    <string name="ministro_network_access_msg">Ministro memerlukan akses rangkaian. Guna rangkaian mudah alih atau rangkaian tanpa talian untuk muat turun data.</string>
+    <string name="settings_msg">Tetapan</string>
+    <string name="wait_for_network_connection_msg">Menunggu sambungan rangkaian</string>
+    <string name="download_app_libs_msg"> %1$s memerlukan pustaka tambahan untuk jalan.\nAdakah anda ingin muat turun sekarang?</string>
+    <string name="start_downloading_msg">Mula muat turun ...</string>
+    <string name="downloading_qt_libraries_msg">Muat turun pustaka Qt</string>
+    <string name="checking_libraries_msg">Semak pustaka. Sila tunggu...</string>
+    <string name="extracting_SSL_msg">Mengekstrak sijil akar SSL. Sila tunggu...</string>
+    <string name="new_qt_libs_msg">Pustaka baru Qt dijumpa</string>
+    <string name="new_qt_libs_tap_msg">Pustaka baru Qt telah dijumpai ketuk untuk kemas kini</string>
+    <string name="ministro_repository_msg">Ministro akan menggunakan  %1$s repositori.</string>
+    <string name="ministro_repository_changed_msg">Repositori Ministro telah berubah</string>
+    <string name="ministro_update_msg">Kemas kini Ministro</string>
+    <string name="ministro_repository_changed_tap_msg">Repositori Ministro telah berubah ketuk untuk kemas kini.</string>
+    <string name="invalid_parameters">Parameter-parameter tidak sah.</string>
+    <string name="dependencies_error">Ministro tidak dapat memuaskan kebergantungan aplikasi anda</string>
+</resources>

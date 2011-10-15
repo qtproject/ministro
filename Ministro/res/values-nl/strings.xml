@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Kies een repository</string>
+    <string name="incompatible_ministo_api">Ministro is niet compatibel met uw applicatie. Update uw Ministro service.</string>
+    <string name="ministro_network_access_msg">Ministro heeft netwerk-toegang nodig. Schakel mobiele data netwerk of Wi-Fi in.</string>
+    <string name="settings_msg">Instelling</string>
+    <string name="wait_for_network_connection_msg">Wachten op netwerkverbinding</string>
+    <string name="download_app_libs_msg"> %1$s heeft extra libraries nodig.\nWilt u deze nu downloaden?</string>
+    <string name="start_downloading_msg">Start downloaden ...</string>
+    <string name="downloading_qt_libraries_msg">Qt libraries aan het downloaden</string>
+    <string name="checking_libraries_msg">Libraries aan het controleren. Even wachten...</string>
+    <string name="extracting_SSL_msg">SSL certificaten extracten. Even wachten...</string>
+    <string name="new_qt_libs_msg">Nieuwe Qt libs gevonden</string>
+    <string name="new_qt_libs_tap_msg">Nieuwe Qt libs zijn gevonden, raak aan om te updaten.</string>
+    <string name="ministro_repository_msg">Ministro gebruikt  %1$s repository</string>
+    <string name="ministro_repository_changed_msg">Ministro repository is veranderd</string>
+    <string name="ministro_update_msg">Ministro update</string>
+    <string name="ministro_repository_changed_tap_msg">Ministro repository is veranderd, raak aan om te updaten.</string>
+    <string name="invalid_parameters">Ongeldige parameters</string>
+    <string name="dependencies_error">Ministro kan niet alle libraries die uw applicatie nodig heeft vinden.</string>
+</resources>

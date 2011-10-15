@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Επιλέξτε την τοποθεσία</string>
+    <string name="incompatible_ministo_api">Η εφαρμογή Ministro δεν είναι συμβατή με την εφαρμογή. Παρακαλώ αναβαθμίστε την εφαρμογή Ministro.</string>
+    <string name="ministro_network_access_msg">Η εφαρμογή Ministro απαιτεί την ύπαρξη σύνδεσης διαδικτύου. Ξεκινήστε την σύνδεση για το κατέβασμα των δεδομένων.</string>
+    <string name="settings_msg">Ρυθμίσεις</string>
+    <string name="wait_for_network_connection_msg">Αναμονή για την σύνδεση διαδικτύου</string>
+    <string name="download_app_libs_msg"> %1$s απαιτεί πρόσθετες βιβλιοθήκες για να ξεκινήσει.\nΝα πραγματοποιηθεί το κατέβασμα των δεδομένων?</string>
+    <string name="start_downloading_msg">Εκκίνηση κατεβάσματος δεδομένων...</string>
+    <string name="downloading_qt_libraries_msg">Κατεβαίνουν οι βιβλιοθήκες της Qt</string>
+    <string name="checking_libraries_msg">Έλεγχος βιβλιοθηκών. Παρακαλώ περιμένετε...</string>
+    <string name="extracting_SSL_msg">Αποσυμπίσεση των πιστοποιητικών SSL. Παρακαλώ περιμένετε...</string>
+    <string name="new_qt_libs_msg">Βρέθηκαν νέες βιβλιοθήκες της Qt</string>
+    <string name="new_qt_libs_tap_msg">Βρέθηκαν νέες βιβλιοθήκες της Qt, πατήστε για αναβάθμιση.</string>
+    <string name="ministro_repository_msg">Η εφαρμογή Ministro θα χρησιμοποιήσει την τοποθεσία %1$s</string>
+    <string name="ministro_repository_changed_msg">Η τοποθεσία της εφαρμογής Ministro έχει αλλάξει</string>
+    <string name="ministro_update_msg">Αναβάθμιση της εφαρμογής Ministro</string>
+    <string name="ministro_repository_changed_tap_msg">Η τοποθεσία της εφαρμογής Ministro έχει αλλάξει,πατήστε για αναβάθμιση.</string>
+    <string name="invalid_parameters">Μή εγκυρες παράμετροι</string>
+    <string name="dependencies_error">Η εφαρμογή Ministro δεν ικανοποιεί τις απαιτήσεις της εφαρμογής σας</string>
+</resources>

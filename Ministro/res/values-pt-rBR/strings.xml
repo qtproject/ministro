@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Escolha um repositório</string>
+    <string name="incompatible_ministo_api">O Ministro não é compatível com sua aplicação. Por favor atualize o serviço Ministro.</string>
+    <string name="ministro_network_access_msg">O Ministro requer acesso à rede. Habilite a rede móvel ou o Wi-Fi para baixar os dados.</string>
+    <string name="settings_msg">Configurações</string>
+    <string name="wait_for_network_connection_msg">Aguardando conexão de rede</string>
+    <string name="download_app_libs_msg"> %1$s precisa de bibliotecas extras para executar.\nVocê gostaria de baixá-las agora?</string>
+    <string name="start_downloading_msg">Iniciando o download ...</string>
+    <string name="downloading_qt_libraries_msg">Baixando as bibliotecas do Qt</string>
+    <string name="checking_libraries_msg">Verificando bibliotecas. Por favor aguarde...</string>
+    <string name="extracting_SSL_msg">Extraindo os certificados raiz SSL. Por favor aguarde...</string>
+    <string name="new_qt_libs_msg">Novas bibliotecas Qt encontradas</string>
+    <string name="new_qt_libs_tap_msg">Novas bibliotecas Qt foram encontradas, toque para atualizar.</string>
+    <string name="ministro_repository_msg">O Ministro utilizará o repositório  %1$s</string>
+    <string name="ministro_repository_changed_msg">Repositório do Ministro modificado</string>
+    <string name="ministro_update_msg">Atualização do Ministro</string>
+    <string name="ministro_repository_changed_tap_msg">O repositório do Ministro foi modificado, toque para atualizar.</string>
+    <string name="invalid_parameters">Parâmetros inválidos</string>
+    <string name="dependencies_error">O Ministro não pode satisfazer as dependências da sua aplicação</string>
+</resources>
