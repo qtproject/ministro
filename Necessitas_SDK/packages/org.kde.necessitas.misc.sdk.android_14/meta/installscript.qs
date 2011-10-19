@@ -20,30 +20,12 @@ function Component()
 {
     if( component.fromOnlineRepository )
     {
-        if (installer.value("os") == "win")
-        {
-            component.addDownloadableArchive( "qtwebkit-src-windows.7z" );
-        }
-        else
-        {
-            component.addDownloadableArchive( "qtwebkit-src.7z" );
-        }
+        component.addDownloadableArchive( "android-@@ANDROID_API_14_VERSION@@.7z" );
     }
 }
 
 Component.prototype.createOperations = function()
 {
-    try
-    {
-        component.createOperations();
-        component.addOperation( "RegisterPersistentSettings",
-                        "source_mapping.xml",
-                        "@@TEMP_PATH@@/@@REPOSITORY@@/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/qtwebkit-src",
-                        "@TargetDir@/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/qtwebkit-src" );
-    }
-    catch( e )
-    {
-        print( e );
-    }
+    // Call the base createOperations(unpacking ...)
+    component.createOperations();
 }
-

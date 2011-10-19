@@ -44,11 +44,12 @@ Component.prototype.createOperations = function()
     {
         component.createOperations();
         var qtPath = "@TargetDir@/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/armeabi-v7a";
-        component.addOperation( "QtPatch", qtPath );
-        component.addOperation( "RegisterQtInCreator",
-                                "@TargetDir@",
-                                "Necessitas Qt @@NECESSITAS_QT_VERSION@@ for Android armv7",
-                                qtPath );
+        component.addOperation( "QtPatch2", qtPath );
+        component.addOperation( "RegisterQtInCreatorV23",
+                                "Necessitas Qt @@NECESSITAS_QT_VERSION@@ for Android armv7a",
+                                qtPath,
+                                "Android",
+                                "Android_Platform_API_5_ARMv7a");
     }
     catch( e )
     {

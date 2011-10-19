@@ -22,7 +22,7 @@ function Component()
     {
         if (installer.value("os") == "x11")
         {
-            component.addDownloadableArchive( "android-sdk-linux_x86.7z" );
+            component.addDownloadableArchive( "android-sdk-linux.7z" );
         }
         else if (installer.value("os") == "win")
         {
@@ -30,7 +30,7 @@ function Component()
         }
         else if (installer.value("os") == "mac")
         {
-            component.addDownloadableArchive( "android-sdk-mac_x86.7z" );
+            component.addDownloadableArchive( "android-sdk-macosx.7z" );
         }
     }
 }
@@ -39,25 +39,10 @@ Component.prototype.createOperations = function()
 {
     // Call the base createOperations(unpacking ...)
     component.createOperations();
+
     // set SDK Location
-
-    var sdkPath;
-    if (installer.value("os") == "x11")
-    {
-        sdkPath="@TargetDir@/android-sdk-linux_x86";
-    }
-    else if (installer.value("os") == "win")
-    {
-        sdkPath="@TargetDir@/android-sdk-windows";
-    }
-    else if (installer.value("os") == "mac")
-    {
-        sdkPath="@TargetDir@/android-sdk-mac_x86";
-    }
-
-    component.addOperation( "SetQtCreatorValue",
-                            "@TargetDir@",
-                            "AndroidConfigurations",
+    component.addOperation( "RegisterPersistentSettings",
+                            "android.xml",
                             "SDKLocation",
-                            sdkPath );
+                            "@TargetDir@/android-sdk" );
 }

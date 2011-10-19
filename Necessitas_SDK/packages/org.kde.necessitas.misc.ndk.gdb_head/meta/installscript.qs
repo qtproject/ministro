@@ -50,15 +50,13 @@ Component.prototype.createOperations = function()
         pythonPath+=".exe";
     }
 
-    component.addOperation( "SetQtCreatorValue",
-                            "@TargetDir@",
-                            "AndroidConfigurations",
+    component.addOperation( "RegisterPersistentSettings",
+                            "android.xml",
                             "GdbLocation",
                             gdbPath );
 
-    component.addOperation( "SetQtCreatorValue",
-                            "@TargetDir@",
-                            "AndroidConfigurations",
+    component.addOperation( "RegisterPersistentSettings",
+                            "android.xml",
                             "GdbserverLocation",
                             gdbserverPath );
 

@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <Package>
     <DisplayName>Apache Ant</DisplayName>
-    <Description>Apache Ant Build Tool</Description>
+    <Description>Apache Ant Build Tool, you need it ONLY if you don't have it already installed.</Description>
     <Version>1.8.2</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.misc.ant</Name>
     <Script>installscript.qs</Script>
-    <InstallPriority>99999</InstallPriority>
+    <Default>script</Default>
+    <InstallPriority>99</InstallPriority>
     <SortingPriority>94</SortingPriority>
-    <ForcedInstallation>false</ForcedInstallation>
 </Package>

@@ -6,5 +6,4 @@
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas</Name>
     <Script>installscript.qs</Script>
-    <InstallPriority>1</InstallPriority>
 </Package>

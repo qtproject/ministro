@@ -9,6 +9,8 @@
         <version value="10" symlink="9"/>
         <version value="11" symlink="9"/>
         <version value="12" symlink="9"/>
+        <version value="13" symlink="9"/>
+        <version value="14" symlink="9"/>
     </platforms>
 
     <libs excludePaths="imports;plugins" loaderClassName="org.kde.necessitas.industrius.QtLoader" applicationParameters="-platform	android" environmentVariables="MINISTRO_SSL_CERTS_PATH=MINISTRO_PATH/qt/ssl	QML_IMPORT_PATH=MINISTRO_PATH/qt/imports	QT_PLUGIN_PATH=MINISTRO_PATH/qt/plugins">

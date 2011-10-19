@@ -36,8 +36,10 @@ Component.prototype.createOperations = function()
     try
     {
         component.createOperations();
-        var qtPath = "";
-        component.addOperation( "RegisterQtCreatorSourceMapping", "@TargetDir@", "@@TEMP_PATH@@/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/qt-src", "@TargetDir@/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/qt-src" );
+        component.addOperation( "RegisterPersistentSettings",
+                                "source_mapping.xml",
+                                "@@TEMP_PATH@@/@@REPOSITORY@@/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/qt-src",
+                                "@TargetDir@/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/qt-src" );
     }
     catch( e )
     {

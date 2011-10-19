@@ -43,13 +43,14 @@ Component.prototype.createOperations = function()
     try
     {
         component.createOperations();
-        var qtPath = "@TargetDir@/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/x86";
+        var qtPath = "@TargetDir@/Android/Qt/@@NECESSITAS_QT_VERSION_SHORT@@/armeabi-android-4";
         component.addOperation( "QtPatch2", qtPath );
+
         component.addOperation( "RegisterQtInCreatorV23",
-                                "Necessitas Qt @@NECESSITAS_QT_VERSION@@ for Android x86",
+                                "Necessitas Qt @@NECESSITAS_QT_VERSION@@ for Android API 4+ armv5",
                                 qtPath,
                                 "Android",
-                                "Android_Platform_API_9_x86");
+                                "Android_Platform_API_4_ARMv5");
     }
     catch( e )
     {

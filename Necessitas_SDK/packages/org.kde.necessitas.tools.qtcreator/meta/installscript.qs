@@ -18,7 +18,6 @@
 // constructor
 function Component()
 {
-    installer.installationFinished.connect( this, Component.prototype.installationFinished );
     if (installer.value("os") == "win")
     {
         component.selectedChanged.connect( this, checkWhetherStopProcessIsNeeded );
@@ -62,134 +61,116 @@ checkWhetherStopProcessIsNeeded = function()
 
 }
 
+registerWindowsFileTypeExtensions = function()
+{
+    var headerExtensions = new Array("h", "hh", "hxx", "h++", "hpp", "hpp");
+
+    for (var i = 0; i < headerExtensions.length; ++i) {
+        component.addOperation( "RegisterFileType",
+                                headerExtensions[i],
+                                "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
+                                "C++ Header file",
+                                "",
+                                "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,3");
+    }
+
+    var cppExtensions = new Array("cc", "cxx", "c++", "cp", "cpp");
+
+    for (var i = 0; i < cppExtensions.length; ++i) {
+        component.addOperation( "RegisterFileType",
+                                cppExtensions[i],
+                                "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
+                                "C++ Source file",
+                                "",
+                                "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,2");
+    }
+
+    component.addOperation( "RegisterFileType",
+                            "c",
+                            "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
+                            "C Source file",
+                            "",
+                            "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,1");
+    component.addOperation( "RegisterFileType",
+                            "ui",
+                            "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
+                            "Qt UI file",
+                            "",
+                            "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,4");
+    component.addOperation( "RegisterFileType",
+                            "pro",
+                            "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
+                            "Qt Project file",
+                            "",
+                            "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,5");
+    component.addOperation( "RegisterFileType",
+                            "pri",
+                            "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
+                            "Qt Project Include file",
+                            "",
+                            "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,6");
+    component.addOperation( "RegisterFileType",
+                            "qs",
+                            "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
+                            "Qt Script file",
+                            "",
+                            "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,0");
+    component.addOperation( "RegisterFileType",
+                            "qml",
+                            "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
+                            "Qt Quick Markup language file",
+                            "",
+                            "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,0");
+}
 
 Component.prototype.createOperations = function()
 {
     // Call the base createOperations and afterwards set some registry settings
     component.createOperations();
-
-    if (installer.value("os") == "win") {
-        var win_application = installer.value("TargetDir") + "/SDKMaintenanceTool.exe";
-        component.addOperation( "SetQtCreatorValue",
-                                "@TargetDir@",
-                                "Updater",
-                                "Application",
-                                win_application );
-    } else if (installer.value("os") == "x11") {
-        component.addOperation( "SetQtCreatorValue",
-                                "@TargetDir@",
-                                "Updater",
-                                "Application",
-                                "@TargetDir@/SDKMaintenanceTool" );
-    } else if (installer.value("os") == "mac") {
-        component.addOperation( "SetQtCreatorValue",
-                                "@TargetDir@",
-                                "Updater",
-                                "Application",
-                                "@TargetDir@/SDKMaintenanceTool.app/Contents/MacOS/SDKMaintenanceTool" );
-    }
-    component.addOperation( "SetQtCreatorValue",
-                            "@TargetDir@",
-                            "Updater",
-                            "CheckOnlyArgument",
-                            "--checkupdates" );
-    component.addOperation( "SetQtCreatorValue",
-                            "@TargetDir@",
-                            "Updater",
-                            "RunUiArgument",
-                            "--updater" );
-
-    if ( installer.value("os") == "x11" )
-    {
-//        component.addOperation( "SetPluginPathOnQtCore",
-//                                "@TargetDir@/QtCreator/lib/qtcreator",
-//                                "@TargetDir@/QtCreator/lib/qtcreator/plugins");
-
-        component.addOperation( "InstallIcons", "@TargetDir@/QtCreator/icons" );
-        component.addOperation( "CreateDesktopEntry",
-                                "Necessitas-qtcreator.desktop",
-                                "Type=Application\nExec=@TargetDir@/QtCreator/bin/necessitas\nPath=@homeDir@\nName=Necessitas Qt Creator\nGenericName=The IDE of choice for development on Android devices.\nIcon=necessitas\nTerminal=false\nCategories=Development;IDE;Qt;\nMimeType=text/x-c++src;text/x-c++hdr;text/x-xsrc;application/x-designer;application/vnd.nokia.qt.qmakeprofile;application/vnd.nokia.xml.qt.resource;"
-                                );
-    }
     if ( installer.value("os") == "win" )
     {
         component.addOperation( "SetPluginPathOnQtCore",
                                 "@TargetDir@/QtCreator/bin",
                                 "@TargetDir@/QtCreator/plugins");
+        component.addOperation( "SetImportsPathOnQtCore",
+                                "@TargetDir@/QtCreator/bin",
+                                "@TargetDir@/QtCreator/bin");
         component.addOperation( "CreateShortcut",
                                 "@TargetDir@\\QtCreator\\bin\\qtcreator.exe",
                                 "@StartMenuDir@/Qt Creator.lnk",
                                 "workingDirectory=@homeDir@" );
-
-        var headerExtensions = new Array("h", "hh", "hxx", "h++", "hpp", "hpp");
-
-        for (var i = 0; i < headerExtensions.length; ++i) {
-            component.addOperation( "RegisterFileType",
-                                    headerExtensions[i],
-                                    "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
-                                    "C++ Header file",
-                                    "",
-                                    "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,3");
-        }
-
-        var cppExtensions = new Array("cc", "cxx", "c++", "cp", "cpp");
-
-        for (var i = 0; i < cppExtensions.length; ++i) {
-            component.addOperation( "RegisterFileType",
-                                    cppExtensions[i],
-                                    "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
-                                    "C++ Source file",
-                                    "",
-                                    "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,2");
-        }
-
-        component.addOperation( "RegisterFileType",
-                                "c",
-                                "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
-                                "C Source file",
-                                "",
-                                "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,1");
-        component.addOperation( "RegisterFileType",
-                                "ui",
-                                "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
-                                "Qt UI file",
-                                "",
-                                "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,4");
-        component.addOperation( "RegisterFileType",
-                                "pro",
-                                "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
-                                "Qt Project file",
-                                "",
-                                "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,5");
-        component.addOperation( "RegisterFileType",
-                                "pri",
-                                "@TargetDir@\\QtCreator\\bin\\qtcreator.exe -client '%1'",
-                                "Qt Project Include file",
-                                "",
-                                "@TargetDir@\\QtCreator\\bin\\qtcreator.exe,6");
-
+        registerWindowsFileTypeExtensions();
     }
-}
+    if ( installer.value("os") == "x11" )
+    {
+        component.addOperation( "SetPluginPathOnQtCore",
+                                "@TargetDir@/QtCreator/lib/qtcreator",
+                                "@TargetDir@/QtCreator/lib/qtcreator/plugins");
+        component.addOperation( "SetImportsPathOnQtCore",
+                                "@TargetDir@/QtCreator/lib/qtcreator",
+                                "@TargetDir@/QtCreator/bin");
 
-Component.prototype.installationFinished = function()
-{
-    if (installer.isInstaller() && component.selected)
+        component.addOperation( "InstallIcons", "@TargetDir@/QtCreator/images" );
+        component.addOperation( "CreateDesktopEntry",
+                                "Necessitas-qtcreator.desktop",
+                                "Type=Application\nExec=@TargetDir@/QtCreator/bin/necessitas\nPath=@homeDir@\nName=Necessitas Qt Creator\nGenericName=The IDE of choice for development on Android devices.\nIcon=necessitas\nTerminal=false\nCategories=Development;IDE;Qt;\nMimeType=text/x-c++src;text/x-c++hdr;text/x-xsrc;application/x-designer;application/vnd.nokia.qt.qmakeprofile;application/vnd.nokia.xml.qt.resource;"
+                                );
+    }
+    if (!installer.isUpdater())
     {
         if (installer.value("os") == "win")
         {
             installer.setValue("RunProgram", installer.value("TargetDir") + "\\QtCreator\\bin\\qtcreator.exe");
-            installer.setValue("RunProgramDescription", "Launch Qt Creator");
         }
         else if (installer.value("os") == "x11")
         {
             installer.setValue("RunProgram", installer.value("TargetDir") + "/QtCreator/bin/necessitas");
-            installer.setValue("RunProgramDescription", "Launch Qt Creator");
         }
         else if (installer.value("os") == "mac")
         {
             installer.setValue("RunProgram", "\"" + installer.value("TargetDir") + "/QtCreator/bin/NecessitasQtCreator.app/Contents/MacOS/NecessitasQtCreator\"");
-            installer.setValue("RunProgramDescription", "Launch Qt Creator");
         }
+        installer.setValue("RunProgramDescription", "Launch Qt Creator");
     }
+    
 }
-

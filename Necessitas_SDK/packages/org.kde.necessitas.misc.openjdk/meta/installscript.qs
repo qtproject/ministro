@@ -61,9 +61,8 @@ Component.prototype.createOperations = function()
     // Call the base createOperations(unpacking ...)
     component.createOperations();
 
-    component.addOperation( "SetQtCreatorValue",
-                            "@TargetDir@",
-                            "AndroidConfigurations",
+    component.addOperation( "RegisterPersistentSettings",
+                            "android.xml",
                             "OpenJDKLocation",
                             "@TargetDir@/openjdk/"+OsToTargetDir() );
 }

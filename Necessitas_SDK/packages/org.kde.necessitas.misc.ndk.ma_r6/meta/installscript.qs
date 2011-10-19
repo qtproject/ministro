@@ -40,15 +40,13 @@ Component.prototype.createOperations = function()
     // Call the base createOperations(unpacking ...)
     component.createOperations();
     // set NDK Location
-    component.addOperation( "SetQtCreatorValue",
-                            "@TargetDir@",
-                            "AndroidConfigurations",
+    component.addOperation( "RegisterPersistentSettings",
+                            "android.xml",
                             "NDKLocation",
                             "@TargetDir@/android-ndk-@@ANDROID_NDK_MAJOR_VERSION@@" );
     // set NDK toolchain version
-    component.addOperation( "SetQtCreatorValue",
-                            "@TargetDir@",
-                            "AndroidConfigurations",
+    component.addOperation( "RegisterPersistentSettings",
+                            "android.xml",
                             "NDKToolchainVersion",
                             "arm-linux-androideabi-4.4.3" );
 
@@ -68,14 +66,12 @@ Component.prototype.createOperations = function()
         gdbPath+="darwin-x86/bin/arm-linux-androideabi-gdb";
     }
 
-    component.addOperation( "SetQtCreatorValue",
-                            "@TargetDir@",
-                            "AndroidConfigurations",
+    component.addOperation( "RegisterPersistentSettings",
+                            "android.xml",
                             "GdbLocation",
                             gdbPath );
-    component.addOperation( "SetQtCreatorValue",
-                            "@TargetDir@",
-                            "AndroidConfigurations",
+    component.addOperation( "RegisterPersistentSettings",
+                            "android.xml",
                             "GdbserverLocation",
                             gdbserverPath );
 }
