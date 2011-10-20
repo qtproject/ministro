@@ -75,7 +75,7 @@ GDB_VER=7.3
 
 pushd $TEMP_PATH
 
-MINISTRO_REPO_PATH=$TEMP_PATH/out/necessitas/qt
+MINISTRO_REPO_PATH=$TEMP_PATH/out/necessitas/qt/$CHECKOUT_BRANCH
 REPO_PATH=$TEMP_PATH/out/necessitas/sdk
 if [ ! -d $TEMP_PATH/out/necessitas/sdk_src/org.kde.necessitas ]
 then
@@ -1140,18 +1140,6 @@ function prepareSDKs
 
     # repack api-14
     repackSDK android-${ANDROID_API_14_VERSION} android-${ANDROID_API_14_VERSION} android-sdk/platforms android-14
-    if [ "$OSTYPE" = "linux-gnu" ] ; then
-        if [ ! -d android-sdk-linux/platform-tools ]
-        then
-            rm -fr android-sdk-linux
-            7z -y x $REPO_PATH_PACKAGES/org.kde.necessitas.misc.sdk.base/data/android-sdk-linux.7z
-            7z -y x $REPO_PATH_PACKAGES/org.kde.necessitas.misc.sdk.platform_tools/data/platform-tools_${ANDROID_PLATFORM_TOOLS_VERSION}-linux.7z
-            7z -y x $REPO_PATH_PACKAGES/org.kde.necessitas.misc.sdk.android_14/data/android-${ANDROID_API_14_VERSION}.7z
-            7z -y x $REPO_PATH_PACKAGES/org.kde.necessitas.misc.sdk.android_8/data/android-${ANDROID_API_8_VERSION}.7z
-        fi
-        export ANDROID_SDK_TOOLS_PATH=$PWD/android-sdk/tools/
-        export ANDROID_SDK_PLATFORM_TOOLS_PATH=$PWD/android-sdk/platform-tools/
-    fi
 }
 
 function patchQtFiles
@@ -1221,6 +1209,20 @@ function compileNecessitasQt #params $1 architecture, $2 package path, $3 NDK_TA
     fi
     # NQT_INSTALL_DIR=/data/data/org.kde.necessitas.ministro/files/qt
     NQT_INSTALL_DIR=$PWD/install
+
+    if [ "$OSTYPE" = "linux-gnu" ] ; then
+        if [ ! -d android-sdk-linux/platform-tools ]
+        then
+            rm -fr android-sdk-linux
+            7z -y x $REPO_PATH_PACKAGES/org.kde.necessitas.misc.sdk.base/data/android-sdk-linux.7z
+            7z -y x $REPO_PATH_PACKAGES/org.kde.necessitas.misc.sdk.platform_tools/data/platform-tools_${ANDROID_PLATFORM_TOOLS_VERSION}-linux.7z
+            7z -y x $REPO_PATH_PACKAGES/org.kde.necessitas.misc.sdk.android_14/data/android-${ANDROID_API_14_VERSION}.7z
+            7z -y x $REPO_PATH_PACKAGES/org.kde.necessitas.misc.sdk.android_8/data/android-${ANDROID_API_8_VERSION}.7z
+        fi
+        export ANDROID_SDK_TOOLS_PATH=$PWD/android-sdk/tools/
+        export ANDROID_SDK_PLATFORM_TOOLS_PATH=$PWD/android-sdk/platform-tools/
+    fi
+
     if [ ! -f all_done ]
     then
          pushd ../qt-src
@@ -1269,6 +1271,7 @@ function compileNecessitasQt #params $1 architecture, $2 package path, $3 NDK_TA
     cp $REPO_PATH_PACKAGES/org.kde.necessitas.android.qt.$package_name/data/qt-framework.7z $REPO_PATH_PACKAGES/org.kde.necessitas.android.qt.$package_name/data/qt-framework-windows.7z
     rm -fr ../install-$1
     cp -a install ../install-$1
+    cp -rf jar ../install-$1/
 #    patchQtFiles
 }
 
@@ -1326,7 +1329,6 @@ function prepareNecessitasQt
 
 function compileNecessitasQtMobility
 {
-    export ANDROID_TARGET_ARCH=$1
     if [ ! -f all_done ]
     then
         pushd ../qtmobility-src
@@ -1381,6 +1383,22 @@ function prepareNecessitasQtMobility
         popd #build-mobility-armeabi-v7a
     fi
 
+    if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.android.qtmobility.armeabi_android_4/data/qtmobility.7z ]
+    then
+        mkdir build-mobility-armeabi-android-4
+        pushd build-mobility-armeabi-android-4
+        compileNecessitasQtMobility armeabi-android-4 Android/Qt/$NECESSITAS_QT_VERSION_SHORT
+        popd #build-mobility-armeabi-android-4
+    fi
+
+#     if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.android.qtmobility.x86/data/qtmobility.7z ]
+#     then
+#         mkdir build-mobility-x86
+#         pushd build-mobility-x86
+#         compileNecessitasQtMobility x86 Android/Qt/$NECESSITAS_QT_VERSION_SHORT
+#         popd #build-mobility-x86
+#     fi
+
     if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.android.qtmobility.src/data/qtmobility-src.7z ]
     then
         packSource qtmobility-src
@@ -1390,7 +1408,6 @@ function prepareNecessitasQtMobility
 
 function compileNecessitasQtWebkit
 {
-    export ANDROID_TARGET_ARCH=$1
     export SQLITE3SRCDIR=$TEMP_PATH/$CHECKOUT_BRANCH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/qt-src/src/3rdparty/sqlite
     if [ ! -f all_done ]
     then
@@ -1480,6 +1497,22 @@ function prepareNecessitasQtWebkit
         popd #build-webkit-armeabi-v7a
     fi
 
+    if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.android.qtwebkit.armeabi_android_4/data/qtwebkit.7z ]
+    then
+        mkdir build-webkit-armeabi-android-4
+        pushd build-webkit-armeabi-android-4
+        compileNecessitasQtWebkit armeabi-android-4 Android/Qt/$NECESSITAS_QT_VERSION_SHORT
+        popd #build-webkit-armeabi-android-4
+    fi
+
+#     if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.android.qtwebkit.x86/data/qtwebkit.7z ]
+#     then
+#         mkdir build-webkit-x86
+#         pushd build-webkit-x86
+#         compileNecessitasQtWebkit x86 Android/Qt/$NECESSITAS_QT_VERSION_SHORT
+#         popd #build-webkit-x86
+#     fi
+# 
     if [ ! -f $REPO_PATH_PACKAGES/org.kde.necessitas.android.qtwebkit.src/data/qtwebkit-src.7z ]
     then
         packSource qtwebkit-src
@@ -1580,6 +1613,7 @@ function setPackagesVariables
     patchPackages "@@NECESSITAS_QT_VERSION_SHORT@@" $NECESSITAS_QT_VERSION_SHORT
     patchPackages "@@NECESSITAS_QTWEBKIT_VERSION@@" $NECESSITAS_QTWEBKIT_VERSION
     patchPackages "@@NECESSITAS_QTMOBILITY_VERSION@@" $NECESSITAS_QTMOBILITY_VERSION
+    patchPackages "@@REPOSITORY@@" $CHECKOUT_BRANCH
     patchPackages "@@TEMP_PATH@@" $TEMP_PATH
 
     patchPackage "@@NECESSITAS_QT_CREATOR_VERSION@@" $NECESSITAS_QT_CREATOR_VERSION "org.kde.necessitas.tools.qtcreator"
@@ -1602,10 +1636,12 @@ function setPackagesVariables
     patchPackage "@@ANDROID_PLATFORM_TOOLS_VERSION@@" $ANDROID_PLATFORM_TOOLS_VERSION "org.kde.necessitas.misc.sdk.platform_tools"
     patchPackage "@@ANDROID_SDK_VERSION@@" $ANDROID_SDK_VERSION "org.kde.necessitas.misc.sdk.base"
 
-#     patchPackage "@@NECESSITAS_QTMOBILITY_ARMEABI_INSTALL_PATH@@" $ANDROID_SDK_VERSION
-#     patchPackage "@@NECESSITAS_QTMOBILITY_ARMEABI-V7A_INSTALL_PATH@@" $ANDROID_SDK_VERSION
-#     patchPackage "@@NECESSITAS_QTWEBKIT_ARMEABI_INSTALL_PATH@@" $ANDROID_SDK_VERSION
-#     patchPackage "@@NECESSITAS_QTWEBKIT_ARMEABI-V7A_INSTALL_PATH@@" $ANDROID_SDK_VERSION
+    patchPackage "@@NECESSITAS_QTMOBILITY_ARMEABI_INSTALL_PATH@@" "$TEMP_PATH/$CHECKOUT_BRANCH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-mobility-armeabi"
+    patchPackage "@@NECESSITAS_QTMOBILITY_ARMEABI_ANDROID_4_INSTALL_PATH@@" "$TEMP_PATH/$CHECKOUT_BRANCH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-mobility-armeabi-android-4"
+    patchPackage "@@NECESSITAS_QTMOBILITY_ARMEABI-V7A_INSTALL_PATH@@" "$TEMP_PATH/$CHECKOUT_BRANCH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-mobility-armeabi-v7a"
+    patchPackage "@@NECESSITAS_QTWEBKIT_ARMEABI_INSTALL_PATH@@" "/data/data/org.kde.necessitas.ministro/files/qt"
+    patchPackage "@@NECESSITAS_QTWEBKIT_ARMEABI_ANDROID_4_INSTALL_PATH@@" "/data/data/org.kde.necessitas.ministro/files/qt"
+    patchPackage "@@NECESSITAS_QTWEBKIT_ARMEABI-V7A_INSTALL_PATH@@" "/data/data/org.kde.necessitas.ministro/files/qt"
 
 }
 
@@ -1640,37 +1676,50 @@ function prepareSDKRepository
 
 function prepareMinistroRepository
 {
+    rm -fr $MINISTRO_REPO_PATH
     pushd $REPO_SRC_PATH/ministrorepogen
     if [ ! -f all_done ]
     then
         $STATIC_QT_PATH/bin/qmake CONFIG+=static -r || error_msg "Can't configure ministrorepogen"
         doMake "Can't compile ministrorepogen" "all done" ma-make
+        if [ "$OSTYPE" = "msys" ] ; then
+            cp $REPO_SRC_PATH/ministrorepogen/release/ministrorepogen$EXE_EXT $REPO_SRC_PATH/ministrorepogen/ministrorepogen$EXE_EXT
+        fi
     fi
     popd
-    for architecture in armeabi armeabi-v7a
+    for platfromArchitecture in armeabi armeabi-v7a armeabi-android-4 
     do
-        rm -fr $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION
-        mkdir -p $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION
-        pushd $TEMP_PATH/$CHECKOUT_BRANCH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/install-$architecture || error_msg "Can't prepare ministro repo, Android Qt not built?"
+        pushd $TEMP_PATH/$CHECKOUT_BRANCH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/install-$platfromArchitecture || error_msg "Can't prepare ministro repo, Android Qt not built?"
+        architecture=$platfromArchitecture;
+        repoVersion=$MINISTRO_VERSION-$platfromArchitecture
+        if [ $architecture = "armeabi-android-4" ] ; then
+            architecture="armeabi"
+        fi
+        MINISTRO_OBJECTS_PATH=$MINISTRO_REPO_PATH/android/$architecture/objects/$repoVersion
+        rm -fr $MINISTRO_OBJECTS_PATH
+        mkdir -p $MINISTRO_OBJECTS_PATH
         rm -fr Android
         for lib in `find . -name *.so`
         do
             libDirname=`dirname $lib`
-            mkdir -p $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/$libDirname
-            cp $lib $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/$libDirname/
-            $ANDROID_STRIP_BINARY --strip-unneeded $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/$lib
+            mkdir -p $MINISTRO_OBJECTS_PATH/$libDirname
+            cp $lib $MINISTRO_OBJECTS_PATH/$libDirname/
+            $ANDROID_STRIP_BINARY --strip-unneeded $MINISTRO_OBJECTS_PATH/$lib
+        done
+
+        for jar in `find . -name *.jar`
+        do
+            jarDirname=`dirname $jar`
+            mkdir -p $MINISTRO_OBJECTS_PATH/$jarDirname
+            cp $jar $MINISTRO_OBJECTS_PATH/$jarDirname/
         done
 
         for qmldirfile in `find . -name qmldir`
         do
             qmldirfileDirname=`dirname $qmldirfile`
-            cp $qmldirfile $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION/$qmldirfileDirname/
+            cp $qmldirfile $MINISTRO_OBJECTS_PATH/$qmldirfileDirname/
         done
-
-        if [ "$OSTYPE" = "msys" ] ; then
-            cp $REPO_SRC_PATH/ministrorepogen/release/ministrorepogen$EXE_EXT $REPO_SRC_PATH/ministrorepogen/ministrorepogen$EXE_EXT
-        fi
-        $REPO_SRC_PATH/ministrorepogen/ministrorepogen$EXE_EXT $ANDROID_READELF_BINARY $MINISTRO_REPO_PATH/android/$architecture/objects/$MINISTRO_VERSION $MINISTRO_VERSION $architecture $REPO_SRC_PATH/ministrorepogen/rules.xml $MINISTRO_REPO_PATH
+        $REPO_SRC_PATH/ministrorepogen/ministrorepogen$EXE_EXT $ANDROID_READELF_BINARY $MINISTRO_OBJECTS_PATH $MINISTRO_VERSION $architecture $REPO_SRC_PATH/ministrorepogen/rules-$platfromArchitecture.xml $MINISTRO_REPO_PATH $repoVersion $CHECKOUT_BRANCH
         popd
     done
 }
@@ -1788,6 +1837,6 @@ fi
 removeUnusedPackages
 
 prepareSDKRepository
-#prepareMinistroRepository
+prepareMinistroRepository
 
 popd
