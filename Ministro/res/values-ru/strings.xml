@@ -4,7 +4,7 @@
     <string name="repositories_prompt">Выберите репозиторий</string>
     <string name="incompatible_ministo_api">Ministro не совместим с вашим приложением. Обновите сервис Ministro.</string>
     <string name="ministro_network_access_msg">Ministro требуется сетевой доступ. Включите мобильную сеть или Wi-Fi для загрузки данных.</string>
-    <string name="setting_msg">Настройка</string>
+    <string name="settings_msg">Настройка</string>
     <string name="wait_for_network_connection_msg">Ожидание сетевого подключения</string>
     <string name="download_app_libs_msg"> %1$s необходимы дополнительные библиотеки для работы.\nЗагрузить их прямо сейчас?</string>
     <string name="start_downloading_msg">Началась загрузка ...</string>
