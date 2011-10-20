@@ -6,14 +6,14 @@
     <string name="ministro_network_access_msg">Ministro requires network access. Enable mobile network or Wi-Fi to download data.</string>
     <string name="settings_msg">Préférences</string>
     <string name="wait_for_network_connection_msg">Attente de la connection réseau</string>
-    <string name="download_app_libs_msg"> %1$ a besoin de librairies supplémentaires.\nVoulez-vous les télécharger maintenant?</string>
+    <string name="download_app_libs_msg"> %1$s a besoin de librairies supplémentaires.\nVoulez-vous les télécharger maintenant?</string>
     <string name="start_downloading_msg">Début du téléchargement ...</string>
     <string name="downloading_qt_libraries_msg">Téléchargement des librairies Qt</string>
     <string name="checking_libraries_msg">Vérification des librairies. Veuillez attendre...</string>
     <string name="extracting_SSL_msg">Extraction des certificats racines SSL. Veuillez attendre...</string>
     <string name="new_qt_libs_msg">Nouvelle version des librairies Qt trouvée</string>
     <string name="new_qt_libs_tap_msg">Nouvelle version des librairies Qt trouvée, tapez pour mettre à jour.</string>
-    <string name="ministro_repository_msg">Ministro usera le dépôt  %1$</string>
+    <string name="ministro_repository_msg">Ministro usera le dépôt  %1$s</string>
     <string name="ministro_repository_changed_msg">Dépôt Ministro changé</string>
     <string name="ministro_update_msg">Mise à jour Ministro</string>
     <string name="ministro_repository_changed_tap_msg">Dépôt Ministro changé, tapez pour mettre à jour.</string>

@@ -68,7 +68,6 @@ import android.provider.Settings;
 
 public class MinistroActivity extends Activity
 {
-
     public native static int nativeChmode(String filepath, int mode);
     private static final String DOMAIN_NAME="http://files.kde.org/necessitas/ministro/necessitas/";
 
