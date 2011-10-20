@@ -20,24 +20,11 @@ function Component()
 {
     if( component.fromOnlineRepository )
     {
-        if (installer.value("os") == "x11")
-        {
-            component.addDownloadableArchive( "android-@@ANDROID_API_7_VERSION@@-linux.7z" );
-        }
-        else if (installer.value("os") == "win")
-        {
-            component.addDownloadableArchive( "android-@@ANDROID_API_7_VERSION@@-windows.7z" );
-        }
-        else if (installer.value("os") == "mac")
-        {
-            component.addDownloadableArchive( "android-@@ANDROID_API_7_VERSION@@-macosx.7z" );
-        }
+        component.addDownloadableArchive( "android-@@ANDROID_API_7_VERSION@@.7z" );
     }
 }
 
 Component.prototype.createOperations = function()
 {
-    // Call the base createOperations(unpacking ...)
     component.createOperations();
-    // set SDK Location
 }

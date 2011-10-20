@@ -32,7 +32,7 @@
 
 void printHelp()
 {
-    qDebug()<<"Usage:./ministrorepogen <readelf executable path> <libraries path> <version> <abi version> <xml rules file> <output folder> ";
+    qDebug()<<"Usage:./ministrorepogen <readelf executable path> <libraries path> <version> <abi version> <xml rules file> <output folder> <out objects repo version> <repository>";
 }
 
 
@@ -51,7 +51,7 @@ void getFileInfo(const QString & filePath, qint64 & fileSize, QString & sha1)
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    if (argc<7)
+    if (argc<9)
     {
         printHelp();
         return 1;
@@ -63,6 +63,8 @@ int main(int argc, char *argv[])
     const char * abiVersion=argv[4];
     const char * rulesFile=argv[5];
     const char * outputFolder=argv[6];
+    const char * objfolder =argv [7];
+    const char * repository =argv [8];
 
     QDomDocument document("libs");
     QFile f(rulesFile);
@@ -77,14 +79,25 @@ int main(int argc, char *argv[])
     if (element.isNull())
         return 1;
 
-    QMap<int, QVector<int> >platforms;
-    element=element.firstChildElement("version");
+    QMap<int, QVector<int> >platformLibs;
+    element=element.firstChildElement("libs").firstChildElement("version");
     while(!element.isNull())
     {
         if (element.hasAttribute("symlink"))
-            platforms[element.attribute("symlink", 0).toInt()].push_back(element.attribute("value", 0).toInt());
+            platformLibs[element.attribute("symlink", 0).toInt()].push_back(element.attribute("value", 0).toInt());
         else
-            platforms[element.attribute("value", 0).toInt()].clear();
+            platformLibs[element.attribute("value", 0).toInt()].clear();
+        element = element.nextSiblingElement();
+    }
+
+    QMap<int, int >platformJars;
+    element=root.firstChildElement("platforms").firstChildElement("jars").firstChildElement("version");
+    while(!element.isNull())
+    {
+        if (element.hasAttribute("symlink"))
+            platformJars[element.attribute("value", 0).toInt()]=element.attribute("symlink", 0).toInt();
+        else
+            platformJars[element.attribute("value", 0).toInt()]=element.attribute("value", 0).toInt();
         element = element.nextSiblingElement();
     }
 
@@ -129,7 +142,7 @@ int main(int argc, char *argv[])
         while(!childs.isNull())
         {
             libs[libraryName].dependencies<<childs.attribute("name");
-            childs=childs.nextSiblingElement();
+            childs=childs.nextSiblingElement("lib");
         }
 
         childs=element.firstChildElement("needs").firstChildElement("item");
@@ -152,14 +165,14 @@ int main(int argc, char *argv[])
     path.mkpath(xmlPath);
     path.cd(xmlPath);
     chdir(path.absolutePath().toUtf8().constData());
-    foreach (int androdPlatform, platforms.keys())
+    foreach (int androdPlatform, platformLibs.keys())
     {
         qDebug()<<"============================================";
         qDebug()<<"Generating repository for android platform :"<<androdPlatform;
         qDebug()<<"--------------------------------------------";
         path.mkpath(QString("android-%1").arg(androdPlatform));
         xmlPath=QString("android-%1/libs-%2.xml").arg(androdPlatform).arg(version);
-        foreach(int symLink, platforms[androdPlatform])
+        foreach(int symLink, platformLibs[androdPlatform])
             QFile::link(QString("android-%1").arg(androdPlatform), QString("android-%1").arg(symLink));
         QFile outXmlFile(xmlPath);
         outXmlFile.open(QIODevice::WriteOnly);
@@ -177,8 +190,8 @@ int main(int argc, char *argv[])
                 qWarning()<<"Warning : Can't find \""<<libsPath+"/"+libs[key].relativePath<<"\" item will be skipped";
                 continue;
             }
-            outXmlFile.write(QString("\t<lib name=\"%1\" url=\"http://files.kde.org/necessitas/qt/android/%2/objects/%3/%4\" file=\"%4\" size=\"%5\" sha1=\"%6\" level=\"%7\"")
-                             .arg(libs[key].name).arg(abiVersion).arg(version).arg(libs[key].relativePath).arg(fileSize).arg(sha1Hash).arg(libs[key].level).toUtf8());
+            outXmlFile.write(QString("\t<lib name=\"%1\" url=\"http://files.kde.org/necessitas/ministro/necessitas/%8/android/%2/objects/%3/%4\" file=\"%4\" size=\"%5\" sha1=\"%6\" level=\"%7\"")
+                             .arg(libs[key].name).arg(abiVersion).arg(objfolder).arg(libs[key].relativePath).arg(fileSize).arg(sha1Hash).arg(libs[key].level).arg(repository).toUtf8());
             if (!libs[key].dependencies.size() && !libs[key].needs.size())
             {
                 outXmlFile.write(" />\n\n");
@@ -201,10 +214,10 @@ int main(int argc, char *argv[])
                 {
                     qint64 fileSize;
                     QString sha1Hash;
-                    getFileInfo(libsPath+"/"+needed.relativePath, fileSize, sha1Hash);
+                    getFileInfo(libsPath+"/"+needed.relativePath.arg(platformJars[androdPlatform]), fileSize, sha1Hash);
                     if (-1==fileSize)
                     {
-                        qWarning()<<"Warning : Can't find \""<<libsPath+"/"+needed.relativePath<<"\" item will be skipped";
+                        qWarning()<<"Warning : Can't find \""<<libsPath+"/"+needed.relativePath.arg(platformJars[androdPlatform])<<"\" item will be skipped";
                         continue;
                     }
 
@@ -212,8 +225,8 @@ int main(int argc, char *argv[])
                     if (needed.type.length())
                         type=QString(" type=\"%1\" ").arg(needed.type);
 
-                    outXmlFile.write(QString("\t\t\t<item name=\"%1\" url=\"http://files.kde.org/necessitas/qt/android/%2/objects/%3/%4\" file=\"%4\" size=\"%5\" sha1=\"%6\"%7/>\n")
-                                     .arg(needed.name).arg(abiVersion).arg(version).arg(needed.relativePath).arg(fileSize).arg(sha1Hash).arg(type).toUtf8());
+                    outXmlFile.write(QString("\t\t\t<item name=\"%1\" url=\"http://files.kde.org/necessitas/ministro/necessitas/%8/android/%2/objects/%3/%4\" file=\"%4\" size=\"%5\" sha1=\"%6\"%7/>\n")
+                                     .arg(needed.name).arg(abiVersion).arg(objfolder).arg(needed.relativePath.arg(platformJars[androdPlatform])).arg(fileSize).arg(sha1Hash).arg(type).arg(repository).toUtf8());
                 }
                 outXmlFile.write("\t\t</needs>\n");
             }

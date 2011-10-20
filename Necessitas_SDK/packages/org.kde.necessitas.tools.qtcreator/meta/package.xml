@@ -2,6 +2,7 @@
 <Package>
     <DisplayName>Necessitas Qt Creator Application</DisplayName>
     <Description>The IDE for Qt development on Android devices.</Description>
+    <UpdateText>Update to 2.3.1 release</UpdateText>
     <Version>@@NECESSITAS_QT_CREATOR_VERSION@@</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.tools.qtcreator</Name>

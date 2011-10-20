@@ -2,21 +2,21 @@
 <resources>
     <string name="app_name">Ministro</string>
     <string name="repositories_prompt">Vali varamu</string>
-    <string name="incompatible_ministo_api">Ministro ei ühildu selle programmiga. Palun uuenda Ministro teenust.</string>
-    <string name="ministro_network_access_msg">Ministro vajab võrgu ligipääsu. Aktiveeri mobiilne internet või WiFi.</string>
+    <string name="incompatible_ministo_api">Ministro ei Ã¼hildu selle programmiga. Palun uuenda Ministro teenust.</string>
+    <string name="ministro_network_access_msg">Ministro vajab vÃµrgu ligipÃ¤Ã¤su. Aktiveeri mobiilne internet vÃµi WiFi.</string>
     <string name="settings_msg">Seaded</string>
-    <string name="wait_for_network_connection_msg">Ootan võrguühendust</string>
+    <string name="wait_for_network_connection_msg">Ootan vÃµrguÃ¼hendust</string>
     <string name="download_app_libs_msg"> %1$s vajab lisateeke.\nSoovite need kohe alla laadida?</string>
     <string name="start_downloading_msg">Alustan allalaadimist...</string>
     <string name="downloading_qt_libraries_msg">Laadin alla Qt teeke</string>
     <string name="checking_libraries_msg">Kontrollin teeke. Palun oota...</string>
-    <string name="extracting_SSL_msg">Eraldan välja SSL juurserte. Palun oota...</string>
+    <string name="extracting_SSL_msg">Eraldan vÃ¤lja SSL juurserte. Palun oota...</string>
     <string name="new_qt_libs_msg">Uued Qt teegid leitud</string>
     <string name="new_qt_libs_tap_msg">Uued Qt teegid leitud, puuduta uuenduse alustamiseks.</string>
-    <string name="ministro_repository_msg">Ministro kasutab  %1$s varamut.</string>
+    <string name="ministro_repository_msg">Uued Qt teegid leitud, puuduta uuenduse alustamiseks.</string>
     <string name="ministro_repository_changed_msg">Ministro varamu on muutunud.</string>
     <string name="ministro_update_msg">Ministro uuendus</string>
     <string name="ministro_repository_changed_tap_msg">Ministro varamu on muutunud, puuduta uuenduse alustamiseks.</string>
     <string name="invalid_parameters">Vigased parameetrid</string>
-    <string name="dependencies_error">Ministro ei suuda selle programmi sõltuvusi lahendada.</string>
+    <string name="dependencies_error">Ministro ei suuda selle programmi sÃµltuvusi lahendada.</string>
 </resources>

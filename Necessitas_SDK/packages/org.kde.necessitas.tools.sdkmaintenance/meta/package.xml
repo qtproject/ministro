@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Package>
+    <DisplayName>SDKMaintenance</DisplayName>
+    <Description>SDKMaintenance is a tool to update/install/uninstall components to the Qt SDK.</Description>
+    <Version>1.2.0-11</Version>
+    <ReleaseDate>@@TODAY@@</ReleaseDate>
+    <Name>org.kde.necessitas.tools.sdkmaintenance</Name>
+    <Script>installscript.qs</Script>
+    <Virtual>true</Virtual>
+    <ForcedInstallation>true</ForcedInstallation>
+</Package>

@@ -6,4 +6,5 @@
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.misc.sdk.base</Name>
     <Script>installscript.qs</Script>
+    <Virtual>true</Virtual>
 </Package>

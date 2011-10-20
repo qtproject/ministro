@@ -20,18 +20,7 @@ function Component()
 {
     if( component.fromOnlineRepository )
     {
-        if (installer.value("os") == "x11")
-        {
-            component.addDownloadableArchive( "android-@@ANDROID_API_13_VERSION@@-linux.7z" );
-        }
-        else if (installer.value("os") == "win")
-        {
-            component.addDownloadableArchive( "android-@@ANDROID_API_13_VERSION@@-windows.7z" );
-        }
-        else if (installer.value("os") == "mac")
-        {
-            component.addDownloadableArchive( "android-@@ANDROID_API_13_VERSION@@-macosx.7z" );
-        }
+        component.addDownloadableArchive( "android-@@ANDROID_API_13_VERSION@@.7z" );
     }
 }
 

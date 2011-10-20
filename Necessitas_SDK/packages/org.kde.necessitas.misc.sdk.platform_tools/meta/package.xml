@@ -7,4 +7,5 @@
     <Name>org.kde.necessitas.misc.sdk.platform_tools</Name>
     <Dependencies>org.kde.necessitas.misc.sdk.base</Dependencies>
     <Script>installscript.qs</Script>
+    <Virtual>true</Virtual>
 </Package>

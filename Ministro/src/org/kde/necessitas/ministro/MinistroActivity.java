@@ -17,11 +17,14 @@
 
 package org.kde.necessitas.ministro;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -67,7 +70,7 @@ public class MinistroActivity extends Activity
 {
 
     public native static int nativeChmode(String filepath, int mode);
-    private static final String DOMAIN_NAME="http://files.kde.org/necessitas/ministro/";
+    private static final String DOMAIN_NAME="http://files.kde.org/necessitas/ministro/necessitas/";
 
     private String[] m_modules;
     private int m_id=-1;
@@ -187,7 +190,7 @@ public class MinistroActivity extends Activity
         return new URL(DOMAIN_NAME+MinistroService.getRepository(c)+"/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/versions.xml");
     }
 
-    private static URL getLibsXmlUrl(Context c, double version) throws MalformedURLException
+    private static URL getLibsXmlUrl(Context c, String version) throws MalformedURLException
     {
         return new URL(DOMAIN_NAME+MinistroService.getRepository(c)+"/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/libs-"+version+".xml");
     }
@@ -200,6 +203,40 @@ public class MinistroActivity extends Activity
             return true;
         return false;
     }
+
+    private static String deviceSupportedFeatures(String supportedFeatures)
+    {
+        if (null==supportedFeatures)
+            return "";
+        String [] serverFeaturesList=supportedFeatures.trim().split(" ");
+        String [] deviceFeaturesList=null;
+        try {
+            FileInputStream fstream = new FileInputStream("/proc/cpuinfo");
+            DataInputStream in = new DataInputStream(fstream);
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String strLine;
+            while ((strLine = br.readLine()) != null)
+            {
+                if (strLine.startsWith("Features"))
+                {
+                    deviceFeaturesList=strLine.substring(strLine.indexOf(":")+1).trim().split(" ");
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+
+        String features="";
+        for(String sfeature: serverFeaturesList)
+            for (String dfeature: deviceFeaturesList)
+                if (sfeature.equals(dfeature))
+                    features+="_"+dfeature;
+
+        return features;
+    }
+
 
     public static double downloadVersionXmlFile(Context c, boolean checkOnly)
     {
@@ -221,8 +258,10 @@ public class MinistroActivity extends Activity
 
             if (checkOnly)
                 return version;
-
-            connection = getLibsXmlUrl(c, version).openConnection();
+            String supportedFeatures=null;
+            if (root.hasAttribute("features"))
+                supportedFeatures=root.getAttribute("features");
+            connection = getLibsXmlUrl(c, version+deviceSupportedFeatures(supportedFeatures)).openConnection();
             connection.setRequestProperty("Accept-Encoding", "gzip,deflate");
             File file= new File(MinistroService.instance().getVersionXmlFile());
             file.delete();
@@ -623,7 +662,7 @@ public class MinistroActivity extends Activity
         File dir=new File(m_qtLibsRootPath);
         dir.mkdirs();
         nativeChmode(m_qtLibsRootPath, 0755);
-        bindService(new Intent("org.kde.necessitas.ministro"), m_ministroConnection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent("org.kde.necessitas.ministro.IMinistro"), m_ministroConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override

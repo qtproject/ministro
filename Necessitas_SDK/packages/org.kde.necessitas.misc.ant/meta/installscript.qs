@@ -45,9 +45,28 @@ Component.prototype.createOperations = function()
     // Call the base createOperations(unpacking ...)
     component.createOperations();
 
-    component.addOperation( "SetQtCreatorValue",
-                            "@TargetDir@",
-                            "AndroidConfigurations",
+    component.addOperation( "RegisterPersistentSettings",
+                            "android.xml",
                             "AntLocation",
                             "@TargetDir@/apache-ant-1.8.2/bin/"+OsToAnt() );
+}
+
+Component.prototype.isDefault = function()
+{
+    if (installer.value("os") == "x11" || installer.value("os") == "mac")
+    {
+        ant = installer.execute( "/usr/bin/which", new Array( "ant" ) )[0];
+        if (!ant)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return true;
+    }
 }

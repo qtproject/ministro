@@ -5,7 +5,7 @@
     <Version>@@ANDROID_API_8_VERSION@@</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.misc.sdk.android_8</Name>
-    <Dependencies>org.kde.necessitas.misc.sdk.base</Dependencies>
-    <Dependencies>org.kde.necessitas.misc.sdk.platform_tools</Dependencies>
+    <Dependencies>org.kde.necessitas.misc.sdk.base,org.kde.necessitas.misc.sdk.platform_tools</Dependencies>
     <Script>installscript.qs</Script>
+    <Default>true</Default>
 </Package>
