@@ -480,7 +480,7 @@ function makeInstallMinGWLibsAndTools
 
     mkdir texinfo
     pushd texinfo
-	downloadIfNotExists texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma http://heanet.dl.sourceforge.net/project/mingw/MSYS/texinfo/texinfo-4.13a-2/texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma
+    downloadIfNotExists texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma http://heanet.dl.sourceforge.net/project/mingw/MSYS/texinfo/texinfo-4.13a-2/texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma
     rm -rf texinfo-4.13a-2-msys-1.0.13-bin.tar
     7za x texinfo-4.13a-2-msys-1.0.13-bin.tar.lzma
     tar -xvf texinfo-4.13a-2-msys-1.0.13-bin.tar

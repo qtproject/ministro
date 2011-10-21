@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>QtWebKit @@NECESSITAS_QTWEBKIT_VERSION@@-armeabi</DisplayName>
+    <DisplayName>QtWebKit @@NECESSITAS_QTWEBKIT_VERSION@@-armeabi android 5+</DisplayName>
     <Description>Development libraries for development applications on Android devices, armeabi architecture.</Description>
     <Version>@@NECESSITAS_QTWEBKIT_VERSION@@</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>

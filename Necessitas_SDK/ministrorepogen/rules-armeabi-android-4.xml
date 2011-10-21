@@ -8,7 +8,7 @@
         </jars>
     </platforms>
 
-    <libs excludePaths="imports;plugins" loaderClassName="org.kde.necessitas.industrius.QtLoader" applicationParameters="-platform	android" environmentVariables="MINISTRO_SSL_CERTS_PATH=MINISTRO_PATH/qt/ssl	QML_IMPORT_PATH=MINISTRO_PATH/qt/imports	QT_PLUGIN_PATH=MINISTRO_PATH/qt/plugins">
+    <libs excludePaths="imports;plugins" loaderClassName="org.kde.necessitas.industrius.QtActivityDelegate" applicationParameters="-platform	android" environmentVariables="MINISTRO_SSL_CERTS_PATH=MINISTRO_PATH/qt/ssl	QML_IMPORT_PATH=MINISTRO_PATH/qt/imports	QT_PLUGIN_PATH=MINISTRO_PATH/qt/plugins">
         <lib file="lib/libQtCore.so" >
             <needs>
                 <item name="QtIndustrius" type="jar" file="jar/QtIndustrius-%1.jar"/>
@@ -67,8 +67,6 @@
             </depends>
         </lib>
         <lib file="plugins/platforms/android/libandroid-4.so" name="QtAndroidPlatformPlugin" platform="4" level="9999" />
-        <lib file="plugins/platforms/android/libandroid-5.so" name="QtAndroidPlatformPlugin" platform="5" level="9999" />
-        <lib file="plugins/platforms/android/libandroid-8.so" name="QtAndroidPlatformPlugin" platform="8" level="9999" />
 
 
         <lib file="lib/libQtSystemInfo.so">
@@ -186,5 +184,5 @@
         </lib>
         <lib file="plugins/mediaservice/libqtmultimediakit_androidmedia.so" name="QtAndroidMKMediaPlugin" platform="8" level="9999" />
         <lib file="plugins/mediaservice/libqtmultimediakit_androidcam.so" name="QtAndroidMKCameraPlugin" platform="8" level="9999" />
-</libs>
+    </libs>
 </root>

@@ -43,6 +43,7 @@ struct Library
     int level;
     QString relativePath;
     QStringList dependencies;
+    QStringList replaces;
     QVector<NeedsStruct> needs;
     QString name;
     int platform;

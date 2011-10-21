@@ -145,6 +145,13 @@ int main(int argc, char *argv[])
             childs=childs.nextSiblingElement("lib");
         }
 
+        childs=element.firstChildElement("replaces").firstChildElement("lib");
+        while(!childs.isNull())
+        {
+            libs[libraryName].replaces<<childs.attribute("name");
+            childs=childs.nextSiblingElement("lib");
+        }
+
         childs=element.firstChildElement("needs").firstChildElement("item");
         while(!childs.isNull())
         {
@@ -206,6 +213,13 @@ int main(int argc, char *argv[])
                 outXmlFile.write("\t\t</depends>\n");
             }
 
+            if (libs[key].replaces.size())
+            {
+                outXmlFile.write("\t\t<replaces>\n");
+                foreach(const QString & libName, libs[key].replaces)
+                    outXmlFile.write(QString("\t\t\t<lib name=\"%1\"/>\n").arg(libName).toUtf8());
+                outXmlFile.write("\t\t</replaces>\n");
+            }
 
             if (libs[key].needs.size())
             {
