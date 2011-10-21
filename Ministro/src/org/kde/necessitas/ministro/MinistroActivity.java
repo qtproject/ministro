@@ -350,7 +350,6 @@ public class MinistroActivity extends Activity
                 {
                     outstream.close();
                     nativeChmode(filePath, 0644);
-                    MinistroService.instance().refreshLibraries(false);
                     return true;
                 }
                 outstream.close();
@@ -452,6 +451,7 @@ public class MinistroActivity extends Activity
                 m_dialog.dismiss();
                 m_dialog = null;
             }
+            MinistroService.instance().refreshLibraries(false);
             finishMe();
         }
     }

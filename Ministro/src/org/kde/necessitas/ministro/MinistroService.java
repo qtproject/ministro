@@ -207,7 +207,7 @@ public class MinistroService extends Service
                 {
                     if (node.getNodeType() == Node.ELEMENT_NODE)
                     {
-                        Library lib= Library.getLibrary((Element)node, false);
+                        Library lib= Library.getLibrary((Element)node, true);
                         File file=new File(m_qtLibsRootPath + lib.filePath);
                         if (file.exists())
                         {
@@ -502,17 +502,17 @@ public class MinistroService extends Service
         for (String module: modules)
             res = res & addModules(module, libs, notFoundModules, jars); // don't stop on first error
 
-        ArrayList<String> tempStringArray = new ArrayList<String>();
+        ArrayList<String> librariesArray = new ArrayList<String>();
         // sort all libraries
         Collections.sort(libs, new ModuleCompare());
         for (Module lib: libs)
-            tempStringArray.add(m_qtLibsRootPath+lib.path);
-        params.putStringArrayList(NATIVE_LIBRARIES_KEY, tempStringArray);
+            librariesArray.add(m_qtLibsRootPath+lib.path);
+        params.putStringArrayList(NATIVE_LIBRARIES_KEY, librariesArray);
 
-        tempStringArray.clear();
+        ArrayList<String> jarsArray = new ArrayList<String>();
         for (String jar: jars)
-            tempStringArray.add(m_qtLibsRootPath+jar);
-        params.putString(DEX_PATH_KEY, Library.join(tempStringArray, m_pathSeparator));
+            jarsArray.add(m_qtLibsRootPath+jar);
+        params.putString(DEX_PATH_KEY, Library.join(jarsArray, m_pathSeparator));
 
         params.putString(LOADER_CLASS_NAME_KEY, m_loaderClassName);
         params.putString(LIB_PATH_KEY, m_qtLibsRootPath);
@@ -565,23 +565,31 @@ public class MinistroService extends Service
 
         // Consult the list of downloaded modules. If a matching entry is found, it is added to the
         // list of readily accessible modules and its dependencies are checked via a recursive call.
-        for (int i = 0; i< m_downloadedLibraries.size(); i++)
+        for (Library library:m_downloadedLibraries)
         {
-            if (m_downloadedLibraries.get(i).name.equals(module))
+            if (library.name.equals(module))
             {
                 Module m = new Module();
-                m.name=m_downloadedLibraries.get(i).name;
-                m.path=m_downloadedLibraries.get(i).filePath;
-                m.level=m_downloadedLibraries.get(i).level;
-                if (m_downloadedLibraries.get(i).needs != null)
-                    for(NeedsStruct needed: m_downloadedLibraries.get(i).needs)
+                m.name=library.name;
+                m.path=library.filePath;
+                m.level=library.level;
+                if (library.needs != null)
+                    for(NeedsStruct needed: library.needs)
                         if (needed.type != null && needed.type.equals("jar"))
                             jars.add(needed.filePath);
                 modules.add(m);
+
                 boolean res = true;
-                if (m_downloadedLibraries.get(i).depends != null)
-                    for (int depIt=0;depIt<m_downloadedLibraries.get(i).depends.length;depIt++)
-                        res &= addModules(m_downloadedLibraries.get(i).depends[depIt], modules, notFoundModules, jars);
+                if (library.depends != null)
+                    for (String depend: library.depends)
+                        res &= addModules(depend, modules, notFoundModules, jars);
+
+                if (library.replaces != null)
+                    for (String replaceLibrary: library.replaces)
+                        for (int mIt=0; mIt<modules.size();mIt++)
+                            if (replaceLibrary.equals(modules.get(mIt).name))
+                                modules.remove(mIt--);
+
                 return res;
             }
         }
