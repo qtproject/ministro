@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>QtMobility @@NECESSITAS_QTMOBILITY_VERSION@@-armeabi</DisplayName>
+    <DisplayName>QtMobility @@NECESSITAS_QTMOBILITY_VERSION@@-armeabi Android API 5+</DisplayName>
     <Description>Development libraries for development applications on Android devices, armeabi architecture.</Description>
     <Version>@@NECESSITAS_QTMOBILITY_VERSION@@</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>

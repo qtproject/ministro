@@ -1,13 +1,12 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>QtMobility @@NECESSITAS_QTMOBILITY_VERSION@@-armeabi</DisplayName>
+    <DisplayName>QtMobility @@NECESSITAS_QTMOBILITY_VERSION@@-armeabi Android API 4+</DisplayName>
     <Description>Development libraries for development applications on Android devices, armeabi architecture.</Description>
     <Version>@@NECESSITAS_QTMOBILITY_VERSION@@</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.android.qtmobility.armeabi_android_4</Name>
     <Dependencies>org.kde.necessitas.android.qt.armeabi_android_4,org.kde.necessitas.android.qtwebkit.armeabi_android_4</Dependencies>
     <Script>installscript.qs</Script>
-    <Default>true</Default>
     <InstallPriority>2</InstallPriority>
     <SortingPriority>2</SortingPriority>
 </Package>

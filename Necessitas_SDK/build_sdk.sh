@@ -1636,9 +1636,9 @@ function setPackagesVariables
     patchPackage "@@ANDROID_PLATFORM_TOOLS_VERSION@@" $ANDROID_PLATFORM_TOOLS_VERSION "org.kde.necessitas.misc.sdk.platform_tools"
     patchPackage "@@ANDROID_SDK_VERSION@@" $ANDROID_SDK_VERSION "org.kde.necessitas.misc.sdk.base"
 
-    patchPackage "@@NECESSITAS_QTMOBILITY_ARMEABI_INSTALL_PATH@@" "$TEMP_PATH/$CHECKOUT_BRANCH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-mobility-armeabi"
-    patchPackage "@@NECESSITAS_QTMOBILITY_ARMEABI_ANDROID_4_INSTALL_PATH@@" "$TEMP_PATH/$CHECKOUT_BRANCH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-mobility-armeabi-android-4"
-    patchPackage "@@NECESSITAS_QTMOBILITY_ARMEABI-V7A_INSTALL_PATH@@" "$TEMP_PATH/$CHECKOUT_BRANCH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-mobility-armeabi-v7a"
+    patchPackage "@@NECESSITAS_QTMOBILITY_ARMEABI_INSTALL_PATH@@" "$TEMP_PATH/$CHECKOUT_BRANCH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-mobility-armeabi/install"
+    patchPackage "@@NECESSITAS_QTMOBILITY_ARMEABI_ANDROID_4_INSTALL_PATH@@" "$TEMP_PATH/$CHECKOUT_BRANCH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-mobility-armeabi-android-4/install"
+    patchPackage "@@NECESSITAS_QTMOBILITY_ARMEABI-V7A_INSTALL_PATH@@" "$TEMP_PATH/$CHECKOUT_BRANCH/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/build-mobility-armeabi-v7a/install"
     patchPackage "@@NECESSITAS_QTWEBKIT_ARMEABI_INSTALL_PATH@@" "/data/data/org.kde.necessitas.ministro/files/qt"
     patchPackage "@@NECESSITAS_QTWEBKIT_ARMEABI_ANDROID_4_INSTALL_PATH@@" "/data/data/org.kde.necessitas.ministro/files/qt"
     patchPackage "@@NECESSITAS_QTWEBKIT_ARMEABI-V7A_INSTALL_PATH@@" "/data/data/org.kde.necessitas.ministro/files/qt"
