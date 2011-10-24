@@ -8,6 +8,6 @@
     <Script>installscript.qs</Script>
     <Dependencies>org.kde.necessitas.tools.qtcreator</Dependencies>
     <Default>true</Default>
-    <InstallPriority>90</InstallPriority>
-    <SortingPriority>90</SortingPriority>
+    <InstallPriority>0</InstallPriority>
+    <SortingPriority>0</SortingPriority>
 </Package>

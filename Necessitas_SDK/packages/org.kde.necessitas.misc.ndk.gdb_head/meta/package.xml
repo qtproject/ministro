@@ -6,7 +6,6 @@
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.misc.ndk.gdb_head</Name>
     <Script>installscript.qs</Script>
-    <InstallPriority>99999</InstallPriority>
-    <SortingPriority>94</SortingPriority>
-    <ForcedInstallation>false</ForcedInstallation>
+    <InstallPriority>4</InstallPriority>
+    <SortingPriority>4</SortingPriority>
 </Package>

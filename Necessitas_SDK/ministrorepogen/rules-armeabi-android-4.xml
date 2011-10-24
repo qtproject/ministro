@@ -4,7 +4,7 @@
             <version value="4"/>
         </libs>
         <jars>
-            <version value="4" symlink="8"/>
+            <version value="4"/>
         </jars>
     </platforms>
 

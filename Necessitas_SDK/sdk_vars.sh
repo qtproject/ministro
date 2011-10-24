@@ -11,8 +11,9 @@ EXTERNAL_7Z=7z
 EXTERNAL_7Z_PARAMS="a -t7z -mx=9"
 
 # Qt Framework versions
-NECESSITAS_QT_VERSION_SHORT=4763 #Necessitas Qt Framework Version
-NECESSITAS_QT_VERSION="4.7.63" #Necessitas Qt Framework Long Version
+NECESSITAS_QT_VERSION_SHORT=480 #Necessitas Qt Framework Version
+NECESSITAS_QT_VERSION="4.8.0 Alpha 3" #Necessitas Qt Framework Long Version
+NECESSITAS_QT_PACKAGE_VERSION="4.8.0-3"
 
 NECESSITAS_QTWEBKIT_VERSION="2.2" #Necessitas QtWebkit Version
 

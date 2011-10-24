@@ -13,7 +13,7 @@
             <version value="14" symlink="9"/>
         </libs>
         <jars>
-            <version value="5" symlink="8"/>
+            <version value="5" symlink="7"/>
             <version value="8"/>
             <version value="9" symlink="14"/>
         </jars>

@@ -2,10 +2,10 @@
 <Package>
     <DisplayName>Qt @@NECESSITAS_QT_VERSION@@-src</DisplayName>
     <Description>Development libraries for development applications on Android devices, source package.</Description>
-    <Version>@@NECESSITAS_QT_VERSION@@</Version>
+    <Version>@@NECESSITAS_QT_PACKAGE_VERSION@@</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.android.qt.src</Name>
     <Script>installscript.qs</Script>
     <InstallPriority>0</InstallPriority>
-    <SortingPriority>1</SortingPriority>
+    <SortingPriority>2</SortingPriority>
 </Package>

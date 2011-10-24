@@ -6,6 +6,6 @@
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.android.qtwebkit.src</Name>
     <Script>installscript.qs</Script>
-    <InstallPriority>1</InstallPriority>
-    <SortingPriority>1</SortingPriority>
+    <InstallPriority>2</InstallPriority>
+    <SortingPriority>2</SortingPriority>
 </Package>

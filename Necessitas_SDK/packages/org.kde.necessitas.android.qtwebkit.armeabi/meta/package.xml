@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>QtWebKit @@NECESSITAS_QTWEBKIT_VERSION@@-armeabi android 5+</DisplayName>
-    <Description>Development libraries for development applications on Android devices, armeabi architecture.</Description>
+    <DisplayName>QtWebKit @@NECESSITAS_QTWEBKIT_VERSION@@-armeabi API 5+</DisplayName>
+    <Description>Development libraries for development applications on Android API 5+ devices, armeabi architecture.</Description>
     <Version>@@NECESSITAS_QTWEBKIT_VERSION@@</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.android.qtwebkit.armeabi</Name>
     <Dependencies>org.kde.necessitas.android.qt.armeabi</Dependencies>
     <Script>installscript.qs</Script>
     <Default>true</Default>
-    <InstallPriority>1</InstallPriority>
-    <SortingPriority>1</SortingPriority>
+    <InstallPriority>0</InstallPriority>
+    <SortingPriority>0</SortingPriority>
 </Package>

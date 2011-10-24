@@ -7,6 +7,6 @@
     <Name>org.kde.necessitas.misc.ndk.gdb_7_3</Name>
     <Script>installscript.qs</Script>
     <Default>true</Default>
-    <InstallPriority>99</InstallPriority>
-    <SortingPriority>99</SortingPriority>
+    <InstallPriority>2</InstallPriority>
+    <SortingPriority>2</SortingPriority>
 </Package>

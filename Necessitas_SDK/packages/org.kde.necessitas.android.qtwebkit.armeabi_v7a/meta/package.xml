@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Package>
-    <DisplayName>QtWebKit @@NECESSITAS_QTWEBKIT_VERSION@@-armeabi_v7a Android API 5+</DisplayName>
-    <Description>Development libraries for development applications on Android devices, armeabi_v7a architecture.</Description>
+    <DisplayName>QtWebKit @@NECESSITAS_QTWEBKIT_VERSION@@-armeabi_v7a API 5+</DisplayName>
+    <Description>Development libraries for development applications on Android API 5+ devices, armeabi_v7a architecture.</Description>
     <Version>@@NECESSITAS_QTWEBKIT_VERSION@@</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.android.qtwebkit.armeabi_v7a</Name>

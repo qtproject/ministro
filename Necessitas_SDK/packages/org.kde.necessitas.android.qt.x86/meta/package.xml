@@ -2,7 +2,7 @@
 <Package>
     <DisplayName>Qt @@NECESSITAS_QT_VERSION@@-x86</DisplayName>
     <Description>Development libraries for development applications on Android devices, x86 architecture.</Description>
-    <Version>@@NECESSITAS_QT_VERSION@@</Version>
+    <Version>@@NECESSITAS_QT_PACKAGE_VERSION@@</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.android.qt.x86</Name>
     <Script>installscript.qs</Script>

@@ -7,6 +7,6 @@
     <Name>org.kde.necessitas.misc.ndk.ma_@@ANDROID_NDK_MAJOR_VERSION@@</Name>
     <Script>installscript.qs</Script>
     <Dependencies>org.kde.necessitas.tools.qtcreator</Dependencies>
-    <InstallPriority>90</InstallPriority>
-    <SortingPriority>90</SortingPriority>
+    <InstallPriority>1</InstallPriority>
+    <SortingPriority>1</SortingPriority>
 </Package>

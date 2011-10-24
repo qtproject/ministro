@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <Package>
     <DisplayName>Qt @@NECESSITAS_QT_VERSION@@-armeabi_v7a API 5+</DisplayName>
-    <Description>Development libraries for development applications on Android devices, armeabi_v7a architecture.</Description>
-    <Version>@@NECESSITAS_QT_VERSION@@</Version>
+    <Description>Development libraries for development applications on Android API 5+ devices, armeabi_v7a architecture.</Description>
+    <Version>@@NECESSITAS_QT_PACKAGE_VERSION@@</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.android.qt.armeabi_v7a</Name>
     <Script>installscript.qs</Script>
     <Default>true</Default>
     <InstallPriority>0</InstallPriority>
-    <SortingPriority>0</SortingPriority>
+    <SortingPriority>1</SortingPriority>
 </Package>
