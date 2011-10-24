@@ -1810,7 +1810,7 @@ prepareSDKs
 prepareAnt
 prepareNecessitasQtCreator
 # prepareGDBVersion head $HOST_TAG
-prepareGDBVersion 7.3
+# prepareGDBVersion 7.3
 # prepareGDBVersion head
 mkdir $CHECKOUT_BRANCH
 pushd $CHECKOUT_BRANCH

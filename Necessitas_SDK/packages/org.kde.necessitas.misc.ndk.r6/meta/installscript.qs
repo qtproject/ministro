@@ -48,8 +48,8 @@ Component.prototype.createOperations = function()
     component.addOperation( "RegisterPersistentSettings",
                             "android.xml",
                             "NDKToolchainVersion",
-                            "arm-linux-androideabi-4.4.3" );
-/*
+                            "4.4.3" );
+
     // set DEFAULT gdb location
     var gdbPath = "@TargetDir@/android-ndk-@@ANDROID_NDK_VERSION@@/toolchains/arm-linux-androideabi-4.4.3/prebuilt/";
     var gdbserverPath = gdbPath+"gdbserver";
@@ -74,5 +74,4 @@ Component.prototype.createOperations = function()
                             "android.xml",
                             "GdbserverLocation",
                             gdbserverPath );
-*/
 }

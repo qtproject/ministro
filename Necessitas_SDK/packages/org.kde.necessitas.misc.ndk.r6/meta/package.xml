@@ -2,7 +2,7 @@
 <Package>
     <DisplayName>Android NDK-@@ANDROID_NDK_VERSION@@</DisplayName>
     <Description>Android NDK-@@ANDROID_NDK_VERSION@@</Description>
-    <Version>5.0.0-@@ANDROID_NDK_VERSION@@</Version>
+    <Version>6.1.2011.10</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.misc.ndk.@@ANDROID_NDK_MAJOR_VERSION@@</Name>
     <Script>installscript.qs</Script>
