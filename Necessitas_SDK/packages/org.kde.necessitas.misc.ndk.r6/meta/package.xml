@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Package>
     <DisplayName>Android NDK-@@ANDROID_NDK_VERSION@@</DisplayName>
-    <Description>Android NDK-@@ANDROID_NDK_VERSION@@</Description>
+    <Description>Android NDK-@@ANDROID_NDK_VERSION@@ Linaro 4.6-2011-10 and Google 4.4.3, includes binutils 2.10.1 and gdb 7.3.50.20110709</Description>
     <Version>6.1.2011.10</Version>
     <ReleaseDate>@@TODAY@@</ReleaseDate>
     <Name>org.kde.necessitas.misc.ndk.@@ANDROID_NDK_MAJOR_VERSION@@</Name>
