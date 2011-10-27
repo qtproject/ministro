@@ -75,7 +75,7 @@ GDB_VER=7.3
 
 pushd $TEMP_PATH
 
-MINISTRO_REPO_PATH=$TEMP_PATH/out/necessitas/qt/$CHECKOUT_BRANCH
+MINISTRO_REPO_PATH=$TEMP_PATH/out/ministro
 REPO_PATH=$TEMP_PATH/out/necessitas/sdk
 if [ ! -d $TEMP_PATH/out/necessitas/sdk_src/org.kde.necessitas ]
 then
@@ -1180,7 +1180,7 @@ function packSource
     echo cp -rf $1 $TEMP_PATH/source_temp_path/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/
     cp -rf $1 $TEMP_PATH/source_temp_path/Android/Qt/$NECESSITAS_QT_VERSION_SHORT/
     pushd $TEMP_PATH/source_temp_path
-    createArchive Android $1.7z
+    createArchive Android $1.7z -l
     mkdir -p $REPO_PATH_PACKAGES/org.kde.necessitas.android.$package_name/data
     mv $1.7z $REPO_PATH_PACKAGES/org.kde.necessitas.android.$package_name/data/$1.7z
     popd
@@ -1269,11 +1269,10 @@ function compileNecessitasQt #params $1 architecture, $2 package path, $3 NDK_TA
     rm -fr $2/$1/bin
     createArchive Android qt-framework.7z
     mv qt-framework.7z $REPO_PATH_PACKAGES/org.kde.necessitas.android.qt.$package_name/data/qt-framework.7z
-    # Not sure why we're using a different qt-framework package for Windows.
-    cp $REPO_PATH_PACKAGES/org.kde.necessitas.android.qt.$package_name/data/qt-framework.7z $REPO_PATH_PACKAGES/org.kde.necessitas.android.qt.$package_name/data/qt-framework-windows.7z
     rm -fr ../install-$1
     cp -a install ../install-$1
     cp -rf jar ../install-$1/
+    packforWindows $REPO_PATH_PACKAGES/org.kde.necessitas.android.qt.$package_name/data/ qt-framework
 #    patchQtFiles
 }
 
@@ -1351,6 +1350,7 @@ function compileNecessitasQtMobility
     createArchive Android qtmobility.7z
     mv qtmobility.7z $REPO_PATH_PACKAGES/org.kde.necessitas.android.qtmobility.$package_name/data/qtmobility.7z
     cp -a $2/$1/* ../install-$1 # copy files to ministro repository
+    packforWindows $REPO_PATH_PACKAGES/org.kde.necessitas.android.qtmobility.$package_name/data/ qtmobility
 #    pushd ../build-$1
 #    patchQtFiles
 #    popd
@@ -1465,6 +1465,7 @@ function compileNecessitasQtWebkit
     createArchive Android qtwebkit.7z
     mv qtwebkit.7z $REPO_PATH_PACKAGES/org.kde.necessitas.android.qtwebkit.$package_name/data/qtwebkit.7z
     cp -a $2/$1/* ../install-$1/
+    packforWindows $REPO_PATH_PACKAGES/org.kde.necessitas.android.qtwebkit.$package_name/data/ qtwebkit
 #    pushd ../build-$1
 #    patchQtFiles
 #    popd
@@ -1699,7 +1700,7 @@ function prepareMinistroRepository
         if [ $architecture = "armeabi-android-4" ] ; then
             architecture="armeabi"
         fi
-        MINISTRO_OBJECTS_PATH=$MINISTRO_REPO_PATH/android/$architecture/objects/$repoVersion
+        MINISTRO_OBJECTS_PATH=$MINISTRO_REPO_PATH/objects/$repoVersion
         rm -fr $MINISTRO_OBJECTS_PATH
         mkdir -p $MINISTRO_OBJECTS_PATH
         rm -fr Android
@@ -1723,7 +1724,7 @@ function prepareMinistroRepository
             qmldirfileDirname=`dirname $qmldirfile`
             cp $qmldirfile $MINISTRO_OBJECTS_PATH/$qmldirfileDirname/
         done
-        $REPO_SRC_PATH/ministrorepogen/ministrorepogen$EXE_EXT $ANDROID_READELF_BINARY $MINISTRO_OBJECTS_PATH $MINISTRO_VERSION $architecture $REPO_SRC_PATH/ministrorepogen/rules-$platfromArchitecture.xml $MINISTRO_REPO_PATH $repoVersion $CHECKOUT_BRANCH
+        $REPO_SRC_PATH/ministrorepogen/ministrorepogen$EXE_EXT $ANDROID_READELF_BINARY $MINISTRO_OBJECTS_PATH $MINISTRO_VERSION $architecture $REPO_SRC_PATH/ministrorepogen/rules-$platfromArchitecture.xml $MINISTRO_REPO_PATH/$CHECKOUT_BRANCH $repoVersion
         popd
     done
 }

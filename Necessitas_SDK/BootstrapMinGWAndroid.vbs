@@ -21,7 +21,7 @@ function downloadHTTP(sourceUrl,destFilepath)
 		objStream.SaveToFile destFilepath, 2
 		objStream.Close
 	end if
-end function 
+end function
 
 function run(ByVal command)
 	dim shell

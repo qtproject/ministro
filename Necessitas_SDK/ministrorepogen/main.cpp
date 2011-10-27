@@ -51,7 +51,7 @@ void getFileInfo(const QString & filePath, qint64 & fileSize, QString & sha1)
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    if (argc<9)
+    if (argc<8)
     {
         printHelp();
         return 1;
@@ -64,7 +64,6 @@ int main(int argc, char *argv[])
     const char * rulesFile=argv[5];
     const char * outputFolder=argv[6];
     const char * objfolder =argv [7];
-    const char * repository =argv [8];
 
     QDomDocument document("libs");
     QFile f(rulesFile);
@@ -168,7 +167,7 @@ int main(int argc, char *argv[])
     SortLibraries(libs, readelfPath, libsPath, excludePaths);
 
     QDir path;
-    QString xmlPath(outputFolder+QString("/android/%1/").arg(abiVersion));
+    QString xmlPath(outputFolder+QString("/%1/").arg(abiVersion));
     path.mkpath(xmlPath);
     path.cd(xmlPath);
     chdir(path.absolutePath().toUtf8().constData());
@@ -197,8 +196,8 @@ int main(int argc, char *argv[])
                 qWarning()<<"Warning : Can't find \""<<libsPath+"/"+libs[key].relativePath<<"\" item will be skipped";
                 continue;
             }
-            outXmlFile.write(QString("\t<lib name=\"%1\" url=\"http://files.kde.org/necessitas/ministro/necessitas/%8/android/%2/objects/%3/%4\" file=\"%4\" size=\"%5\" sha1=\"%6\" level=\"%7\"")
-                             .arg(libs[key].name).arg(abiVersion).arg(objfolder).arg(libs[key].relativePath).arg(fileSize).arg(sha1Hash).arg(libs[key].level).arg(repository).toUtf8());
+            outXmlFile.write(QString("\t<lib name=\"%1\" url=\"http://files.kde.org/necessitas/android/necessitas/objects/%2/%3\" file=\"%3\" size=\"%4\" sha1=\"%5\" level=\"%6\"")
+                             .arg(libs[key].name).arg(objfolder).arg(libs[key].relativePath).arg(fileSize).arg(sha1Hash).arg(libs[key].level).toUtf8());
             if (!libs[key].dependencies.size() && !libs[key].needs.size())
             {
                 outXmlFile.write(" />\n\n");
@@ -239,8 +238,8 @@ int main(int argc, char *argv[])
                     if (needed.type.length())
                         type=QString(" type=\"%1\" ").arg(needed.type);
 
-                    outXmlFile.write(QString("\t\t\t<item name=\"%1\" url=\"http://files.kde.org/necessitas/ministro/necessitas/%8/android/%2/objects/%3/%4\" file=\"%4\" size=\"%5\" sha1=\"%6\"%7/>\n")
-                                     .arg(needed.name).arg(abiVersion).arg(objfolder).arg(needed.relativePath.arg(platformJars[androdPlatform])).arg(fileSize).arg(sha1Hash).arg(type).arg(repository).toUtf8());
+                    outXmlFile.write(QString("\t\t\t<item name=\"%1\" url=\"http://files.kde.org/necessitas/android/necessitas/objects/%2/%3\" file=\"%3\" size=\"%4\" sha1=\"%5\"%6/>\n")
+                                     .arg(needed.name).arg(objfolder).arg(needed.relativePath.arg(platformJars[androdPlatform])).arg(fileSize).arg(sha1Hash).arg(type).toUtf8());
                 }
                 outXmlFile.write("\t\t</needs>\n");
             }

@@ -69,7 +69,7 @@ import android.provider.Settings;
 public class MinistroActivity extends Activity
 {
     public native static int nativeChmode(String filepath, int mode);
-    private static final String DOMAIN_NAME="http://files.kde.org/necessitas/ministro/necessitas/";
+    private static final String DOMAIN_NAME="http://files.kde.org/necessitas/ministro/android/necessitas/";
 
     private String[] m_modules;
     private int m_id=-1;
@@ -186,12 +186,12 @@ public class MinistroActivity extends Activity
 
     private static URL getVersionUrl(Context c) throws MalformedURLException
     {
-        return new URL(DOMAIN_NAME+MinistroService.getRepository(c)+"/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/versions.xml");
+        return new URL(DOMAIN_NAME+MinistroService.getRepository(c)+"/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/versions.xml");
     }
 
     private static URL getLibsXmlUrl(Context c, String version) throws MalformedURLException
     {
-        return new URL(DOMAIN_NAME+MinistroService.getRepository(c)+"/android/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/libs-"+version+".xml");
+        return new URL(DOMAIN_NAME+MinistroService.getRepository(c)+"/"+android.os.Build.CPU_ABI+"/android-"+android.os.Build.VERSION.SDK_INT+"/libs-"+version+".xml");
     }
 
     public static boolean isOnline(Context c)

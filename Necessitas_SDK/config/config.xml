@@ -12,8 +12,8 @@
     <UninstallerName>SDKMaintenanceTool</UninstallerName>
     <RemoteRepositories>
         <Repository>
-<!--            <Url>http://files.kde.org/necessitas/test</Url> -->
-            <Url>file:///var/debian/tmp/necessitas/out/necessitas/sdk</Url>
+            <Url>http://files.kde.org/necessitas/sdk_master</Url>
+<!--            <Url>file:///var/debian/tmp/necessitas/out/necessitas/sdk</Url> -->
             <Required>true</Required>
         </Repository>
     </RemoteRepositories>
