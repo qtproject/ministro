@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Scegliere un repository</string>
+    <string name="incompatible_ministo_api">Ministro non è compatibile con l\'applicazione. Aggiornare il servizio Ministro.</string>
+    <string name="ministro_network_access_msg">Ministro richiede l\'accesso di rete. Abilitare rete mobile o Wi-Fi per scaricare i dati.</string>
+    <string name="settings_msg">Impostazioni</string>
+    <string name="wait_for_network_connection_msg">In attesa della connessione di rete</string>
+    <string name="download_app_libs_msg"> %1$s richiede librerie extra per l\'esecuzione.\nScaricarle ora?</string>
+    <string name="start_downloading_msg">Inizio scaricamento in corso</string>
+    <string name="downloading_qt_libraries_msg">Scaricamento delle librerie Qt</string>
+    <string name="checking_libraries_msg">Controllo delle librerie in corso. Attendere</string>
+    <string name="extracting_SSL_msg">Estrazione dei certificati di root SSL. Attendere</string>
+    <string name="new_qt_libs_msg">Trovate nuove librerie Qt</string>
+    <string name="new_qt_libs_tap_msg">Trovate nuove librerie Qt. Premere per aggiornare.</string>
+    <string name="ministro_repository_msg">Ministro userà il repository %1$s</string>
+    <string name="ministro_repository_changed_msg">Modificato repository di Ministro</string>
+    <string name="ministro_update_msg">Aggiornamento di Ministro</string>
+    <string name="ministro_repository_changed_tap_msg">Modificato repository di Ministro. Premere per aggiornare.</string>
+    <string name="invalid_parameters">Parametri non validi</string>
+    <string name="dependencies_error">Ministro non può soddisfare le dipendenze dell\'applicazione</string>
+</resources>

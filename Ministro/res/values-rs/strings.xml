@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Izaberite spremište.</string>
+    <string name="incompatible_ministo_api">Ministro nije kompatibilan sa Vašom aplikacijom. Molimo ažurirajte Ministro servis.</string>
+    <string name="ministro_network_access_msg">Ministro zahteva pristup mreži. Omogućite mobilnu ili bežičnu mrežu radi preuzimanja podataka.</string>
+    <string name="settings_msg">Podešavanja</string>
+    <string name="wait_for_network_connection_msg">Čekam konekciju sa mrežom</string>
+    <string name="download_app_libs_msg"> %1$s zahteva dodatne biblioteke da bi se pokrenuo. Želite li sada da ih preuzmete?</string>
+    <string name="start_downloading_msg">Preuzimanje započeto ...</string>
+    <string name="downloading_qt_libraries_msg">Preuzimanje Qt biblioteka</string>
+    <string name="checking_libraries_msg">Proveravanje biblioteka. Molimo sačekajte...</string>
+    <string name="extracting_SSL_msg">Ekstraktovanje SSL sertifikata. Molimo sačekajte...</string>
+    <string name="new_qt_libs_msg">Pronađene nove Qt biblioteke</string>
+    <string name="new_qt_libs_tap_msg">Nove Qt biblioteke su pronađene, klik za ažuriranje.</string>
+    <string name="ministro_repository_msg">Ministro će koristiti %1$s spremište</string>
+    <string name="ministro_repository_changed_msg">Ministro spremište promenjeno</string>
+    <string name="ministro_update_msg">Ministro ažuriranje</string>
+    <string name="ministro_repository_changed_tap_msg">Ministro spremište promenjeno, klik za ažuriranje.</string>
+    <string name="invalid_parameters">Pogrešni parametri</string>
+    <string name="dependencies_error">Ministro ne može da pronađe zavisnosti Vaše aplikacije</string>
+</resources>

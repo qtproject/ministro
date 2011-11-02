@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Pilih indeks</string>
+    <string name="incompatible_ministo_api">Ministro tidak cocok dengan aplikasi Anda. Silakan meningkatkan layanan Ministro.</string>
+    <string name="ministro_network_access_msg">Ministro memerlukan akses jaringan. Aktifkan jaringan bergerak atau Wi-Fi untuk mengunduh data.</string>
+    <string name="settings_msg">tata latar</string>
+    <string name="wait_for_network_connection_msg">Menunggu koneksi jaringan </string>
+    <string name="download_app_libs_msg"> %1$s memerlukan ekstra daftar pustaka untuk dioperasikan.\nUnduh sekarang?</string>
+    <string name="start_downloading_msg">Mulai mengunduh ...</string>
+    <string name="downloading_qt_libraries_msg">Mengunduh daftar pustaka Qt </string>
+    <string name="checking_libraries_msg">mengecek daftar pustaka. Harap tunggu...</string>
+    <string name="extracting_SSL_msg">Mengekstrak certifikat akar SSL root. Harap tunggu...</string>
+    <string name="new_qt_libs_msg">Ditemukan daftar pustaka Qt aktual</string>
+    <string name="new_qt_libs_tap_msg">Telah ditemukan daftar pustaka Qt aktual tekan untuk memperbarui.</string>
+    <string name="ministro_repository_msg">Ministro akan menggunakan indeks  %1$s</string>
+    <string name="ministro_repository_changed_msg">Indeks Ministro berubah</string>
+    <string name="ministro_update_msg">Ministro aktual</string>
+    <string name="ministro_repository_changed_tap_msg">Indeks Ministro berubah tekan untuk memperbarui.</string>
+    <string name="invalid_parameters">Parameter tidak berfungsi</string>
+    <string name="dependencies_error">Ministro tidak dapat memenuhi dependensi aplikasi Anda</string>
+</resources>
