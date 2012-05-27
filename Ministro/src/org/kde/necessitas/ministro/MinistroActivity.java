@@ -68,6 +68,9 @@ import android.provider.Settings;
 
 public class MinistroActivity extends Activity
 {
+    private static final int CONNECTION_TIMEOUT = 20000; // 20 seconds for connection timeout
+    private static final int READ_TIMEOUT = 2000; // 20 seconds for connection timeout
+
     public native static int nativeChmode(String filepath, int mode);
     private static final String DOMAIN_NAME="http://files.kde.org/necessitas/ministro/android/necessitas/";
 
@@ -85,6 +88,7 @@ public class MinistroActivity extends Activity
             builder.setMessage(getResources().getString(R.string.ministro_network_access_msg));
             builder.setCancelable(true);
             builder.setNeutralButton(getResources().getString(R.string.settings_msg), new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int id) {
                         final ProgressDialog m_dialog = ProgressDialog.show(MinistroActivity.this, null, getResources().getString(R.string.wait_for_network_connection_msg), true, true, new DialogInterface.OnCancelListener() {
                             @Override
@@ -116,6 +120,7 @@ public class MinistroActivity extends Activity
                     }
                 });
             builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int id)
                     {
                             dialog.cancel();
@@ -147,12 +152,14 @@ public class MinistroActivity extends Activity
                         getIntent().getExtras().getString("name")))
                     .setCancelable(false)
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.dismiss();
                             checkNetworkAndDownload(false);
                         }
                     })
                     .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                        @Override
                         public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
                                 finishMe();
@@ -248,6 +255,8 @@ public class MinistroActivity extends Activity
             Document dom = null;
             Element root = null;
             URLConnection connection = getVersionUrl(c).openConnection();
+            connection.setConnectTimeout(CONNECTION_TIMEOUT);
+            connection.setReadTimeout(READ_TIMEOUT);
             dom = builder.parse(connection.getInputStream());
             root = dom.getDocumentElement();
             root.normalize();
@@ -457,7 +466,7 @@ public class MinistroActivity extends Activity
     private class CheckLibraries extends AsyncTask<Boolean, Void, Double>
     {
         private ProgressDialog dialog = null;
-        private ArrayList<Library> newLibs = new ArrayList<Library>();
+        private final ArrayList<Library> newLibs = new ArrayList<Library>();
         private String m_message;
         @Override
         protected void onPreExecute()
@@ -490,6 +499,22 @@ public class MinistroActivity extends Activity
                 else
                     version = MinistroService.instance().getVersion();
 
+                SharedPreferences preferences=getSharedPreferences("Ministro", MODE_PRIVATE);
+                // extract device look&feel
+                if (!preferences.getString("CODENAME", "").equals(android.os.Build.VERSION.CODENAME) ||
+                        !preferences.getString("INCREMENTAL", "").equals(android.os.Build.VERSION.INCREMENTAL) ||
+                        !preferences.getString("RELEASE", "").equals(android.os.Build.VERSION.RELEASE) ||
+                        !preferences.getString("MINISTRO_VERSION", "").equals(getPackageManager().getPackageInfo(getPackageName(), 0).versionName) ||
+                        !(new File(m_qtLibsRootPath+"style").exists()))
+                {
+                    m_message = getResources().getString(R.string.extracting_look_n_feel_msg);
+                    publishProgress((Void[])null);
+                    new ExtractStyle(MinistroActivity.this, m_qtLibsRootPath+"style/");
+                    SharedPreferences.Editor editor= preferences.edit();
+                    editor.putString("MINISTRO_VERSION",getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
+                    editor.commit();
+                }
+
                 ArrayList<Library> libraries;
                 if (update[0])
                 {
@@ -513,7 +538,6 @@ public class MinistroActivity extends Activity
                 root.normalize();
 
                 // extract device root certificates
-                SharedPreferences preferences=getSharedPreferences("Ministro", MODE_PRIVATE);
                 if (!preferences.getString("CODENAME", "").equals(android.os.Build.VERSION.CODENAME) ||
                         !preferences.getString("INCREMENTAL", "").equals(android.os.Build.VERSION.INCREMENTAL) ||
                         !preferences.getString("RELEASE", "").equals(android.os.Build.VERSION.RELEASE))
@@ -678,6 +702,6 @@ public class MinistroActivity extends Activity
 
     static
     {
-        System.loadLibrary("chmode");
+        System.loadLibrary("ministro");
     }
 }

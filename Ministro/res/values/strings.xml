@@ -19,4 +19,6 @@
     <string name="ministro_repository_changed_tap_msg">Ministro repository changed tap to update.</string>
     <string name="invalid_parameters">Invalid parameters</string>
     <string name="dependencies_error">Ministro can not satisfy your application dependencies</string>
+    <string name="check_frequency">Check for updates frequency (days)</string>
+    <string name="extracting_look_n_feel_msg">Extracting the device look&amp;feel information. Please wait...</string>
 </resources>

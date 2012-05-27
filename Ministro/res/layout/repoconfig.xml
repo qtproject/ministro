@@ -11,10 +11,23 @@
         android:text="@string/repositories_prompt"
     />
     <Spinner
-        android:id="@+id/spinner"
+        android:id="@+id/repositories"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:drawSelectorOnTop="true"
         android:prompt="@string/repositories_prompt"
+    />
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10mm"
+        android:text="@string/check_frequency"
+    />
+    <Spinner
+        android:id="@+id/check_frequency"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:drawSelectorOnTop="true"
+        android:prompt="@string/check_frequency"
     />
 </LinearLayout>

@@ -35,31 +35,48 @@ public class MinistroConfigActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // TODO Auto-generated method stub
-        super.onCreate(savedInstanceState);
         setContentView(R.layout.repoconfig);
-        Spinner s = (Spinner) findViewById(R.id.spinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+        Spinner repositoriesSpinner = (Spinner) findViewById(R.id.repositories);
+        ArrayAdapter<CharSequence> repositories = ArrayAdapter.createFromResource(
                 this, R.array.repositories, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        s.setAdapter(adapter);
-        s.setSelection(adapter.getPosition(MinistroService.getRepository(this)));
-        s.setOnItemSelectedListener(new OnItemSelectedListener(){
+        repositories.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        repositoriesSpinner.setAdapter(repositories);
+        repositoriesSpinner.setSelection(repositories.getPosition(MinistroService.getRepository(this)));
+        repositoriesSpinner.setOnItemSelectedListener(new OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos,
                     long id) {
-                // TODO Auto-generated method stub
                 Toast.makeText(parent.getContext()
                         , getResources().getString(R.string.ministro_repository_msg
                         , parent.getItemAtPosition(pos).toString()), Toast.LENGTH_LONG).show();
                 MinistroService.setRepository(MinistroConfigActivity.this, parent.getItemAtPosition(pos).toString());
             }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+            }
+        });
+
+        Spinner checkFrequencySpinner = (Spinner) findViewById(R.id.check_frequency);
+        ArrayAdapter<CharSequence> checkFrequency = ArrayAdapter.createFromResource(
+                this, R.array.check_frequency, android.R.layout.simple_spinner_item);
+        checkFrequency.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        checkFrequencySpinner.setAdapter(checkFrequency);
+        checkFrequencySpinner.setSelection(checkFrequency.getPosition(MinistroService.getCheckFrequency(this).toString()));
+        checkFrequencySpinner.setOnItemSelectedListener(new OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos,
+                    long id) {
+                Toast.makeText(parent.getContext()
+                        , getResources().getString(R.string.ministro_repository_msg
+                        , parent.getItemAtPosition(pos).toString()), Toast.LENGTH_LONG).show();
+                MinistroService.setCheckFrequency(MinistroConfigActivity.this, Long.parseLong(parent.getItemAtPosition(pos).toString()));
+            }
 
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
             }
         });
+        super.onCreate(savedInstanceState);
     }
 
     @Override

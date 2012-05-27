@@ -50,6 +50,7 @@ public class MinistroService extends Service
     private static final String TAG = "MinistroService";
 
     private static final String MINISTRO_CHECK_UPDATES_KEY="LASTCHECK";
+    private static final String MINISTRO_CHECK_FREQUENCY_KEY="CHECKFREQUENCY";
     private static final String MINISTRO_REPOSITORY_KEY="REPOSITORY";
     private static final String MINISTRO_DEFAULT_REPOSITORY="stable";
 
@@ -96,9 +97,24 @@ public class MinistroService extends Service
         editor.commit();
     }
 
+    public static Long getCheckFrequency(Context c)
+    {
+        SharedPreferences preferences=c.getSharedPreferences("Ministro", MODE_PRIVATE);
+        return preferences.getLong(MINISTRO_CHECK_FREQUENCY_KEY, 7l*24*3600*1000)/(24l*3600*1000);
+    }
+
+    public static void setCheckFrequency(Context c, long value)
+    {
+        SharedPreferences preferences=c.getSharedPreferences("Ministro", MODE_PRIVATE);
+        SharedPreferences.Editor editor= preferences.edit();
+        editor.putLong(MINISTRO_CHECK_FREQUENCY_KEY, value*24*3600*1000);
+        editor.putLong(MINISTRO_CHECK_UPDATES_KEY,0);
+        editor.commit();
+    }
+
     // used to check Ministro Service compatibility
     private static final int MINISTRO_MIN_API_LEVEL=1;
-    private static final int MINISTRO_MAX_API_LEVEL=1;
+    private static final int MINISTRO_MAX_API_LEVEL=2;
 
     // MinistroService instance, its used by MinistroActivity to directly access services data (e.g. libraries)
     private static MinistroService m_instance = null;
@@ -120,7 +136,7 @@ public class MinistroService extends Service
 
 
     // current downloaded libraries
-    private ArrayList<Library> m_downloadedLibraries = new ArrayList<Library>();
+    private final ArrayList<Library> m_downloadedLibraries = new ArrayList<Library>();
 
     ArrayList<Library> getDownloadedLibraries()
     {
@@ -131,7 +147,7 @@ public class MinistroService extends Service
     }
 
     // current available libraries
-    private ArrayList<Library> m_availableLibraries = new ArrayList<Library>();
+    private final ArrayList<Library> m_availableLibraries = new ArrayList<Library>();
     ArrayList<Library> getAvailableLibraries()
     {
         synchronized (this)
@@ -201,6 +217,9 @@ public class MinistroService extends Service
                 m_applicationParams=m_applicationParams.replaceAll("MINISTRO_PATH", getFilesDir().getAbsolutePath());
                 m_environmentVariables=root.getAttribute("environmentVariables");
                 m_environmentVariables=m_environmentVariables.replaceAll("MINISTRO_PATH", getFilesDir().getAbsolutePath());
+                m_environmentVariables="MINISTRO_ANDROID_STYLE_PATH="+m_qtLibsRootPath+"style/\t"+m_environmentVariables;
+                if (root.hasAttribute("qtVersion"))
+                    m_qtVersion = Integer.valueOf(root.getAttribute("qtVersion"));
                 root.normalize();
                 Node node = root.getFirstChild();
                 while(node != null)
@@ -252,19 +271,27 @@ public class MinistroService extends Service
         return m_version;
     }
 
+    private double m_qtVersion = 0x040800;
+    public double getQtVersion()
+    {
+        return m_qtVersion;
+    }
+
     // class used to fire an action, this class is used
     // to start an activity when user needs more libraries to start its application
     class ActionStruct
     {
-        ActionStruct(IMinistroCallback cb, String[] m, ArrayList<String> notFoundMoules, String appName)
+        ActionStruct(IMinistroCallback cb, String[] m, ArrayList<String> notFoundMoules, String appName, Bundle p)
         {
             id=++m_actionId;
             callback = cb;
             modules = m;
+            parameters = p;
         }
         public int id;
         public IMinistroCallback callback;
         public String[] modules;
+        public Bundle parameters;
     }
 
     // we can have more then one action
@@ -278,7 +305,8 @@ public class MinistroService extends Service
         m_pathSeparator = System.getProperty("path.separator", ":");
         SharedPreferences preferences=getSharedPreferences("Ministro", MODE_PRIVATE);
         long lastCheck = preferences.getLong(MINISTRO_CHECK_UPDATES_KEY,0);
-        if (MinistroActivity.isOnline(this) && System.currentTimeMillis()-lastCheck>24l*3600*100) // check once/day
+        long checkFrequency = preferences.getLong(MINISTRO_CHECK_FREQUENCY_KEY,7l*24*3600*1000);  // check once per week by default
+        if (MinistroActivity.isOnline(this) && System.currentTimeMillis()-lastCheck>checkFrequency)
         {
             refreshLibraries(true);
             SharedPreferences.Editor editor= preferences.edit();
@@ -346,9 +374,13 @@ public class MinistroService extends Service
         String[] modules = parameters.getStringArray(REQUIRED_MODULES_KEY);
         String appName = parameters.getString(APPLICATION_TITLE_KEY);
 
+        int qtApiLevel = parameters.getInt(MINIMUM_QT_VERSION_KEY);
+        if (qtApiLevel > m_qtVersion) // the application needs a newer qt version
+        {
+            startRetrieval(callback, null, null, appName, parameters);
+            return;
+        }
 
-        @SuppressWarnings("unused")
-        int qtApiLevel = parameters.getInt(MINIMUM_QT_VERSION_KEY); // TODO check if current QT version is compatible with required version
         @SuppressWarnings("unused")
         String qtProvider="necessitas";
         if (parameters.containsKey(QT_PROVIDER_KEY))
@@ -391,7 +423,7 @@ public class MinistroService extends Service
         else
         {
             // Starts a retrieval of the modules which are not readily accessible.
-            startRetrieval(callback, modules, notFoundModules, appName);
+            startRetrieval(callback, modules, notFoundModules, appName, parameters);
         }
     }
 
@@ -406,16 +438,19 @@ public class MinistroService extends Service
     * @throws RemoteException
     */
     private void startRetrieval(IMinistroCallback callback, String[] modules
-                                , ArrayList<String> notFoundModules, String appName) throws RemoteException
+                                , ArrayList<String> notFoundModules, String appName, Bundle parameters) throws RemoteException
     {
-        ActionStruct as = new ActionStruct(callback, modules, notFoundModules, appName);
+        ActionStruct as = new ActionStruct(callback, modules, notFoundModules, appName, parameters);
         m_actions.add(as); // if not, lets start an activity to do it.
 
         Intent intent = new Intent(MinistroService.this, MinistroActivity.class);
         intent.putExtra("id", as.id);
-        String[] libs = notFoundModules.toArray(new String[notFoundModules.size()]);
-        intent.putExtra("modules", libs);
         intent.putExtra("name", appName);
+        if (null != notFoundModules)
+        {
+            String[] libs = notFoundModules.toArray(new String[notFoundModules.size()]);
+            intent.putExtra("modules", libs);
+        }
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         boolean failed = false;
@@ -450,7 +485,7 @@ public class MinistroService extends Service
             ActionStruct action=m_actions.get(i);
             if (action.id==id)
             {
-                postRetrieval(action.callback, action.modules);
+                postRetrieval(action);
                 m_actions.remove(i);
                 break;
             }
@@ -469,13 +504,16 @@ public class MinistroService extends Service
     * @param callback
     * @param modules
     */
-    private void postRetrieval(IMinistroCallback callback, String[] modules)
+    private void postRetrieval(ActionStruct action)
     {
         // Does a final check whether the libraries are accessible (without caring for
         // the non-accessible ones).
         try
         {
-            callback.loaderReady(checkModules(modules, null));
+            if (null != action.modules)
+                action.callback.loaderReady(checkModules(action.modules, null));
+            else
+                checkModulesImpl(action.callback, action.parameters);
         }
         catch (Exception e)
         {
@@ -538,7 +576,7 @@ public class MinistroService extends Service
     * the list of downloaded libraries. If found, an entry to the <code>modules</code> list is
     * added.</p>
     *
-    * <p>In case the <code>module</ocde> is not immediately accessible and the <code>notFoundModules</code>
+    * <p>In case the <code>module</code> is not immediately accessible and the <code>notFoundModules</code>
     * argument exists, a list of available libraries is consulted to fill a list of modules which
     * yet need to be retrieved.</p>
     *
