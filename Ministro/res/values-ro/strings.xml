@@ -8,15 +8,16 @@
     <string name="wait_for_network_connection_msg">Aştept conexiunea de reţea</string>
     <string name="download_app_libs_msg">%1$s are nevoie de biblioteci suplimentare pentru a rula.\nDoriţi să le descărcaţi acum?</string>
     <string name="start_downloading_msg">Încep descărcarea ...</string>
-    <string name="downloading_qt_libraries_msg">Descarc bibliotecile Qt</string>
+    <string name="downloading_qt_libraries_msg">Descarc bibliotecile</string>
     <string name="checking_libraries_msg">Verific bibliotecile. Vă rugăm aşteptaţi ...</string>
     <string name="extracting_SSL_msg">Extrag certificate SSL. Vă rugăm aşteptaţi ...</string>
-    <string name="new_qt_libs_msg">Au fost găsite biblioteci Qt noi</string>
-    <string name="new_qt_libs_tap_msg">Au fost găsite biblioteci Qt noi, apăsaţi pentru a le actualiza.</string>
+    <string name="new_qt_libs_msg">Au fost găsite biblioteci noi</string>
+    <string name="new_qt_libs_tap_msg">Au fost găsite biblioteci noi, apăsaţi pentru a le actualiza.</string>
     <string name="ministro_repository_msg">Ministro va folosi depozitul %1$s</string>
     <string name="ministro_repository_changed_msg">Depozitul Ministro s-a schimbat</string>
     <string name="ministro_update_msg">Actualizare Ministro</string>
     <string name="ministro_repository_changed_tap_msg">Ministro depozitul sa schimbat, apăsaţi pentru actualizare.</string>
     <string name="invalid_parameters">Parametrii sunt invalizi</string>
     <string name="dependencies_error">Ministro nu poate găsi toate dependenţele aplicaţiei</string>
+    <string name="extracting_look_n_feel_msg">Extrag informaţiile de tematică. Vă rugăm aşteptaţi ...</string>
 </resources>

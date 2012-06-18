@@ -4,7 +4,7 @@
     <string name="repositories_prompt">リポジトリの選択</string>
     <string name="incompatible_ministo_api">Ministroはあなたのアプリケーションと互換性がありません。 Ministroサービスをアップグレードしてください。</string>
     <string name="ministro_network_access_msg">Ministroはネットワークアクセスを必要とします。 モバイルネットワークかWi-Fiでデータのダウンロードを許可してください。</string>
-    <string name="setting_msg">セッティング</string>
+    <string name="settings_msg">セッティング</string>
     <string name="wait_for_network_connection_msg">ネットワークの接続待ち</string>
     <string name="download_app_libs_msg"> %1$sは拡張ライブラリを必要とします。\n今ダウンロードしますか？</string>
     <string name="start_downloading_msg">ダウンロード開始 ...</string>

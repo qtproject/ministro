@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name">Ministro</string>
     <string name="repositories_prompt">Choose a repository</string>
     <string name="incompatible_ministo_api">Ministro is not compatible with your application. Please upgrade Ministro service.</string>
@@ -8,11 +8,11 @@
     <string name="wait_for_network_connection_msg">Waiting for network connection</string>
     <string name="download_app_libs_msg"> %1$s needs extra libraries to run.\nDo you want to download them now?</string>
     <string name="start_downloading_msg">Start downloading ...</string>
-    <string name="downloading_qt_libraries_msg">Downloading Qt libraries</string>
+    <string name="downloading_qt_libraries_msg">Downloading libraries</string>
     <string name="checking_libraries_msg">Checking libraries. Please wait...</string>
     <string name="extracting_SSL_msg">Extracting SSL root certificates. Please wait...</string>
-    <string name="new_qt_libs_msg">New Qt libs found</string>
-    <string name="new_qt_libs_tap_msg">New Qt libs has been found tap to update.</string>
+    <string name="new_qt_libs_msg">New libs has been found</string>
+    <string name="new_qt_libs_tap_msg">New libs has been found tap to update.</string>
     <string name="ministro_repository_msg">Ministro will use  %1$s repository</string>
     <string name="ministro_repository_changed_msg">Ministro repository changed</string>
     <string name="ministro_update_msg">Ministro update</string>
