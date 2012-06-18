@@ -30,6 +30,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.os.Bundle;
+
 
 class Library
 {
@@ -214,6 +216,22 @@ class Library
             builder.append(delimiter).append(iter.next());
         }
         return builder.toString();
+    }
+
+    public static void mergeBundleParameters(Bundle out, String outKey, Bundle in, String inKey)
+    {
+        if (!in.containsKey(inKey))
+            return;
+
+        String value = null;
+        if (out.containsKey(outKey))
+            value=out.getString(outKey);
+
+        if (value!=null && value.length()>0 && value.charAt(value.length()-1)!='\t')
+            value=value+"\t";
+
+        value=value+in.getString(inKey);
+        out.putString(outKey, value);
     }
 };
 

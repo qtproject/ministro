@@ -179,7 +179,6 @@ public class MinistroService extends Service
                 Notification notification = new Notification(icon, tickerText, when);
                 notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
                 notification.defaults |= Notification.DEFAULT_SOUND;
-                notification.defaults |= Notification.DEFAULT_VIBRATE;
                 notification.defaults |= Notification.DEFAULT_LIGHTS;
                 try {
                     nm.notify(1, notification);
@@ -413,6 +412,8 @@ public class MinistroService extends Service
         {
             try
             {
+                Library.mergeBundleParameters(loaderParams, ENVIRONMENT_VARIABLES_KEY, parameters, ENVIRONMENT_VARIABLES_KEY);
+                Library.mergeBundleParameters(loaderParams, APPLICATION_PARAMETERS_KEY, parameters, APPLICATION_PARAMETERS_KEY);
                 callback.loaderReady(loaderParams);
             }
             catch (Exception e)

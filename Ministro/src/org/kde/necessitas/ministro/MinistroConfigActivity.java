@@ -48,7 +48,7 @@ public class MinistroConfigActivity extends Activity {
                     long id) {
                 Toast.makeText(parent.getContext()
                         , getResources().getString(R.string.ministro_repository_msg
-                        , parent.getItemAtPosition(pos).toString()), Toast.LENGTH_LONG).show();
+                        , parent.getItemAtPosition(pos).toString()), Toast.LENGTH_SHORT).show();
                 MinistroService.setRepository(MinistroConfigActivity.this, parent.getItemAtPosition(pos).toString());
             }
             @Override
@@ -66,9 +66,6 @@ public class MinistroConfigActivity extends Activity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos,
                     long id) {
-                Toast.makeText(parent.getContext()
-                        , getResources().getString(R.string.ministro_repository_msg
-                        , parent.getItemAtPosition(pos).toString()), Toast.LENGTH_LONG).show();
                 MinistroService.setCheckFrequency(MinistroConfigActivity.this, Long.parseLong(parent.getItemAtPosition(pos).toString()));
             }
 

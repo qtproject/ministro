@@ -64,12 +64,14 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.provider.Settings;
 
 public class MinistroActivity extends Activity
 {
     private static final int CONNECTION_TIMEOUT = 20000; // 20 seconds for connection timeout
-    private static final int READ_TIMEOUT = 2000; // 20 seconds for connection timeout
+    private static final int READ_TIMEOUT = 10000; // 10 seconds for read timeout
 
     public native static int nativeChmode(String filepath, int mode);
     private static final String DOMAIN_NAME="http://files.kde.org/necessitas/ministro/android/necessitas/";
@@ -77,6 +79,7 @@ public class MinistroActivity extends Activity
     private String[] m_modules;
     private int m_id=-1;
     private String m_qtLibsRootPath;
+    private WakeLock m_wakeLock;
 
     private void checkNetworkAndDownload(final boolean update)
     {
@@ -143,9 +146,11 @@ public class MinistroActivity extends Activity
         @Override
         public void onServiceConnected(ComponentName name, IBinder service)
         {
-            if (getIntent().hasExtra("id") && getIntent().hasExtra("modules"))
-            {
+            if (getIntent().hasExtra("id"))
                 m_id=getIntent().getExtras().getInt("id");
+
+            if (getIntent().hasExtra("modules"))
+            {
                 m_modules=getIntent().getExtras().getStringArray("modules");
                 AlertDialog.Builder builder = new AlertDialog.Builder(MinistroActivity.this);
                 builder.setMessage(getResources().getString(R.string.download_app_libs_msg,
@@ -183,11 +188,8 @@ public class MinistroActivity extends Activity
     {
         if (-1 != m_id && null != MinistroService.instance())
             MinistroService.instance().retrievalFinished(m_id);
-        else
-        {
-            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            nm.cancelAll();
-        }
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.cancelAll();
         finish();
     }
 
@@ -684,12 +686,20 @@ public class MinistroActivity extends Activity
         dir.mkdirs();
         nativeChmode(m_qtLibsRootPath, 0755);
         bindService(new Intent("org.kde.necessitas.ministro.IMinistro"), m_ministroConnection, Context.BIND_AUTO_CREATE);
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        m_wakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "Ministro");
+        m_wakeLock.acquire();
     }
 
     @Override
     protected void onDestroy()
     {
         super.onDestroy();
+        if (null != m_wakeLock)
+        {
+            m_wakeLock.release();
+            m_wakeLock = null;
+        }
         unbindService(m_ministroConnection);
     }
 

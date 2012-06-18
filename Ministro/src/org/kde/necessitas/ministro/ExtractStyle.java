@@ -54,6 +54,7 @@ import android.util.AttributeSet;
 import android.util.Xml;
 import android.view.inputmethod.EditorInfo;
 
+
 public class ExtractStyle {
 
     native static int[] extractChunkInfo(byte[] chunkData);
@@ -829,7 +830,7 @@ public class ExtractStyle {
         }
     }
 
-    public JSONObject extractTextAppearanceInformations(String styleName, String qtClass, AttributeSet attribSet )
+    public JSONObject extractTextAppearanceInformations(String styleName, String qtClass, AttributeSet attribSet, int textAppearance )
     {
         JSONObject json = new JSONObject();
         try
@@ -852,9 +853,11 @@ public class ExtractStyle {
             TypedArray a =m_theme.obtainStyledAttributes(null, textViewAttrs, styleId, 0);
 
             TypedArray appearance = null;
-            int ap = a.getResourceId(styleableClass.getDeclaredField("TextView_textAppearance").getInt(null), -1);
-            if (ap != -1)
-                appearance = m_theme.obtainStyledAttributes(ap, (int[]) styleableClass.getDeclaredField("TextAppearance").get(null));
+            if (-1==textAppearance)
+                textAppearance = a.getResourceId(styleableClass.getDeclaredField("TextView_textAppearance").getInt(null), -1);
+
+            if (textAppearance != -1)
+                appearance = m_theme.obtainStyledAttributes(textAppearance, (int[]) styleableClass.getDeclaredField("TextAppearance").get(null));
 
             if (appearance != null)
             {
@@ -1097,7 +1100,7 @@ public class ExtractStyle {
 
     void extractCompoundButton(JSONObject parentObject, String styleName, String qtClass)
     {
-        JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null);
+        JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null, -1);
         Class<?> attrClass;
         try {
             attrClass = Class.forName("android.R$attr");
@@ -1160,7 +1163,7 @@ public class ExtractStyle {
 
     void extractProgressBar(JSONObject parentObject, String styleName, String qtClass)
     {
-        JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null);
+        JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null, -1);
         try {
             extractProgressBarInfo(json, styleName);
             parentObject.put(styleName, json);
@@ -1171,7 +1174,7 @@ public class ExtractStyle {
 
     void extractAbsSeekBar(JSONObject parentObject, String styleName, String qtClass)
     {
-        JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null);
+        JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null, -1);
         extractProgressBarInfo(json, styleName);
         Class<?> attrClass;
         try {
@@ -1195,7 +1198,7 @@ public class ExtractStyle {
 
     JSONObject extractCheckedTextView(AttributeSet attribSet, String itemName)
     {
-        JSONObject json = extractTextAppearanceInformations("textViewStyle", itemName, attribSet);
+        JSONObject json = extractTextAppearanceInformations("textViewStyle", itemName, attribSet, -1);
         try {
             Class<?> attrClass= Class.forName("android.R$attr");
             int styleId = attrClass.getDeclaredField("textViewStyle").getInt(null);
@@ -1214,7 +1217,7 @@ public class ExtractStyle {
         return json;
     }
 
-    private JSONObject extractItemStyle(int resourceId, String itemName) {
+    private JSONObject extractItemStyle(int resourceId, String itemName, int textAppearance) {
         try
         {
             XmlResourceParser parser = m_context.getResources().getLayout(resourceId);
@@ -1231,7 +1234,7 @@ public class ExtractStyle {
             AttributeSet attributes = Xml.asAttributeSet(parser);
             String name = parser.getName();
             if (name.equals("TextView"))
-                return extractTextAppearanceInformations("textViewStyle", itemName, attributes);
+                return extractTextAppearanceInformations("textViewStyle", itemName, attributes, textAppearance);
             if (name.equals("CheckedTextView"))
                 return extractCheckedTextView(attributes, itemName);
         } catch (Exception e) {
@@ -1243,13 +1246,13 @@ public class ExtractStyle {
     private void extractItemsStyle(JSONObject json) {
         try
         {
-            json.put("simple_list_item",extractItemStyle(android.R.layout.simple_list_item_1, "simple_list_item"));
-            json.put("simple_list_item_checked",extractItemStyle(android.R.layout.simple_list_item_checked, "simple_list_item_checked"));
-            json.put("simple_list_item_multiple_choice",extractItemStyle(android.R.layout.simple_list_item_multiple_choice, "simple_list_item_multiple_choice"));
-            json.put("simple_list_item_single_choice",extractItemStyle(android.R.layout.simple_list_item_single_choice, "simple_list_item_single_choice"));
-            json.put("simple_spinner_item",extractItemStyle(android.R.layout.simple_spinner_item, "simple_spinner_item"));
-            json.put("simple_spinner_dropdown_item",extractItemStyle(android.R.layout.simple_spinner_dropdown_item, "simple_spinner_dropdown_item"));
-            json.put("simple_dropdown_item_1line",extractItemStyle(android.R.layout.simple_dropdown_item_1line, "simple_dropdown_item_1line"));
+            json.put("simple_list_item",extractItemStyle(android.R.layout.simple_list_item_1, "simple_list_item", android.R.style.TextAppearance_Large));
+            json.put("simple_list_item_checked",extractItemStyle(android.R.layout.simple_list_item_checked, "simple_list_item_checked", android.R.style.TextAppearance_Large));
+            json.put("simple_list_item_multiple_choice",extractItemStyle(android.R.layout.simple_list_item_multiple_choice, "simple_list_item_multiple_choice", android.R.style.TextAppearance_Large));
+            json.put("simple_list_item_single_choice",extractItemStyle(android.R.layout.simple_list_item_single_choice, "simple_list_item_single_choice", android.R.style.TextAppearance_Large));
+            json.put("simple_spinner_item",extractItemStyle(android.R.layout.simple_spinner_item, "simple_spinner_item", -1));
+            json.put("simple_spinner_dropdown_item",extractItemStyle(android.R.layout.simple_spinner_dropdown_item, "simple_spinner_dropdown_item",android.R.style.TextAppearance_Large));
+            json.put("simple_dropdown_item_1line",extractItemStyle(android.R.layout.simple_dropdown_item_1line, "simple_dropdown_item_1line",android.R.style.TextAppearance_Large));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1264,14 +1267,14 @@ public class ExtractStyle {
         m_theme = context.getTheme();
         JSONObject json = new JSONObject();
         try {
-            json.put("buttonStyle", extractTextAppearanceInformations("buttonStyle", "QPushButton", null));
-            json.put("spinnerStyle", extractTextAppearanceInformations("spinnerStyle", "QComboBox", null));
+            json.put("buttonStyle", extractTextAppearanceInformations("buttonStyle", "QPushButton", null, -1));
+            json.put("spinnerStyle", extractTextAppearanceInformations("spinnerStyle", "QComboBox", null, -1));
             extractProgressBar(json, "progressBarStyleHorizontal", "QProgressBar");
             extractAbsSeekBar(json, "seekBarStyle", "QSlider");
             extractCompoundButton(json, "checkboxStyle", "QCheckBox");
-            json.put("editTextStyle", extractTextAppearanceInformations("editTextStyle", "QLineEdit", null));
+            json.put("editTextStyle", extractTextAppearanceInformations("editTextStyle", "QLineEdit", null, -1));
             extractCompoundButton(json, "radioButtonStyle", "QRadioButton");
-            json.put("textViewStyle", extractTextAppearanceInformations("textViewStyle", "QWidget", null));
+            json.put("textViewStyle", extractTextAppearanceInformations("textViewStyle", "QWidget", null, -1));
             extractItemsStyle(json);
             //extractCompoundButton(json, "buttonStyleToggle", null);
             //extractCompoundButton(json, "switchStyle", null);
