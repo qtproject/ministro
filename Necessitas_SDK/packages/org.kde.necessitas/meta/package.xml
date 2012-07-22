@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<Package>
-    <DisplayName>Necessitas Qt SDK</DisplayName>
-    <Description>Meta package needed to install the SDK</Description>
-    <Version>1.0.0</Version>
-    <ReleaseDate>@@TODAY@@</ReleaseDate>
-    <Name>org.kde.necessitas</Name>
-    <Script>installscript.qs</Script>
-</Package>

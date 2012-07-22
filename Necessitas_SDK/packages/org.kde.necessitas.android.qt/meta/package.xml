@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<Package>
-    <DisplayName>Qt</DisplayName>
-    <Description>Qt</Description>
-    <Version>1.0</Version>
-    <ReleaseDate>@@TODAY@@</ReleaseDate>
-    <Name>org.kde.necessitas.android.qt</Name>
-    <SortingPriority>0</SortingPriority>
-</Package>
