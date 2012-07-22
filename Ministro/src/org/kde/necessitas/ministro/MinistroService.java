@@ -41,6 +41,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -133,7 +134,7 @@ public class MinistroService extends Service
     }
 
     private int m_actionId=0; // last actions id
-
+    private Handler m_handler = null;
 
     // current downloaded libraries
     private final ArrayList<Library> m_downloadedLibraries = new ArrayList<Library>();
@@ -299,6 +300,7 @@ public class MinistroService extends Service
     @Override
     public void onCreate()
     {
+        m_handler = new Handler();
         m_versionXmlFile = getFilesDir().getAbsolutePath()+"/version.xml";
         m_qtLibsRootPath = getFilesDir().getAbsolutePath()+"/qt/";
         m_pathSeparator = System.getProperty("path.separator", ":");
@@ -444,7 +446,7 @@ public class MinistroService extends Service
         ActionStruct as = new ActionStruct(callback, modules, notFoundModules, appName, parameters);
         m_actions.add(as); // if not, lets start an activity to do it.
 
-        Intent intent = new Intent(MinistroService.this, MinistroActivity.class);
+        final Intent intent = new Intent(MinistroService.this, MinistroActivity.class);
         intent.putExtra("id", as.id);
         intent.putExtra("name", appName);
         if (null != notFoundModules)
@@ -457,7 +459,12 @@ public class MinistroService extends Service
         boolean failed = false;
         try
         {
-            MinistroService.this.startActivity(intent);
+            m_handler.postDelayed(new Runnable() {
+              @Override
+              public void run() {
+                  MinistroService.this.startActivity(intent);
+              }
+            }, 100);
         }
         catch(Exception e)
         {
@@ -512,7 +519,12 @@ public class MinistroService extends Service
         try
         {
             if (null != action.modules)
-                action.callback.loaderReady(checkModules(action.modules, null));
+            {
+                Bundle loaderParams = checkModules(action.modules, null);
+                Library.mergeBundleParameters(loaderParams, ENVIRONMENT_VARIABLES_KEY, action.parameters, ENVIRONMENT_VARIABLES_KEY);
+                Library.mergeBundleParameters(loaderParams, APPLICATION_PARAMETERS_KEY, action.parameters, APPLICATION_PARAMETERS_KEY);
+                action.callback.loaderReady(loaderParams);
+            }
             else
                 checkModulesImpl(action.callback, action.parameters);
         }
