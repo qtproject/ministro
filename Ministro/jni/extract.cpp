@@ -106,7 +106,7 @@ extern "C" JNIEXPORT jintArray JNICALL Java_org_kde_necessitas_ministro_ExtractS
             // need to deserialize the chunk
             Res_png_9patch* chunk = static_cast<Res_png_9patch*>(storage);
             Res_png_9patch::deserialize(chunk);
-            printChunkInformation(chunk);
+//            printChunkInformation(chunk);
             jintArray result;
             size_t size = 3+chunk->numXDivs+chunk->numYDivs+chunk->numColors;
             result = env->NewIntArray(size);
