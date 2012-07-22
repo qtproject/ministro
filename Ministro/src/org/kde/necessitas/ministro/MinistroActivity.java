@@ -74,7 +74,7 @@ public class MinistroActivity extends Activity
     private static final int READ_TIMEOUT = 10000; // 10 seconds for read timeout
 
     public native static int nativeChmode(String filepath, int mode);
-    private static final String DOMAIN_NAME="http://files.kde.org/necessitas/ministro/android/necessitas/";
+    private static final String DOMAIN_NAME="https://files.kde.org/necessitas/ministro/android/necessitas/";
 
     private String[] m_modules;
     private int m_id=-1;
