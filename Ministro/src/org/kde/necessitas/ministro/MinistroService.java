@@ -73,6 +73,7 @@ public class MinistroService extends Service
     private static final String NATIVE_LIBRARIES_KEY="native.libraries";
     private static final String ENVIRONMENT_VARIABLES_KEY="environment.variables";
     private static final String APPLICATION_PARAMETERS_KEY="application.parameters";
+    private static final String QT_VERSION_PARAMETER_KEY="qt.version.parameter";
     /// loader parameter keys
 
     /// loader error codes
@@ -80,6 +81,7 @@ public class MinistroService extends Service
     private static final int EC_INCOMPATIBLE=1;
     private static final int EC_NOT_FOUND=2;
     private static final int EC_INVALID_PARAMETERS=3;
+    private static final int EC_INVALID_QT_VERSION=3;
     /// loader error codes
 
 
@@ -378,7 +380,23 @@ public class MinistroService extends Service
         int qtApiLevel = parameters.getInt(MINIMUM_QT_VERSION_KEY);
         if (qtApiLevel > m_qtVersion) // the application needs a newer qt version
         {
+            if (parameters.getBoolean(QT_VERSION_PARAMETER_KEY, false))
+            {
+                Bundle loaderParams = new Bundle();
+                loaderParams.putInt(ERROR_CODE_KEY, EC_INVALID_QT_VERSION);
+                loaderParams.putString(ERROR_MESSAGE_KEY, getResources().getString(R.string.invalid_qt_version));
+                try
+                {
+                    callback.loaderReady(loaderParams);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Log.e(TAG, "Invalid qt verson");
+                return;
+            }
             startRetrieval(callback, null, null, appName, parameters);
+            parameters.putBoolean(QT_VERSION_PARAMETER_KEY, true);
             return;
         }
 

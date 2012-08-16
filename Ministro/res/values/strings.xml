@@ -21,4 +21,5 @@
     <string name="dependencies_error">Ministro can not satisfy your application dependencies</string>
     <string name="check_frequency">Check for updates frequency (days)</string>
     <string name="extracting_look_n_feel_msg">Extracting the device look&amp;feel information. Please wait...</string>
+    <string name="invalid_qt_version">Invalid Qt version</string>
 </resources>
