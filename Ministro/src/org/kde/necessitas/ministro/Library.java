@@ -174,6 +174,7 @@ class Library
             {
                 digester.update(tmp, 0, downloaded);
             }
+            inFile.close();
             return sha1.equalsIgnoreCase(convertToHex(digester.digest()));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -199,11 +200,23 @@ class Library
 
     public static void removeAllFiles(String path)
     {
-        String files[]=new File(path).list();
+        File f = new File(path);
+        if (!f.exists())
+            return;
+        String files[]=f.list();
         if (!path.endsWith("/"))
             path+="/";
         for (int i=0;i<files.length;i++)
-            new File(path+files[i]).delete();
+        {
+            try
+            {
+                new File(path+files[i]).delete();
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static String join(Collection<String> s, String delimiter)

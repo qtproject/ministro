@@ -235,7 +235,41 @@ public class MinistroService extends Service
                             if (checkCrc && !Library.checkCRC(file.getAbsolutePath(), lib.sha1))
                                 file.delete();
                             else
-                                m_downloadedLibraries.add(lib);
+                            {
+
+                                boolean allOk = true;
+                                if (lib.needs != null)
+                                {
+                                    for(NeedsStruct needed: lib.needs)// check if its needed files are available
+                                        if (needed.type != null && needed.type.equals("jar"))
+                                        {
+                                            File f=new File(m_qtLibsRootPath + needed.filePath);
+                                            if (!f.exists())
+                                            {
+                                                allOk = false;
+                                                break;
+                                            }
+                                        }
+                                    if (!allOk)
+                                    {
+                                        for(NeedsStruct needed: lib.needs)// remove all needed files
+                                            if (needed.type != null && needed.type.equals("jar"))
+                                            {
+                                                try {
+                                                    File f=new File(m_qtLibsRootPath + needed.filePath);
+                                                    if (f.exists())
+                                                        f.delete();
+                                                } catch (Exception e)
+                                                {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        file.delete(); // delete the parent
+                                    }
+                                }
+                                if (allOk)
+                                    m_downloadedLibraries.add(lib);
+                            }
                         }
                         m_availableLibraries.add(lib);
                     }
@@ -333,7 +367,6 @@ public class MinistroService extends Service
     {
         return new IMinistro.Stub()
         {
-            @Override
             public void requestLoader(IMinistroCallback callback, Bundle parameters) throws RemoteException
             {
 
@@ -478,7 +511,6 @@ public class MinistroService extends Service
         try
         {
             m_handler.postDelayed(new Runnable() {
-              @Override
               public void run() {
                   MinistroService.this.startActivity(intent);
               }
@@ -697,7 +729,6 @@ public class MinistroService extends Service
     */
     static private class ModuleCompare implements Comparator<Module>
     {
-        @Override
         public int compare(Module a, Module b)
         {
             return a.level-b.level;

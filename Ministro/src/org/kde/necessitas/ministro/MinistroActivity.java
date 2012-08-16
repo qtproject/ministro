@@ -67,6 +67,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.provider.Settings;
+import android.util.Log;
 
 public class MinistroActivity extends Activity
 {
@@ -91,10 +92,8 @@ public class MinistroActivity extends Activity
             builder.setMessage(getResources().getString(R.string.ministro_network_access_msg));
             builder.setCancelable(true);
             builder.setNeutralButton(getResources().getString(R.string.settings_msg), new DialogInterface.OnClickListener() {
-                    @Override
                     public void onClick(DialogInterface dialog, int id) {
                         final ProgressDialog m_dialog = ProgressDialog.show(MinistroActivity.this, null, getResources().getString(R.string.wait_for_network_connection_msg), true, true, new DialogInterface.OnCancelListener() {
-                            @Override
                             public void onCancel(DialogInterface dialog)
                             {
                                 finishMe();
@@ -108,7 +107,6 @@ public class MinistroActivity extends Activity
                                 {
                                     getApplication().unregisterReceiver(this);
                                     runOnUiThread(new Runnable() {
-                                        @Override
                                         public void run()
                                         {
                                             m_dialog.dismiss();
@@ -123,14 +121,12 @@ public class MinistroActivity extends Activity
                     }
                 });
             builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
                     public void onClick(DialogInterface dialog, int id)
                     {
                             dialog.cancel();
                     }
                 });
             builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                @Override
                 public void onCancel(DialogInterface dialog)
                 {
                     finishMe();
@@ -143,7 +139,6 @@ public class MinistroActivity extends Activity
 
     private ServiceConnection m_ministroConnection=new ServiceConnection()
     {
-        @Override
         public void onServiceConnected(ComponentName name, IBinder service)
         {
             if (getIntent().hasExtra("id"))
@@ -157,14 +152,12 @@ public class MinistroActivity extends Activity
                         getIntent().getExtras().getString("name")))
                     .setCancelable(false)
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        @Override
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.dismiss();
                             checkNetworkAndDownload(false);
                         }
                     })
                     .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                        @Override
                         public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
                                 finishMe();
@@ -177,7 +170,6 @@ public class MinistroActivity extends Activity
                 checkNetworkAndDownload(true);
         }
 
-        @Override
         public void onServiceDisconnected(ComponentName name)
         {
             m_ministroConnection = null;
@@ -231,6 +223,7 @@ public class MinistroActivity extends Activity
                     break;
                 }
             }
+            br.close();
         } catch (Exception e) {
             e.printStackTrace();
             return "";
@@ -313,7 +306,6 @@ public class MinistroActivity extends Activity
             m_dialog.setMessage(m_status);
             m_dialog.setCancelable(true);
             m_dialog.setOnCancelListener(new DialogInterface.OnCancelListener(){
-                        @Override
                         public void onCancel(DialogInterface dialog)
                         {
                             DownloadManager.this.cancel(false);
@@ -326,51 +318,62 @@ public class MinistroActivity extends Activity
 
         private boolean DownloadItem(String url, String file, long size, String fileSha1) throws NoSuchAlgorithmException, MalformedURLException, IOException
         {
-            MessageDigest digester = MessageDigest.getInstance("SHA-1");
-            URLConnection connection = new URL(url).openConnection();
-            Library.mkdirParents(m_qtLibsRootPath, file, 1);
-            String filePath=m_qtLibsRootPath+file;
-            int progressSize=0;
-            try
+            for (int i=0;i<2;i++)
             {
-                FileOutputStream outstream = new FileOutputStream(filePath);
-                InputStream instream = connection.getInputStream();
-                int downloaded;
-                byte[] tmp = new byte[2048];
-                int oldProgress=-1;
-                while ((downloaded = instream.read(tmp)) != -1)
+                MessageDigest digester = MessageDigest.getInstance("SHA-1");
+                URLConnection connection = new URL(url).openConnection();
+                Library.mkdirParents(m_qtLibsRootPath, file, 1);
+                String filePath=m_qtLibsRootPath+file;
+                int progressSize=0;
+                try
                 {
-                    if (isCancelled())
-                        break;
-                    progressSize+=downloaded;
-                    m_totalProgressSize+=downloaded;
-                    digester.update(tmp, 0, downloaded);
-                    outstream.write(tmp, 0, downloaded);
-                    int progress=(int)(progressSize*100/size);
-                    if (progress!=oldProgress)
+                    FileOutputStream outstream = new FileOutputStream(filePath);
+                    InputStream instream = connection.getInputStream();
+                    int downloaded;
+                    byte[] tmp = new byte[2048];
+                    int oldProgress=-1;
+                    while ((downloaded = instream.read(tmp)) != -1)
                     {
-                        publishProgress(progress
-                                , m_totalProgressSize);
-                        oldProgress = progress;
+                        if (isCancelled())
+                            break;
+                        progressSize+=downloaded;
+                        m_totalProgressSize+=downloaded;
+                        digester.update(tmp, 0, downloaded);
+                        outstream.write(tmp, 0, downloaded);
+                        int progress=(int)(progressSize*100/size);
+                        if (progress!=oldProgress)
+                        {
+                            publishProgress(progress
+                                    , m_totalProgressSize);
+                            oldProgress = progress;
+                        }
                     }
-                }
-                String sha1 =  Library.convertToHex(digester.digest());
-                if (sha1.equalsIgnoreCase(fileSha1))
-                {
+                    String sha1 =  Library.convertToHex(digester.digest());
+                    if (sha1.equalsIgnoreCase(fileSha1))
+                    {
+                        outstream.close();
+                        nativeChmode(filePath, 0644);
+                        return true;
+                    }
+                    else
+                        Log.e("Ministro", "sha1 mismatch, the file:"+file+" will be removed, expected sha1:"+fileSha1+" got sha1:"+sha1+" file was downloaded from "+url);
                     outstream.close();
-                    nativeChmode(filePath, 0644);
-                    return true;
+                    File f = new File(filePath);
+                    f.delete();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    File f = new File(filePath);
+                    f.delete();
                 }
-                outstream.close();
-                File f = new File(filePath);
-                f.delete();
-            } catch (Exception e) {
-                e.printStackTrace();
-                File f = new File(filePath);
-                f.delete();
+                m_totalProgressSize-=progressSize;
             }
-            m_totalProgressSize-=progressSize;
             return false;
+        }
+
+        void removeFile(String file)
+        {
+            File f = new File(m_qtLibsRootPath+file);
+            f.delete();
         }
 
         @Override
@@ -387,7 +390,6 @@ public class MinistroActivity extends Activity
                 }
 
                 m_dialog.setMax(m_totalSize);
-                int lastId=-1;
                 for (int i=0;i<params.length;i++)
                 {
                     if (isCancelled())
@@ -398,16 +400,8 @@ public class MinistroActivity extends Activity
                     }
                     publishProgress(0, m_totalProgressSize);
                     if (!DownloadItem(params[i].url, params[i].filePath, params[i].size, params[i].sha1))
-                    {
-                        // sometimes for some reasons which I don't understand, Ministro receives corrupt data, so let's give it another chance.
-                        if (i == lastId)
-                            break;
-                        lastId=i;
-                        --i;
-                        continue;
-                    }
+                        break;
 
-                    lastId=-1;
                     if (null != params[i].needs)
                         for (int j=0;j<params[i].needs.length;j++)
                         {
@@ -418,14 +412,11 @@ public class MinistroActivity extends Activity
                             publishProgress(0, m_totalProgressSize);
                             if (!DownloadItem(params[i].needs[j].url, params[i].needs[j].filePath, params[i].needs[j].size, params[i].needs[j].sha1))
                             {
-                                // sometimes for some reasons which I don't understand, Ministro receives corrupt data, so let's give it another chance.
-                                if (j == lastId)
-                                    break;
-                                lastId=j;
-                                --j;
-                                continue;
+                                for (int k=0;k<j;k++) // remove previous neede files
+                                    removeFile(params[i].needs[k].filePath);
+                                removeFile(params[i].filePath); // remove the parent
+                                break;
                             }
-                            lastId=-1;
                         }
                 }
             } catch (NoSuchAlgorithmException e) {
@@ -475,7 +466,6 @@ public class MinistroActivity extends Activity
         {
             runOnUiThread(new Runnable()
             {
-                @Override
                 public void run()
                 {
                     dialog = ProgressDialog.show(MinistroActivity.this, null,

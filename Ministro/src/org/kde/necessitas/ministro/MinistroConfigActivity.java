@@ -43,7 +43,6 @@ public class MinistroConfigActivity extends Activity {
         repositoriesSpinner.setAdapter(repositories);
         repositoriesSpinner.setSelection(repositories.getPosition(MinistroService.getRepository(this)));
         repositoriesSpinner.setOnItemSelectedListener(new OnItemSelectedListener(){
-            @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos,
                     long id) {
                 Toast.makeText(parent.getContext()
@@ -51,7 +50,6 @@ public class MinistroConfigActivity extends Activity {
                         , parent.getItemAtPosition(pos).toString()), Toast.LENGTH_SHORT).show();
                 MinistroService.setRepository(MinistroConfigActivity.this, parent.getItemAtPosition(pos).toString());
             }
-            @Override
             public void onNothingSelected(AdapterView<?> arg0) {
             }
         });
@@ -63,13 +61,11 @@ public class MinistroConfigActivity extends Activity {
         checkFrequencySpinner.setAdapter(checkFrequency);
         checkFrequencySpinner.setSelection(checkFrequency.getPosition(MinistroService.getCheckFrequency(this).toString()));
         checkFrequencySpinner.setOnItemSelectedListener(new OnItemSelectedListener(){
-            @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos,
                     long id) {
                 MinistroService.setCheckFrequency(MinistroConfigActivity.this, Long.parseLong(parent.getItemAtPosition(pos).toString()));
             }
 
-            @Override
             public void onNothingSelected(AdapterView<?> arg0) {
             }
         });

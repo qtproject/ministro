@@ -11,8 +11,8 @@
     <string name="downloading_qt_libraries_msg">Downloading libraries</string>
     <string name="checking_libraries_msg">Checking libraries. Please wait...</string>
     <string name="extracting_SSL_msg">Extracting SSL root certificates. Please wait...</string>
-    <string name="new_qt_libs_msg">New libs has been found</string>
-    <string name="new_qt_libs_tap_msg">New libs has been found tap to update.</string>
+    <string name="new_qt_libs_msg">New libs have been found</string>
+    <string name="new_qt_libs_tap_msg">New libs have been found tap to update.</string>
     <string name="ministro_repository_msg">Ministro will use  %1$s repository</string>
     <string name="ministro_repository_changed_msg">Ministro repository changed</string>
     <string name="ministro_update_msg">Ministro update</string>
