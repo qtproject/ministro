@@ -36,6 +36,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.concurrent.Semaphore;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -67,6 +68,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.os.StatFs;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -154,7 +156,82 @@ public class MinistroActivity extends Activity
             alert.show();
         }
     }
+    private AlertDialog m_distSpaceDialog=null;
+    private final int freeSpaceCode=0xf3ee500;
+    private Semaphore m_diskSpaceSemaphore = new Semaphore(0);
 
+    private boolean checkFreeSpace(final long size) throws InterruptedException
+    {
+        final StatFs stat = new StatFs(m_qtLibsRootPath);
+        if (stat.getBlockSize() * stat.getAvailableBlocks() < size)
+        {
+            runOnUiThread(new Runnable() {
+                public void run() {
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MinistroActivity.this);
+                    builder.setMessage(getResources().getString(R.string.ministro_disk_space_msg,
+                                                (size-(stat.getBlockSize() * stat.getAvailableBlocks()))/1024+"Kb"));
+                    builder.setCancelable(true);
+                    builder.setNeutralButton(getResources().getString(R.string.settings_msg), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                try {
+                                    startActivityForResult(new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS), freeSpaceCode);
+                                } catch(Exception e) {
+                                    e.printStackTrace();
+                                    try {
+                                        startActivityForResult(new Intent(Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS), freeSpaceCode);
+                                    } catch(Exception e1) {
+
+                                        e1.printStackTrace();
+                                    }
+                                }
+                            }
+                        });
+                    builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id)
+                            {
+                                dialog.dismiss();
+                                m_diskSpaceSemaphore.release();
+                            }
+                        });
+                    builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        public void onCancel(DialogInterface dialog)
+                        {
+                            dialog.dismiss();
+                            m_diskSpaceSemaphore.release();
+                        }
+                    });
+                    m_distSpaceDialog = builder.create();
+                    m_distSpaceDialog.show();
+                }
+            });
+            m_diskSpaceSemaphore.acquire();
+        }
+        else
+            return true;
+
+        return stat.getBlockSize() * stat.getAvailableBlocks()>size;
+    }
+
+    protected void onActivityResult (int requestCode, int resultCode, Intent data)
+    {
+        if (requestCode == freeSpaceCode)
+        {
+            m_diskSpaceSemaphore.release();
+            try
+            {
+                if (m_distSpaceDialog != null)
+                {
+                    m_distSpaceDialog.dismiss();
+                    m_distSpaceDialog = null;
+                }
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
     private ServiceConnection m_ministroConnection=new ServiceConnection()
     {
         public void onServiceConnected(ComponentName name, IBinder service)
@@ -423,8 +500,9 @@ public class MinistroActivity extends Activity
                         for (int j=0;j<params[i].needs.length;j++)
                             m_totalSize+=params[i].needs[j].size;
                 }
-
                 m_dialog.setMax(m_totalSize);
+                if (!checkFreeSpace(m_totalSize))
+                    return null;
                 for (int i=0;i<params.length;i++)
                 {
                     if (isCancelled())
