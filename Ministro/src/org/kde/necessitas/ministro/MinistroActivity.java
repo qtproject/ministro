@@ -62,6 +62,7 @@ import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -105,7 +106,14 @@ public class MinistroActivity extends Activity
                             {
                                 if (isOnline(MinistroActivity.this))
                                 {
-                                    getApplication().unregisterReceiver(this);
+                                    try
+                                    {
+                                        getApplication().unregisterReceiver(this);
+                                    }
+                                    catch(Exception e)
+                                    {
+                                        e.printStackTrace();
+                                    }
                                     runOnUiThread(new Runnable() {
                                         public void run()
                                         {
@@ -116,7 +124,17 @@ public class MinistroActivity extends Activity
                                 }
                             }
                         }, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-                        startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
+                        try {
+                            startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                            try {
+                                startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                            } catch(Exception e1) {
+
+                                e1.printStackTrace();
+                            }
+                        }
                         dialog.dismiss();
                     }
                 });
@@ -164,7 +182,15 @@ public class MinistroActivity extends Activity
                         }
                     });
                 AlertDialog alert = builder.create();
-                alert.show();
+                try
+                {
+                    alert.show();
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    checkNetworkAndDownload(false);
+                }
             }
             else
                 checkNetworkAndDownload(true);
@@ -307,13 +333,21 @@ public class MinistroActivity extends Activity
             m_dialog.setCancelable(true);
             m_dialog.setCanceledOnTouchOutside(false);
             m_dialog.setOnCancelListener(new DialogInterface.OnCancelListener(){
-                        public void onCancel(DialogInterface dialog)
-                        {
-                            DownloadManager.this.cancel(false);
-                            finishMe();
-                        }
+                public void onCancel(DialogInterface dialog)
+                {
+                    DownloadManager.this.cancel(false);
+                    finishMe();
+                }
             });
-            m_dialog.show();
+            try
+            {
+                m_dialog.show();
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+                m_dialog = null;
+            }
             super.onPreExecute();
         }
 
@@ -435,10 +469,20 @@ public class MinistroActivity extends Activity
         @Override
         protected void onProgressUpdate(Integer... values)
         {
-            synchronized (m_status)
+            try
             {
-                m_dialog.setMessage(m_status+values[0]+"%");
-                m_dialog.setProgress(values[1]);
+                if (m_dialog != null)
+                {
+                    synchronized (m_status)
+                    {
+                        m_dialog.setMessage(m_status+values[0]+"%");
+                        m_dialog.setProgress(values[1]);
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
             }
             super.onProgressUpdate(values);
         }
@@ -457,22 +501,24 @@ public class MinistroActivity extends Activity
         }
     }
 
-    private class CheckLibraries extends AsyncTask<Boolean, Void, Double>
+    private class CheckLibraries extends AsyncTask<Boolean, String, Double>
     {
-        private ProgressDialog dialog = null;
+        private ProgressDialog m_dialog = null;
         private final ArrayList<Library> newLibs = new ArrayList<Library>();
         private String m_message;
         @Override
         protected void onPreExecute()
         {
-            runOnUiThread(new Runnable()
+            try
             {
-                public void run()
-                {
-                    dialog = ProgressDialog.show(MinistroActivity.this, null,
-                            getResources().getString(R.string.checking_libraries_msg), true, true);
-                }
-            });
+                m_dialog = ProgressDialog.show(MinistroActivity.this, null,
+                        getResources().getString(R.string.checking_libraries_msg), true, true);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                m_dialog = null;
+            }
             super.onPreExecute();
         }
 
@@ -501,7 +547,7 @@ public class MinistroActivity extends Activity
                         !(new File(m_qtLibsRootPath+"style").exists()))
                 {
                     m_message = getResources().getString(R.string.extracting_look_n_feel_msg);
-                    publishProgress((Void[])null);
+                    publishProgress(m_message);
                     new ExtractStyle(MinistroActivity.this, m_qtLibsRootPath+"style/");
                     SharedPreferences.Editor editor= preferences.edit();
                     editor.putString("MINISTRO_VERSION",getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
@@ -536,7 +582,7 @@ public class MinistroActivity extends Activity
                         !preferences.getString("RELEASE", "").equals(android.os.Build.VERSION.RELEASE))
                 {
                     m_message = getResources().getString(R.string.extracting_SSL_msg);
-                    publishProgress((Void[])null);
+                    publishProgress(m_message);
                     String environmentVariables=root.getAttribute("environmentVariables");
                     environmentVariables=environmentVariables.replaceAll("MINISTRO_PATH", "");
                     String environmentVariablesList[]=environmentVariables.split("\t");
@@ -654,19 +700,34 @@ public class MinistroActivity extends Activity
         }
 
         @Override
-        protected void onProgressUpdate(Void... nothing)
+        protected void onProgressUpdate(String... messages)
         {
-            dialog.setMessage(m_message);
-            super.onProgressUpdate(nothing);
+            try
+            {
+                if (null != m_dialog)
+                    m_dialog.setMessage(messages[0]);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+            super.onProgressUpdate(messages);
         }
 
         @Override
         protected void onPostExecute(Double result)
         {
-            if (null != dialog)
+            try
             {
-                dialog.dismiss();
-                dialog = null;
+                if (null != m_dialog)
+                {
+                    m_dialog.dismiss();
+                    m_dialog = null;
+                }
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
             }
             if (newLibs.size()>0 && result>0)
             {
