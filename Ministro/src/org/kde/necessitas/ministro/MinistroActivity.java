@@ -305,6 +305,7 @@ public class MinistroActivity extends Activity
             m_dialog.setTitle(getResources().getString(R.string.downloading_qt_libraries_msg));
             m_dialog.setMessage(m_status);
             m_dialog.setCancelable(true);
+            m_dialog.setCanceledOnTouchOutside(false);
             m_dialog.setOnCancelListener(new DialogInterface.OnCancelListener(){
                         public void onCancel(DialogInterface dialog)
                         {
