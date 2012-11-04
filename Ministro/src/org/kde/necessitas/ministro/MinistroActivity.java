@@ -549,9 +549,22 @@ public class MinistroActivity extends Activity
                             Library.removeAllFiles(path);
                             try
                             {
-                                KeyStore ks= KeyStore.getInstance(KeyStore.getDefaultType());
-                                FileInputStream instream = new FileInputStream(new File("/system/etc/security/cacerts.bks"));
-                                ks.load(instream, null);
+                                KeyStore ks = null;
+                                if (Build.VERSION.SDK_INT>13)
+                                {
+                                    ks = KeyStore.getInstance("AndroidCAStore");
+                                    ks.load(null, null);
+                                }
+                                else
+                                {
+                                    ks= KeyStore.getInstance(KeyStore.getDefaultType());
+                                    String cacertsPath=System.getProperty("javax.net.ssl.trustStore");
+                                    if (null == cacertsPath)
+                                        cacertsPath="/system/etc/security/cacerts.bks";
+                                    FileInputStream instream = new FileInputStream(new File(cacertsPath));
+                                    ks.load(instream, null);
+                                }
+
                                 for (Enumeration<String> aliases = ks.aliases(); aliases.hasMoreElements(); )
                                 {
                                     String aName = aliases.nextElement();
