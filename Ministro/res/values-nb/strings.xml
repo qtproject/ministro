@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Velg et kodelager</string>
+    <string name="incompatible_ministo_api">Ministro er ikke kompatibel med din applikasjon. Vennligst oppgrader tjenesten Ministro.</string>
+    <string name="ministro_network_access_msg">Ministro krever nettverkstilgang. Tillat datatrafikk i mobilnett eller skru på trådløst nettverk for å laste ned data.</string>
+    <string name="settings_msg">Innstillinger</string>
+    <string name="wait_for_network_connection_msg">Venter på nettverkstilkobling</string>
+    <string name="download_app_libs_msg"> %1$s trenger flere biblioteker for å kjøre.\nVil du laste ned disse nå?</string>
+    <string name="start_downloading_msg">Start nedlasting ...</string>
+    <string name="downloading_qt_libraries_msg">Laster ned Qt biblioteker</string>
+    <string name="checking_libraries_msg">Sjekker biblioteker. Vennligst vent...</string>
+    <string name="extracting_SSL_msg">Trekker ut SSL rotsertifikater. Vennligst vent...</string>
+    <string name="new_qt_libs_msg">Fant nye Qt biblioteker</string>
+    <string name="new_qt_libs_tap_msg">Fant nye Qt biblioteker, trykk for å oppdatere</string>
+    <string name="ministro_repository_msg">Ministro vil bruke %1$s kodelager</string>
+    <string name="ministro_repository_changed_msg">Ministro kodelager endret</string>
+    <string name="ministro_update_msg">Ministro oppdatering</string>
+    <string name="ministro_repository_changed_tap_msg">Ministro kodelager endret, trykk for å oppdatere</string>
+    <string name="invalid_parameters">Ugyldige parametere</string>
+    <string name="dependencies_error">Din applikasjon har avhengigheter Ministro ikke kan tilfredsstille</string>
+</resources>

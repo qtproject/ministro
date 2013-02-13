@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">مخزن را انتخاب کن</string>
+    <string name="incompatible_ministo_api">سرویس Ministro با برنامه‌تان سازگار نیست. لطفا سرویس Ministro را بروز کنید.</string>
+    <string name="ministro_network_access_msg">سرویس Ministro نیاز به دسترسی به شبکه اینترنت دارد. شبکه اینترنت موبایل یا شبکه اینترنت بی‌سیم را برای دانلود داده‌ها فعال کنید.</string>
+    <string name="settings_msg">تنظیمات</string>
+    <string name="wait_for_network_connection_msg">انتظار برای اتصال به شبکه</string>
+    <string name="download_app_libs_msg">‏ %1$s  برای اجرا شدن به کتابخانه‌های اضافی نیاز دارد.\nآیا اکنون آنها را دانلود می‌کنید؟</string>
+    <string name="start_downloading_msg">آغاز دانلود کردن...‏</string>
+    <string name="downloading_qt_libraries_msg">دانلود کردن کتابخانه‌های Qt‏</string>
+    <string name="checking_libraries_msg">بررسی کتابخانه‌ها. لطفا منتظر بمانید...‏</string>
+    <string name="extracting_SSL_msg">استخراج کردن اعتبارنامه ریشه SSL.  لطفا منتظر بمانید...‏</string>
+    <string name="new_qt_libs_msg">کتابخانه‌های جدید Qt یافت شدند</string>
+    <string name="new_qt_libs_tap_msg">کتابخانه‌های جدید Qt یافت شده‌اند برای بروزرسانی tap کنید.</string>
+    <string name="ministro_repository_msg">سرویس Ministro مخزن  %1$s را استفاده خواهد کرد</string>
+    <string name="ministro_repository_changed_msg">مخزن سرویس Ministro تغییر کرده است.</string>
+    <string name="ministro_update_msg">بروزرسانی سرویس Ministro‏</string>
+    <string name="ministro_repository_changed_tap_msg">مخزن سرویس Ministro تغییر کرده است برای بروزرسانی tap کنید.</string>
+    <string name="invalid_parameters">پارامترهای نامعتبر</string>
+    <string name="dependencies_error">سرویس Ministro نمی‌تواند وابستگی‌های برنامه‌تان را برآورده کند</string>
+</resources>

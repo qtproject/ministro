@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Bitte wählen Sie eine Quelle</string>
+    <string name="incompatible_ministo_api">Ministro ist nicht kompatibel mit ihrer Applikation. Bitte aktualisieren Sie Minstro-Service.</string>
+    <string name="ministro_network_access_msg">Ministor benötigt Internetzugang. Bitte schalten Sie Wi-Fi oder mobiles Internet an.</string>
+    <string name="settings_msg">Einstellungen</string>
+    <string name="wait_for_network_connection_msg">Warte auf Internet-Verbindung</string>
+    <string name="download_app_libs_msg"> %1$s benötigt eine zusätzliche Bibliothek.\nMöchten Sie diese nun herunterladen?</string>
+    <string name="start_downloading_msg">Beginne den Download...</string>
+    <string name="downloading_qt_libraries_msg">Lade Qt Bibliotheken herunter</string>
+    <string name="checking_libraries_msg">Überprüfe Bibliotheken. Bitte warten...</string>
+    <string name="extracting_SSL_msg">Extrahiere SSL Wurzelzertifikate. Bitte warten...</string>
+    <string name="new_qt_libs_msg">Neue Qt Bibliotheken gefunden</string>
+    <string name="new_qt_libs_tap_msg">Neue Qt Bibliotheken wurden gefunden. Zum Aktualisieren antippen.</string>
+    <string name="ministro_repository_msg">Ministro wird %1$s Quelle benutzen</string>
+    <string name="ministro_repository_changed_msg">Ministro Quelle geändert</string>
+    <string name="ministro_update_msg">Ministro Update</string>
+    <string name="ministro_repository_changed_tap_msg">Ministro Quelle wurde geändert. Zum Aktualisieren antippen.</string>
+    <string name="invalid_parameters">Ungültige Parameter</string>
+    <string name="dependencies_error">Ministro kann die Abhängigkeiten ihrer Applikation nicht zur verfügen stellen.</string>
+</resources>

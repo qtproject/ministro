@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Выберите репозиторий</string>
+    <string name="incompatible_ministo_api">Ministro не совместим с вашим приложением. Обновите сервис Ministro.</string>
+    <string name="ministro_network_access_msg">Ministro требуется сетевой доступ. Включите мобильную сеть или Wi-Fi для загрузки данных.</string>
+    <string name="settings_msg">Настройка</string>
+    <string name="wait_for_network_connection_msg">Ожидание сетевого подключения</string>
+    <string name="download_app_libs_msg"> %1$s необходимы дополнительные библиотеки для работы.\nЗагрузить их прямо сейчас?</string>
+    <string name="start_downloading_msg">Началась загрузка ...</string>
+    <string name="downloading_qt_libraries_msg">Загрузка библиотек Qt</string>
+    <string name="checking_libraries_msg">Проверка библиотек. Подождите...</string>
+    <string name="extracting_SSL_msg">Извлечение корневых сертификатов SSL. Подождите...</string>
+    <string name="new_qt_libs_msg">Найдены новые библиотеки Qt</string>
+    <string name="new_qt_libs_tap_msg">Нажмите для поиска новых библиотек Qt.</string>
+    <string name="ministro_repository_msg">Ministro будет использовать репозиторий %1$s</string>
+    <string name="ministro_repository_changed_msg">Репозиторий Ministro изменён</string>
+    <string name="ministro_update_msg">Обновление Ministro</string>
+    <string name="ministro_repository_changed_tap_msg">Нажмите для изменения репозитория Ministro.</string>
+    <string name="invalid_parameters">Неверные параметры</string>
+    <string name="dependencies_error">Ministro не может удовлетворить зависимости вашего приложения</string>
+</resources>

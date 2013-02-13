@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">Wybierz repozytorium</string>
+    <string name="incompatible_ministo_api">Usługa Ministro nie jest zgodna z tą aplikacją. Uaktualnij Ministro.</string>
+    <string name="ministro_network_access_msg">Usługa Ministro wymaga połączenia z Internetem. Aktywuj Wi-Fi lub mobilny Internet, aby pobrać dane.</string>
+    <string name="settings_msg">Ustawienia</string>
+    <string name="wait_for_network_connection_msg">Oczekiwanie na połączenie z Internetem</string>
+    <string name="download_app_libs_msg">%1$s wymaga dodatkowych bibliotek do uruchomienia.\nCzy chcesz je pobrać teraz?</string>
+    <string name="start_downloading_msg">Rozpoczęcie pobierania...</string>
+    <string name="downloading_qt_libraries_msg">Pobieranie bibliotek Qt</string>
+    <string name="checking_libraries_msg">Weryfikacja bibliotek. Proszę czekać...</string>
+    <string name="extracting_SSL_msg">Wyodrębnianie certyfikatów SSL. Proszę czekać...</string>
+    <string name="new_qt_libs_msg">Dostępne nowe biblioteki Qt</string>
+    <string name="new_qt_libs_tap_msg">Dostępna nowa wersja bibliotek Qt. Dotknij, aby zaktualizować.</string>
+    <string name="ministro_repository_msg">Ministro będzie używał repozytorium „%1$s”</string>
+    <string name="ministro_repository_changed_msg">Zmienione repozytorium Ministro</string>
+    <string name="ministro_update_msg">Aktualizacja Ministro</string>
+    <string name="ministro_repository_changed_tap_msg">Zmienione repozytorium Ministro. Dotknij, aby zaktualizować.</string>
+    <string name="invalid_parameters">Nieprawidłowe parametry</string>
+    <string name="dependencies_error">Ministro nie jest w stanie odnaleźć wszystkich zależności dla aplikacji</string>
+</resources>

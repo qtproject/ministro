@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Instrument de configurare Ministro</string>
+    <string name="install_ministro_msg">Acest instrument are nevoie de cel mai recent serviciu Ministro. Doriţi să-l instalaţi?</string>
+</resources>

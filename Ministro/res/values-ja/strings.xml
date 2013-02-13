@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">リポジトリの選択</string>
+    <string name="incompatible_ministo_api">Ministroはあなたのアプリケーションと互換性がありません。 Ministroサービスをアップグレードしてください。</string>
+    <string name="ministro_network_access_msg">Ministroはネットワークアクセスを必要とします。 モバイルネットワークかWi-Fiでデータのダウンロードを許可してください。</string>
+    <string name="settings_msg">セッティング</string>
+    <string name="wait_for_network_connection_msg">ネットワークの接続待ち</string>
+    <string name="download_app_libs_msg"> %1$sは拡張ライブラリを必要とします。\n今ダウンロードしますか？</string>
+    <string name="start_downloading_msg">ダウンロード開始 ...</string>
+    <string name="downloading_qt_libraries_msg">Qtライブラリーダウンロード中</string>
+    <string name="checking_libraries_msg">ライブラリーを確認中です。 お待ちください...</string>
+    <string name="extracting_SSL_msg">SSLルート証明書を抽出中。 お待ちください...</string>
+    <string name="new_qt_libs_msg">新しいQtライブラリーが見つかりました</string>
+    <string name="new_qt_libs_tap_msg">新しいQtライブラリーが見つかったので更新をタップしてください。</string>
+    <string name="ministro_repository_msg">Ministroは%1$sのリポジトリを使用します。</string>
+    <string name="ministro_repository_changed_msg">Ministroリポジトリが変更されました</string>
+    <string name="ministro_update_msg">Ministro更新</string>
+    <string name="ministro_repository_changed_tap_msg">Ministroのリポジトリが変更されたので更新をタップしてください。</string>
+    <string name="invalid_parameters">無効なパラメータ</string>
+    <string name="dependencies_error">Ministroはあなたのアプリケーションの依存関係を解決できません</string>
+</resources>

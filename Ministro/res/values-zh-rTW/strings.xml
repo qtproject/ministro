@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ministro</string>
+    <string name="repositories_prompt">選擇一個資源庫</string>
+    <string name="incompatible_ministo_api">Ministro與您的應用程序不相容。請升級Ministro服務。</string>
+    <string name="ministro_network_access_msg">Ministro需要連接網絡。請啟用移動網絡或無線網絡下載數據。</string>
+    <string name="settings_msg">設置</string>
+    <string name="wait_for_network_connection_msg">等待網絡連接</string>
+    <string name="download_app_libs_msg"> %1$s 需要額外的程式庫運行。\n您想現在下載它嗎？</string>
+    <string name="start_downloading_msg">開始下載。。。</string>
+    <string name="downloading_qt_libraries_msg">下載Qt程式庫</string>
+    <string name="checking_libraries_msg">檢查程式庫。請稍候。。。</string>
+    <string name="extracting_SSL_msg">提取SSL根證書。請稍候。。。</string>
+    <string name="new_qt_libs_msg">找到新的Qt程式庫</string>
+    <string name="new_qt_libs_tap_msg">已找到新的Qt程式庫 輕敲進行更新。</string>
+    <string name="ministro_repository_msg">Ministro將使用  %1$s 資源庫</string>
+    <string name="ministro_repository_changed_msg">Ministro資源庫已更改</string>
+    <string name="ministro_update_msg">Ministro更新</string>
+    <string name="ministro_repository_changed_tap_msg">Ministro資源庫已更改 輕敲進行更新。</string>
+    <string name="invalid_parameters">參數無效</string>
+    <string name="dependencies_error">Ministro不能滿足您的應用程序依賴需求</string>
+</resources>
